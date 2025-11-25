@@ -4,7 +4,7 @@
     "fade_ms": 900,
     "hero": {
         "lead": "Led by Dr. Samuel Pironon",
-        "title": "Biodiversity, ecology, and plant-human interactions",
+        "title": "Reweaving Something Something",
         "subtitle": "We study how people and plants are connected through nutrition, medicine, and culture. Our team blends data science, field ecology, and network thinking to map, model, and safeguard nature’s pharmacopeia.",
         "cta_primary": {
             "label": "Explore research",
@@ -13,6 +13,10 @@
         "cta_secondary": {
             "label": "Get in touch",
             "to": "/contact"
+        },
+        "cta_tertiary": {
+            "label": "More About Us",
+            "to": "/about"
         }
     },
     "images": [
