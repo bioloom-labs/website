@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="loomSmall" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#34d399" />
+      <stop offset="100%" stop-color="#0f9f82" />
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="#021510" />
+  <circle cx="32" cy="32" r="22" fill="#03241b" />
+  <path
+    d="M26 14v36c0 6 3.5 10 6 10s6-4 6-10V14"
+    fill="none"
+    stroke="url(#loomSmall)"
+    stroke-width="5"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+  <path
+    d="M20 24c4 4 10 7 12 7s8-3 12-7M20 40c4-4 10-7 12-7s8 3 12 7"
+    fill="none"
+    stroke="#67e8f9"
+    stroke-width="4"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    opacity="0.85"
+  />
+</svg>

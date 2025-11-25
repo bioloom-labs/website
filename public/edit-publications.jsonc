@@ -1,0 +1,39 @@
+[
+    // --- Remove these DOIs pulled from OpenAlex ---
+    //  {
+    "action": "remove",
+    "doi": "https://doi.org/10.1000/example-doi-2"
+},
+// --- Add a fully manual entry ---
+//  {
+"action": "add",
+"id": "manual:centre-periphery-hotspots", // optional; if missing, auto-generated
+"doi": "10.1234/example-doi-override", // used for future remove rules
+"title": "Centre–periphery patterns in plant–human interactions",
+"year": 2024,
+"journal": "Journal of Biodiversity Stuff",
+"journalUrl": "https://doi.org/10.1234/example-doi-override",
+"link": "https://doi.org/10.1234/example-doi-override",
+// Either give authors as an array...
+"authors": [
+    "Samuel Pironon",
+    "Mihir Hurwanth"
+],
+// ...or you can omit and just supply authorsText if you want something custom:
+// "authorsText": "Samuel Pironon, Mihir Hurwanth",
+// Will show as the little lab pill on the right
+"labAuthorNames": [
+    "Samuel Pironon",
+    "Mihir Hurwanth"
+],
+// Optional abstract & topics (used in search + chips)
+"abstractText": "We explore centre–periphery patterns in species, metabolites, and plant–human interactions across global regions...",
+"topic": "Biogeography",
+"subfield": "Macroecology",
+"field": "Ecology",
+"domain": "Life sciences",
+// Type controls the label & colour
+// Examples: "journal-article", "review", "dataset"
+"type": "journal-article"
+}
+]

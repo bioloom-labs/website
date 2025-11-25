@@ -1,0 +1,147 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+    --bg-grad: radial-gradient(1000px 600px at 80% -10%, rgba(16, 185, 129, 0.25), transparent),
+        radial-gradient(800px 400px at 10% 20%, rgba(5, 150, 105, 0.2), transparent);
+}
+
+body {
+    background: var(--bg-grad), theme(colors.brand.950);
+}
+
+.glass {
+    @apply bg-white/5 backdrop-blur border border-white/10;
+}
+
+.btn-primary {
+    @apply inline-flex items-center gap-2 rounded-xl bg-brand-400 text-brand-950 font-medium px-5 py-3 shadow hover:shadow-glow transition;
+}
+
+.btn-secondary {
+    @apply inline-flex items-center gap-2 rounded-xl border border-white/15 bg-white/5 px-5 py-3 font-medium hover:bg-white/10 transition;
+}
+
+.img-research {
+    @apply mb-4 w-full aspect-[4/3] rounded-xl object-contain;
+}
+
+.section {
+    @apply mx-auto max-w-7xl px-4 py-20 md:py-28;
+}
+
+.about-scroll-container {
+    scroll-snap-type: y mandatory;
+}
+
+.about-scene {
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+}
+
+.h1-grad {
+    @apply text-4xl md:text-6xl font-semibold tracking-tight;
+    background: linear-gradient(to right, #6ee7b7, #34d399, #10b981);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.h2-grad {
+    @apply text-2xl md:text-4xl font-semibold tracking-tight;
+    background: linear-gradient(to right, #a7f3d0, #6ee7b7, #34d399);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.pill {
+    @apply inline-flex items-center rounded-full border border-white/20 bg-white/5 px-3 py-1 text-xs tracking-wide;
+}
+
+.card {
+    @apply relative overflow-hidden rounded-2xl glass;
+}
+
+.card-body {
+    @apply relative p-6;
+}
+
+.card-spot {
+    @apply absolute inset-0 bg-gradient-to-br from-brand-400/10 via-transparent to-emerald-300/10 opacity-0 transition;
+}
+
+.list-vertical {
+    @apply flex flex-col gap-4;
+}
+
+.img-card {
+    @apply mb-4 h-40 w-full rounded-xl object-cover;
+}
+
+.avatar {
+    @apply h-14 w-14 shrink-0 rounded-full object-cover;
+}
+
+.social {
+    @apply inline-flex items-center gap-2 rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-sm hover:bg-white/10 transition;
+}
+
+.social-row {
+    @apply mt-4 flex flex-wrap gap-2;
+}
+
+/* === New: frosted-glass form controls for filters === */
+
+.input-glass {
+    @apply w-full rounded-xl bg-white/5 border border-white/15 px-3 py-2 text-sm text-white/90 backdrop-blur focus:outline-none focus:ring-2 focus:ring-brand-300 focus:border-brand-300;
+}
+
+.select-glass {
+    @apply w-full rounded-xl bg-white/10 border border-white/20 px-3 py-2 text-sm text-white/90 shadow-sm backdrop-blur focus:outline-none focus:ring-2 focus:ring-brand-300 focus:border-brand-300;
+}
+
+/* Make sure native option list is readable (esp. on Windows) */
+.select-glass option {
+    background-color: #020617;
+    /* dark slate / brand-950-ish */
+    color: #f9fafb;
+    /* near-white */
+}
+
+/* --- Publications: loading squiggle animation --- */
+
+.pen-loading-wrapper {
+    position: relative;
+    width: 16rem;
+    height: 4.5rem;
+}
+
+.pen-path {
+    stroke-dasharray: 320;
+    stroke-dashoffset: 320;
+    animation: pen-draw 2.4s ease-in-out infinite;
+}
+
+@keyframes pen-draw {
+    0% {
+        stroke-dashoffset: 320;
+        opacity: 0;
+    }
+
+    10% {
+        opacity: 1;
+    }
+
+    80% {
+        stroke-dashoffset: 0;
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0;
+    }
+}
+
+.img-research {
+    @apply w-full h-auto rounded-xl object-cover transition-opacity duration-700;
+}

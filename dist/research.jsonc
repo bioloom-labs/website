@@ -1,0 +1,27 @@
+[
+  {
+    // Optional stable ID
+    "id": "climate-adaptation",
+    "title": "Climate Adaptation & Biodiversity Change",
+    "image": "/images/research/climate.jpg",
+    "text": "We study how climate change reshapes plant distributions, evolutionary strategies, and the resilience of species vital to human well-being."
+  },
+  {
+    "id": "chemotaxonomy",
+    "title": "Chemotaxonomy & Plant Metabolite Diversity",
+    "image": "/images/research/chemotaxonomy.jpg",
+    "text": "Using chemical fingerprints, phylogenetics, and AI, we uncover patterns in plant metabolite evolution to guide natural-product discovery."
+  },
+  {
+    "id": "plant-human-networks",
+    "title": "Plant–Human Interaction Networks",
+    "image": "/images/research/networks.jpg",
+    "text": "We map how communities rely on plants for food, medicine, and culture, identifying vulnerabilities and opportunities for conservation."
+  },
+  {
+    "id": "geospatial-biodiversity",
+    "title": "Geospatial Modelling of Biodiversity Hotspots",
+    "image": "/images/research/maps.jpg",
+    "text": "Integrating GBIF, POWO, and environmental datasets, we model species richness, endemism, and bioactivity–environment relationships."
+  }
+]

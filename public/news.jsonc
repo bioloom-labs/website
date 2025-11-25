@@ -1,0 +1,25 @@
+// News — date (YYYY-MM-DD), title, text, optional link.
+[
+  {
+    "date": "2026-07-15",
+    "title": "Dataset release",
+    "text": "We released an open dataset of plant–compound associations.",
+    "link": "#"
+  },
+  {
+    "date": "2025-05-22",
+    "title": "New preprint",
+    "text": "Preprint on phylo-chem networks now online.",
+    "link": "#"
+  },
+  {
+    "date": "2025-02-03",
+    "title": "Seminar talk",
+    "text": "Invited talk on equitable bioprospecting."
+  },
+  {
+    "date": "2025-02-06",
+    "title": "Seminar talk",
+    "text": "Invited talk on equitable bioprospecting."
+  }
+]

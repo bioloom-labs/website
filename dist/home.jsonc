@@ -1,0 +1,36 @@
+/* Home hero configuration (text + slideshow) */
+{
+    "interval_ms": 5000,
+    "fade_ms": 900,
+    "hero": {
+        "lead": "Led by Dr. Samuel Pironon",
+        "title": "Biodiversity, ecology, and plant-human interactions",
+        "subtitle": "We study how people and plants are connected through nutrition, medicine, and culture. Our team blends data science, field ecology, and network thinking to map, model, and safeguard nature’s pharmacopeia.",
+        "cta_primary": {
+            "label": "Explore research",
+            "to": "/research"
+        },
+        "cta_secondary": {
+            "label": "Get in touch",
+            "to": "/contact"
+        }
+    },
+    "images": [
+        {
+            "src": "/images/home/kew-gardens.jpg",
+            "alt": "Palm House, Kew Gardens",
+            "credit": {
+                "name": "Emily Underworld",
+                "url": "https://unsplash.com/@emilyunderworld"
+            }
+        },
+        {
+            "src": "/images/home/singapore.jpg",
+            "alt": "Gardens by the Bay, Singapore",
+            "credit": {
+                "name": "Nick Fewings",
+                "url": "https://unsplash.com/@jannerboy62"
+            }
+        }
+    ]
+}

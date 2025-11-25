@@ -1,0 +1,90 @@
+{
+  "title": "Inside BioLoom Labs",
+  "eyebrow": "Field notebooks • Molecular studios • Data commons",
+  "videos": {
+    "intro": "/images/videos/about/1080p_holdingplant.mp4",
+    "narrative": [
+      "/images/videos/about/1080p_gymnocalyciumcactus.mp4",
+      "/images/videos/about/1080p_handseeds.mp4",
+      "/images/videos/about/1080p_butterflyonhand.mp4",
+      "/images/videos/about/1080p_europeangreenfinch.mp4"
+    ],
+    "sections": "/images/videos/about/1080p_beereddahlia.mp4"
+  },
+  "videoAttributions": {
+    "intro": {
+      "label": "Background Stock Videos by Vecteezy",
+      "href": "https://www.vecteezy.com/free-videos/background"
+    },
+    "narrative": [
+      {
+        // gymnocalyciumcactus.mp4 → “Timelapses”
+        "label": "Timelapses Stock Videos by Vecteezy",
+        "href": "https://www.vecteezy.com/free-videos/timelapses"
+      },
+      {
+        // handseeds.mp4 → “Hand”
+        "label": "Hand Stock Videos by Vecteezy",
+        "href": "https://www.vecteezy.com/free-videos/hand"
+      },
+      {
+        // butterflyonhand.mp4 → “Garden”
+        "label": "Garden Stock Videos by Vecteezy",
+        "href": "https://www.vecteezy.com/free-videos/garden"
+      },
+      {
+        // europeangreenfinch.mp4 → “Nature Birds”
+        "label": "Nature Birds Stock Videos by Vecteezy",
+        "href": "https://www.vecteezy.com/free-videos/nature-birds"
+      }
+    ],
+    "sections": {
+      // beereddahlia.mp4 → “Pollination”
+      "label": "Pollination Stock Videos by Vecteezy",
+      "href": "https://www.vecteezy.com/free-videos/pollination"
+    }
+  },
+  "intro": [
+    "BioLoom Labs is a deliberately interdisciplinary environment bringing together ecologists, chemists, data scientists, and community partners with a shared commitment to understanding and protecting plant diversity. We treat every leaf sample, molecular trace, and historical record as a contribution to a broader narrative about adaptation, persistence, and reciprocity between people and plants.",
+    "Our work spans humid forest plots, herbarium archives, laboratory benches, and computational platforms. We integrate field observations with spectral data, metabolomic signatures, and machine learning models that ingest global biodiversity datasets. Across all workflows, traditional knowledge and local expertise remain central, informing our methods and shaping our interpretations.",
+    "Our driving motivation is to pursue discovery in a way that is both rigorous and equitable. We develop analytical tools that highlight underexplored geographic regions, emerging threats, and overlooked lineages—while also emphasising the social, cultural, and policy contexts required for responsible research. Effective natural product discovery today demands precision science supported by transparent ethics and genuine collaboration.",
+    "The sections below describe how our research progresses from fieldwork to data integration, molecular exploration, and policy translation. Each step represents an essential component of our wider effort to advance natural product discovery without reproducing extractive scientific practices."
+  ],
+  "narrative": [
+    {
+      "heading": "Field surveying and specimen documentation",
+      "tag": "Fieldwork",
+      "text": "We conduct structured biodiversity surveys in collaboration with local experts and institutions. Each specimen is recorded with high-resolution imagery, geospatial coordinates, ecological metadata, and associated cultural or ethnobotanical information. These combined data support downstream taxonomic, ecological, and chemical analyses."
+    },
+    {
+      "heading": "Data integration and environmental modelling",
+      "tag": "Modelling",
+      "text": "Field observations are integrated with climatic, remote-sensing, and trait datasets to build robust ecological and biogeographical models. Using statistical and machine learning methods, we generate species-distribution estimates, assess environmental drivers, and identify regions or taxa with high chemodiversity potential."
+    },
+    {
+      "heading": "Governance, compliance, and equitable access",
+      "tag": "Ethics",
+      "text": "All research activities follow international and national access and benefit-sharing frameworks. We implement protocols aligned with the Nagoya Protocol, co-develop agreements with partner communities, and ensure transparent decision-making around sample use, data sharing, authorship, and long-term stewardship."
+    },
+    {
+      "heading": "Chemical profiling and computational analysis",
+      "tag": "Cheminformatics",
+      "text": "Laboratory workflows include chromatographic separation, metabolomic profiling, and compound annotation. Computational pipelines support structure prediction, scaffold clustering, and target prioritisation, enabling systematic evaluation of chemical diversity and bioactive potential across plant lineages."
+    }
+  ],
+  "sections": [
+    {
+      "heading": "Why this matters",
+      "text": "Natural products continue to play a central role in global healthcare, yet the ecosystems and communities that sustain them often encounter disproportionate risks. Our work aims to identify opportunities for discovery while championing equitable research practices, open data standards, and shared intellectual frameworks."
+    },
+    {
+      "heading": "How we collaborate",
+      "text": "We work closely with Indigenous communities, botanic gardens, conservation networks, public health partners, and computational research teams. Formal agreements on data sovereignty, authorship, training, and resource sharing are standard components of our collaborations, ensuring mutual respect and long-term impact."
+    },
+    {
+      "heading": "Where we are headed",
+      "text": "Our next steps include scaling climate-resilient crop libraries, co-developing accessible AI tools for laboratories in the Global South, expanding integrative metabolomic datasets, and deepening exchange programmes that bring computational and place-based knowledge into direct dialogue."
+    }
+  ],
+  "closing": "Our work is continuously evolving. We welcome new collaborations, field sites, datasets, and conversations that help advance a more equitable and imaginative future for plant-derived therapeutics."
+}

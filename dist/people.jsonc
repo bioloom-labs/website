@@ -1,0 +1,111 @@
+// People file — update either the "current" or "previous" array with entries.
+// Allowed fields (empty strings are OK):
+// name, role, description, photo, email, website, twitter, linkedin, github, links[] (auto-detects Bluesky, Google Scholar, ORCID, etc.)
+{
+  "current_sections": [
+    {
+      "title": "Principal Investigator",
+      "members": [
+        {
+          "name": "Samuel Pironon",
+          "role": "Principal Investigator",
+          "description": "How many species inhabit the Earth? Where are they concentrated? How do they contribute to humanity's subsistence and well-being? Are they threatened by ongoing anthropogenic pressures? Which mechanisms can be developed to guarantee their protection and enhancement on the long-term?\n\nSamuel Pironon's research focuses on understanding the diversity, distribution, traits and conservation status of species and their contributions to people globally. Sam and his group analyse large datasets using interdisciplinary approaches to address fundamental macroecological questions and to look for solutions to major global challenges such as biodiversity loss, food insecurity, climate change and diseases. While Sam's interests are not limited taxonomically, geographically, or conceptually, his recent work has largely centered on the diversity of terrestrial vascular plants, especially those documented to be used by people, including for food and medicine.",
+          "photo": "/images/people/pironon.jpg",
+          "email": "s.pironon@qmul.ac.uk",
+          "website": "",
+          "twitter": "",
+          "linkedin": "",
+          "github": "",
+          "links": [
+            "https://scholar.google.com/citations?user=pRpsOngAAAAJ&hl=en&oi=ao",
+            "https://www.researchgate.net/profile/Samuel-Pironon?ev=hdr_xprf",
+            "https://orcid.org/0000-0002-8937-7626"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "PhD Researchers",
+      "members": [
+        {
+          "name": "Mihir Hurwanth",
+          "role": "PhD Researcher at Queen Mary University of London",
+          "description": "AI is transforming drug discovery by learning patterns across chemistry, biology, and evolution, enabling faster and more targeted identification of promising compounds. My work sits inside that shift by showing how machine learning can make natural product discovery more semantic and more deeply informed. My journey here began in biochemistry, where I learned to view molecules as living stories: shaped by enzymes, evolution, and environment. During my MSc in Artificial Intelligence for Drug Discovery, that perspective shifted toward a computational approach. I worked on RNN-based generative models trained with reinforcement learning to design novel compounds. I developed a deep interest in how model architectures, scoring functions, and chemical constraints influence AI's creativity in molecular design. Now, my research focuses on applying those ideas to the natural-products domain. I develop data pipelines that combine ecological, chemotaxonomic, and phylogenetic data into structured inputs for machine learning models. This helps me map chemical space across extensive plant lineages, discover overlooked species with potential biosynthetic abilities, and employ generative techniques to suggest molecules based on nature’s own design principles. What motivates me is the potential to connect two worlds that rarely intersect — global biodiversity patterns and the detailed logic of drug discovery. By learning from how plants have tackled chemical challenges over millions of years, I aim to create tools that make early-stage discovery more predictive, more interpretable, and more aligned with the biology that underpins human health.",
+          "photo": "/images/people/hurwanth.jpg",
+          "email": "m.hurwanth@qmul.ac.uk",
+          "website": "",
+          "twitter": "",
+          "linkedin": "https://www.linkedin.com/in/mihirhurwanth/",
+          "github": "https://github.com/MH261102",
+          "links": [
+            "https://orcid.org/0009-0001-8017-9375"
+          ]
+        },
+        {
+          "name": "Kristian George Suszczenia",
+          "role": "PhD Researcher at Queen Mary University of London",
+          "description": "Our individual lifestyles, and the society that supports them, are entirely founded upon and embedded within nature – our food, our water, our materials, our wellbeing, and our stable environment. Yet a worldview which sees society and economy as distinct from and above nature, using it for short term gains, is undermining these vital foundations; Nature’s Contributions to People (NCPs). In this role, I am modelling and exploring that weave between people and planet by creating “socio-ecological networks”; where species and people are modelled together in a single system. This will allow us to explore how biodiversity loss is cascading through our ecosystem to impact people by collapsing NCPs. I will also explore how this kind of network-based thinking can be used to conceptualise, communicate and actualise an alternative “Fabric of Life” worldview ([Diaz 2022](https://www.science.org/doi/10.1126/science.abp8336)); where we see ourselves as a crucial thread in an inseparably interwoven people-planet fabric. Thus, allowing our decision making – from consumer to policymaker – to go from undermining our natural foundations to supporting them. I am coming from a biology undergraduate and Master’s research at the University of Oxford, where I joined WildCRU to develop new software to help conservation practitioners plan for connectivity of habitats and movement of species as climate change progresses. I am also trained and have authored in family and public engagement with biodiversity science, and have consulted on social and ecological future risks, for EU NGOs, international charities, and the UK government.",
+          "photo": "/images/people/suszczenia.jpg",
+          "email": "k.g.suszczenia@qmul.ac.uk",
+          "website": "",
+          "twitter": "",
+          "linkedin": "https://uk.linkedin.com/in/kristian-suszczenia-201267269",
+          "github": "https://github.com/SusZCru",
+          "links": []
+        }
+      ]
+    },
+    {
+      "title": "Undergraduate Researchers",
+      "members": [
+        {
+          "name": "Sukanneya Thiyagarajah",
+          "role": "Undergraduate at Queen Mary University of London",
+          "description": "I’m a biology student at Queen Mary, focusing on understanding the natural world and the organisms within it. I’m particularly interested in climate change and how different species respond to environmental shifts. In my project, I study general patterns of rarity in species that are used by people, looking broadly at how common or uncommon these species tend to be.",
+          "photo": "",
+          "email": "s.thiyagarajah@se23.qmul.ac.uk",
+          "website": "",
+          "twitter": "",
+          "linkedin": "https://www.linkedin.com/in/sukanneya-t-2892b2255/",
+          "github": "",
+          "links": []
+        }
+      ]
+    }
+  ],
+  "previous": [
+    // Add previous lab members here using the same fields as above.
+    {
+      "name": "Freya Read",
+      "role": "Plants for Health: Content and Data Officer at Royal Botanic Gardens, Kew",
+      "description": "After completing my integrated master’s degree in biology from the University of York, I carried out an internship with Samuel Pironon, working on documenting the diversity of plant species used by humans across the world. I am currently a member of the Plants for Health team at Royal Botanic Gardens, Kew. This project aims to create a comprehensive catalogue of plants used in health-related contexts, including dietary supplements, beverages, cosmetics, and traditional medicines. It addresses inconsistencies in how plant and herbal substance names are applied across countries and disciplines. In my role as Content and Data Officer, I focus on analysing, reformatting and enriching datasets for both partner and project datasets. Additionally, I manage a small team of volunteers who are working on various projects related to the data capture of plant use information.",
+      "photo": "/images/people/read.jpeg",
+      "email": "f.read@kew.org",
+      "website": "",
+      "twitter": "",
+      "linkedin": "",
+      "github": "",
+      "links": [
+        "https://orcid.org/0009-0007-7199-737X",
+        "https://github.com/freya2121",
+        "www.linkedin.com/in/freya-read-795b30251"
+      ]
+    },
+    {
+      "name": "Felix KS Lim",
+      "role": "Postdoctoral Research Associate (Kew Science) at Royal Botanic Gardens, Kew",
+      "description": "My research centres on understanding ecosystem change across spatial, temporal and environmental gradients, and developing ways to improve conservation efforts while balancing sustainable livelihoods and improving human wellbeing.",
+      "photo": "/images/people/felix_lim.jpg",
+      "email": "f.lim@kew.org",
+      "website": "https://www.kew.org/science/our-science/people/felix-lim",
+      "twitter": "",
+      "linkedin": "",
+      "github": "",
+      "links": [
+        "https://bsky.app/profile/felixlim.bsky.social",
+        "https://orcid.org/0000-0003-1227-460X",
+        "https://scholar.google.se/citations?hl=en&pli=1&user=rnIA124AAAAJ"
+      ]
+    }
+  ]
+}

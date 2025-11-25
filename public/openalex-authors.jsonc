@@ -1,0 +1,10 @@
+[
+    {
+        // Short OpenAlex author ID (no URL, just the A... part)
+        "id": "A5077327508",
+        "name": "Samuel Pironon",
+        // Optional: how many works to pull for this author
+        "max_works": 200
+    }
+    // Add more authors here...
+]
