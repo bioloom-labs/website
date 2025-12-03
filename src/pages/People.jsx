@@ -60,7 +60,7 @@ function MembersSection({
 }) {
   const hasMembers = Array.isArray(members) && members.length > 0;
   return (
-    <div>
+    <div className="space-y-4">
       <div className="flex items-center gap-3">
         <h3 className="text-xl font-semibold text-white">{title}</h3>
         {hasMembers && showCount && (
@@ -71,7 +71,7 @@ function MembersSection({
       </div>
 
       {hasMembers ? (
-        <div className="mt-6 flex flex-col gap-4">
+        <div className="mt-2 grid gap-8 sm:grid-cols-2 xl:grid-cols-3">
           {members.map((p, idx) => (
             <PersonCard
               key={`${title}-${p.name}-${idx}`}
@@ -111,7 +111,7 @@ export default function People() {
         const response = await fetchJSONC("/people.jsonc");
 
         if (Array.isArray(response)) {
-          setData({ current: response, previous: [] });
+          setData({ sections: [{ title: "People", members: response }], previous: [] });
           return;
         }
 
@@ -180,6 +180,13 @@ export default function People() {
           </span>{" "}
           and brings together ecologists, data scientists, and collaborators
           across institutions.
+        </p>
+        <p className="mt-4 text-sm text-white/70">
+          Hover or tap any card —{" "}
+          <span className="font-medium text-brand-200">
+            click our faces to learn more about us
+          </span>
+          .
         </p>
       </div>
 

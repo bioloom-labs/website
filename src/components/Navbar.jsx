@@ -55,9 +55,18 @@ export default function Navbar() {
   return (
     <header className="sticky top-0 z-50 border-b border-white/10 bg-brand-950/70 backdrop-blur supports-[backdrop-filter]:bg-brand-950/40">
       <nav className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3">
-        <Link to="/" className="flex items-center gap-2 font-semibold tracking-tight">
-          <img src="/images/logo.svg" alt="BioLoom Labs logo" className="h-6 w-6" /> BioLoom Labs
+        <Link to="/" className="flex items-center">
+          <div className="h- w-auto flex items-center">
+            <img
+              src="/images/logos/bioloom.png"
+              alt="BioLoom Labs Logo"
+              className="h-20 w-auto object-contain object-center"
+              style={{ display: "block" }}
+            />
+          </div>
         </Link>
+
+
 
         {/* Desktop nav (≥ lg) */}
         <div className="hidden lg:flex items-center gap-1">
