@@ -14,14 +14,7 @@ export default function Home() {
   const [paused, setPaused] = useState(false);
   const [ready, setReady] = useState(false);
 
-  const [hero, setHero] = useState({
-    lead: "Led by Dr. Samuel Pironon",
-    title: "Biodiversity, ecology, and plant–human interactions",
-    subtitle:
-      "We study how people and plants are connected through nutrition, medicine, and culture. Our team blends data science, field ecology, and network thinking to map, model, and safeguard nature’s pharmacopeia.",
-    cta_primary: { label: "Explore research", to: "/research" },
-    cta_secondary: { label: "Get in touch", to: "/contact" },
-  });
+  const [hero, setHero] = useState({});
 
   // Load config
   useEffect(() => {
@@ -30,7 +23,7 @@ export default function Home() {
         if (Array.isArray(data.images)) setSlides(data.images);
         if (data.interval_ms) setIntervalMs(Number(data.interval_ms));
         if (data.fade_ms) setFadeMs(Number(data.fade_ms));
-        if (data.hero) setHero((h) => ({ ...h, ...data.hero }));
+        if (data.hero) setHero(data.hero);
       })
       .catch((err) => console.error("home.jsonc load error:", err));
   }, []);
@@ -150,7 +143,7 @@ export default function Home() {
         {hero.lead && <span className="pill">{hero.lead}</span>}
         <h1 className="h1-grad mt-4">{hero.title}</h1>
         {hero.subtitle && (
-          <p className="mt-5 max-w-2xl text-lg text-white/80 leading-relaxed">
+          <p className="mt-8 max-w-2xl text-lg text-white/80 leading-relaxed">
             {hero.subtitle}
           </p>
         )}

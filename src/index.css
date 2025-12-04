@@ -41,7 +41,7 @@ body {
 }
 
 .h1-grad {
-    @apply text-4xl md:text-6xl font-semibold tracking-tight;
+    @apply block text-4xl md:text-6xl font-semibold tracking-tight leading-[1.18] md:leading-[1.12] pb-1;
     background: linear-gradient(to right, #6ee7b7, #34d399, #10b981);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;

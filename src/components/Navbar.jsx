@@ -60,7 +60,7 @@ export default function Navbar() {
             <img
               src="/images/logos/bioloom.png"
               alt="BioLoom Labs Logo"
-              className="h-20 w-auto object-contain object-center"
+              className="h-14 w-auto object-contain object-center"
               style={{ display: "block" }}
             />
           </div>
