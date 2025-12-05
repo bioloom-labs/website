@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://bioloomlabs.com/</loc></url>
-  <url><loc>https://bioloomlabs.com/about</loc></url>
-  <url><loc>https://bioloomlabs.com/projects</loc></url>
-  <url><loc>https://bioloomlabs.com/contact</loc></url>
+  <url><loc>https://bioloom-labs.com/</loc></url>
+  <url><loc>https://bioloom-labs.com/about</loc></url>
+  <url><loc>https://bioloom-labs.com/projects</loc></url>
+  <url><loc>https://bioloom-labs.com/research</loc></url>
+  <url><loc>https://bioloom-labs.com/publications</loc></url
+  <url><loc>https://bioloom-labs.com/contact</loc></url>
+  <url><loc>https://bioloom-labs.com/news</loc></url>
 </urlset>

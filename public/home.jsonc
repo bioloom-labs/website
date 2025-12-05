@@ -4,8 +4,8 @@
     "fade_ms": 900,
     "hero": {
         "lead": "Led by Dr. Samuel Pironon",
-        "title": "Reweaving Something Something",
-        "subtitle": "We study how people and plants are connected through nutrition, medicine, and culture. Our team blends data science, field ecology, and network thinking to map, model, and safeguard nature’s pharmacopeia.",
+        "title": "🚧 Under Construction",
+        "subtitle": "This website is currently under development. Our lab studies how people and plants are connected through nutrition, medicine, and culture—combining data science, field ecology, and network thinking to map, model, and safeguard nature’s pharmacopeia.",
         "cta_primary": {
             "label": "Explore research",
             "to": "/research"
@@ -13,10 +13,6 @@
         "cta_secondary": {
             "label": "Get in touch",
             "to": "/contact"
-        },
-        "cta_tertiary": {
-            "label": "More About Us",
-            "to": "/about"
         }
     },
     "images": [
