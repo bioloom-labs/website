@@ -89,7 +89,7 @@ export default function Contact() {
                             allowFullScreen=""
                             loading="lazy"
                             referrerPolicy="no-referrer-when-downgrade"
-                          title="BioLoom Labs Location"
+                            title="BioLoom Labs Location"
                         />
                     </div>
                 </div>
@@ -108,11 +108,11 @@ export default function Contact() {
                         </a>
                         <a
                             className="social"
-                            href="https://github.com/pirononlab"
+                            href="https://github.com/bioloom-labs"
                             target="_blank"
                             rel="noopener noreferrer"
                         >
-                            github.com/pirononlab
+                            GitHub
                         </a>
                     </div>
                 </div>
