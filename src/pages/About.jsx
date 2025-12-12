@@ -4,7 +4,7 @@ import { ChevronDown } from "lucide-react";
 import { fetchJSONC } from "../utils/jsonc.js";
 
 const sceneCardClass =
-  "rounded-[2.5rem] border border-white/10 bg-white/5 px-8 py-10 backdrop-blur-xl shadow-[0_30px_120px_rgba(2,6,23,0.45)]";
+  "rounded-[2.5rem] border border-emerald-300/20 bg-emerald-950/60 px-8 py-10 backdrop-blur-xl shadow-[0_30px_120px_rgba(2,6,23,0.45)]";
 
 /* -------------------- Paragraph stack (intro text) -------------------- */
 
@@ -72,6 +72,14 @@ function NarrativeSection({ blocks = [] }) {
 function NarrativeCard({ block, index }) {
   if (!block) return null;
 
+  const paragraphs = Array.isArray(block.paragraphs)
+    ? block.paragraphs
+    : block.text
+    ? [block.text]
+    : [];
+  const hasList = Array.isArray(block.list) && block.list.length > 0;
+  const hasValues = Array.isArray(block.values) && block.values.length > 0;
+
   return (
     <motion.article
       // Added z-index and layout projection
@@ -114,10 +122,44 @@ function NarrativeCard({ block, index }) {
             </h3>
           )}
 
-          {block.text && (
-            <p className="text-white/85 text-lg leading-relaxed max-w-3xl">
-              {block.text}
-            </p>
+          {paragraphs.length > 0 && (
+            <div className="space-y-3 text-white/85 text-lg leading-relaxed max-w-3xl">
+              {paragraphs.map((text, idx) => (
+                <p key={`paragraph-${idx}`}>{text}</p>
+              ))}
+            </div>
+          )}
+
+          {hasList && (
+            <ul className="mt-2 space-y-2 text-white/85 text-base leading-relaxed list-disc list-inside max-w-3xl">
+              {block.list.map((item, idx) => (
+                <li key={`list-${idx}`} className="pl-1">
+                  {item}
+                </li>
+              ))}
+            </ul>
+          )}
+
+          {hasValues && (
+            <div className="grid gap-4 md:grid-cols-3">
+              {block.values.map((value, idx) => (
+                <div
+                  key={value.title || idx}
+                  className="rounded-xl border border-white/10 bg-white/5 p-4 space-y-2"
+                >
+                  {value.title && (
+                    <h4 className="text-base font-semibold text-brand-200">
+                      {value.title}
+                    </h4>
+                  )}
+                  {value.text && (
+                    <p className="text-sm text-white/80 leading-relaxed">
+                      {value.text}
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
           )}
         </div>
       </motion.div>
@@ -141,7 +183,7 @@ function SectionGrid({ sections = [] }) {
         {sections.map((section, idx) => (
           <div
             key={section.heading || idx}
-            className="rounded-2xl border border-white/10 bg-white/5 p-6 flex flex-col gap-3"
+            className="rounded-2xl border border-emerald-300/20 bg-emerald-950/60 p-6 flex flex-col gap-3"
           >
             {section.heading && (
               <h4 className="text-lg font-semibold text-brand-200">
@@ -175,7 +217,7 @@ function CollaboratorsScene() {
   ];
 
   return (
-    <div className="text-center space-y-6 mx-auto max-w-5xl rounded-[2.5rem] border border-white/10 bg-white/5/50 px-8 py-10 backdrop-blur-xl shadow-[0_30px_120px_rgba(2,6,23,0.45)]">
+    <div className="text-center space-y-6 mx-auto max-w-5xl rounded-[2.5rem] border border-emerald-300/20 bg-emerald-950/60 px-8 py-10 backdrop-blur-xl shadow-[0_30px_120px_rgba(2,6,23,0.45)]">
       <div className="space-y-4">
         <p className="text-sm uppercase tracking-[0.3em] text-white/60">
           With gratitude
@@ -478,7 +520,7 @@ export default function About() {
     const collaboratorsCredit =
       attributions.collaborators || attributions.sections || null;
 
-    return [
+    const scenesList = [
       {
         id: "about-intro",
         type: "intro",
@@ -495,22 +537,28 @@ export default function About() {
         poster: narrativePosters[idx],
         credit: narrativeAttributions[idx] || null,
       })),
-      {
+    ];
+
+    if ((sections && sections.length) || data.closing) {
+      scenesList.push({
         id: "about-sections",
         type: "sections",
         sections,
         video: videos.sections || "/images/videos/about/beereddahlia.mp4",
         poster: posters.sections,
         credit: attributions.sections || null,
-      },
-      {
-        id: "about-collaborators",
-        type: "collaborators",
-        video: collaboratorsVideo,
-        poster: collaboratorsPoster,
-        credit: collaboratorsCredit,
-      },
-    ];
+      });
+    }
+
+    scenesList.push({
+      id: "about-collaborators",
+      type: "collaborators",
+      video: collaboratorsVideo,
+      poster: collaboratorsPoster,
+      credit: collaboratorsCredit,
+    });
+
+    return scenesList;
   }, [data]);
 
   // Set initial scene
@@ -591,7 +639,7 @@ export default function About() {
                   <div className="space-y-3 max-w-xl mb-10">
                     <p className="text-xs uppercase tracking-[0.25em] text-white/60">Narrative arc</p>
                     <h3 className="text-xl md:text-2xl font-semibold text-white">
-                      How BioLoom Labs moves from forest plots to policy dashboards.
+                      Why the biodiversity-people weave guides every part of BioLoom Labs.
                     </h3>
                   </div>
                 )}

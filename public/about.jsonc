@@ -1,13 +1,15 @@
 {
-  "title": "Inside BioLoom Labs",
-  "eyebrow": "Field notebooks • Molecular studios • Data commons",
+  "title": "The Origins of BIOLOOM",
+  "eyebrow": "About Us",
   "videos": {
     "intro": "/images/videos/about/1080p_holdingplant.mp4",
     "narrative": [
       "/images/videos/about/1080p_gymnocalyciumcactus.mp4",
       "/images/videos/about/1080p_handseeds.mp4",
       "/images/videos/about/1080p_butterflyonhand.mp4",
-      "/images/videos/about/1080p_europeangreenfinch.mp4"
+      "/images/videos/about/1080p_europeangreenfinch.mp4",
+      "/images/videos/about/1080p_beereddahlia.mp4",
+      "/images/videos/about/1080p_handseeds.mp4"
     ],
     "sections": "/images/videos/about/1080p_beereddahlia.mp4"
   },
@@ -36,6 +38,16 @@
         // europeangreenfinch.mp4 → “Nature Birds”
         "label": "Nature Birds Stock Videos by Vecteezy",
         "href": "https://www.vecteezy.com/free-videos/nature-birds"
+      },
+      {
+        // beereddahlia.mp4 → “Pollination”
+        "label": "Pollination Stock Videos by Vecteezy",
+        "href": "https://www.vecteezy.com/free-videos/pollination"
+      },
+      {
+        // handseeds.mp4 → “Hand”
+        "label": "Hand Stock Videos by Vecteezy",
+        "href": "https://www.vecteezy.com/free-videos/hand"
       }
     ],
     "sections": {
@@ -45,46 +57,64 @@
     }
   },
   "intro": [
-    "BioLoom Labs is a deliberately interdisciplinary environment bringing together ecologists, chemists, data scientists, and community partners with a shared commitment to understanding and protecting plant diversity. We treat every leaf sample, molecular trace, and historical record as a contribution to a broader narrative about adaptation, persistence, and reciprocity between people and plants.",
-    "Our work spans humid forest plots, herbarium archives, laboratory benches, and computational platforms. We integrate field observations with spectral data, metabolomic signatures, and machine learning models that ingest global biodiversity datasets. Across all workflows, traditional knowledge and local expertise remain central, informing our methods and shaping our interpretations.",
-    "Our driving motivation is to pursue discovery in a way that is both rigorous and equitable. We develop analytical tools that highlight underexplored geographic regions, emerging threats, and overlooked lineages—while also emphasising the social, cultural, and policy contexts required for responsible research. Effective natural product discovery today demands precision science supported by transparent ethics and genuine collaboration.",
-    "The sections below describe how our research progresses from fieldwork to data integration, molecular exploration, and policy translation. Each step represents an essential component of our wider effort to advance natural product discovery without reproducing extractive scientific practices."
+    "The loom is one of the earliest partnerships between biodiversity and people; a confluence of wood, plant fibres, and even silkworms that, in human hands, has provided warmth and creative expression to countless people.",
+    "But, more than just cloth, the loom allowed us to express complex patterns and colours – emulating the profoundly complex world around us. Later, the loom's ability to capture intricate connections inspired the computing revolution, on which our team members are now also trying to weave the complexities of nature.",
+    "The loom is therefore the perfect namesake to emblemise our research: applying ecological knowledge at the interface of biodiversity and humanity to strive toward a world where the intricately woven biodiversity-people nexus is better understood, recentred in decision making fit for future generations, and recognised as the vital foundations of human flourishing, economy, and culture."
   ],
   "narrative": [
     {
-      "heading": "Field surveying and specimen documentation",
-      "tag": "Fieldwork",
-      "text": "We conduct structured biodiversity surveys in collaboration with local experts and institutions. Each specimen is recorded with high-resolution imagery, geospatial coordinates, ecological metadata, and associated cultural or ethnobotanical information. These combined data support downstream taxonomic, ecological, and chemical analyses."
+      "heading": "Why Biodiversity-People Research Matters",
+      "tag": "Why this matters",
+      "paragraphs": [
+        "Our ecosystems have experienced dramatic declines in wetlands, reefs, pollinators, large animals, old growth forests, and diversity -among much more- as a result of the pressures we put on it. As all of these systems are vital providers of Nature's Contribution to People across the globe, our destructive relationship with our planetary partners is undermining our own system. Already, this is limiting food security, clean water access, public health, achievement of sustainable development goals, and siphoning trillions from national and local economies.",
+        "As such, it has never been more critical for ecologists to contribute their knowledge and methods to the study, and intervention, of this biodiversity-people relationship. Applying our side of the story, our ecological expertise, to the interwoven ecosystem and social-system; the Fabric of Life."
+      ]
     },
     {
-      "heading": "Data integration and environmental modelling",
-      "tag": "Modelling",
-      "text": "Field observations are integrated with climatic, remote-sensing, and trait datasets to build robust ecological and biogeographical models. Using statistical and machine learning methods, we generate species-distribution estimates, assess environmental drivers, and identify regions or taxa with high chemodiversity potential."
+      "heading": "Vision",
+      "tag": "Vision",
+      "text": "To illuminate biodiversity and its contribution to people's lifestyles and livelihoods, using ecological approaches, to help inform a more sustainable human-nature weave."
     },
     {
-      "heading": "Governance, compliance, and equitable access",
-      "tag": "Ethics",
-      "text": "All research activities follow international and national access and benefit-sharing frameworks. We implement protocols aligned with the Nagoya Protocol, co-develop agreements with partner communities, and ensure transparent decision-making around sample use, data sharing, authorship, and long-term stewardship."
+      "heading": "Mission",
+      "tag": "Mission",
+      "list": [
+        "Applying macroecology, up to global scale, to map biodiversity, darkspots in our knowledge of it, and link it to people. With a special focus on the Nature's provision of food and medicine.",
+        "Designing novel computational techniques to enhance our ability to see and document species uses, their links to functional and biochemical traits, and do so rapidly on scale.",
+        "Applying network ecology to people and biodiversity simultaneously in 'socio-ecological networks' to model how disruptions cascade between ecosystem and social system.",
+        "Developing concepts and methods that can improve conservation while balancing sustainable livelihoods and human wellbeing.",
+        "Helping produce open access resources for linking biodiversity to people in order to boost NCP research all over the world."
+      ]
     },
     {
-      "heading": "Chemical profiling and computational analysis",
-      "tag": "Cheminformatics",
-      "text": "Laboratory workflows include chromatographic separation, metabolomic profiling, and compound annotation. Computational pipelines support structure prediction, scaffold clustering, and target prioritisation, enabling systematic evaluation of chemical diversity and bioactive potential across plant lineages."
+      "heading": "Lab Values",
+      "tag": "Values",
+      "values": [
+        {
+          "title": "Science is for the people",
+          "text": "The public funds and relies on science, especially research that is so critical to times of ecological damage, resultant injustices, and disinformation. Impact comes from us; engagement with the public, media, other researchers, students and from using our voice. This is not just hitting impact goals, boosting awareness is a moral imperative for ecologists in times like these."
+        },
+        {
+          "title": "Progress crosses divides",
+          "text": "The ideas and developments that advance our world and help people most arise from discussion across disciplines, perspectives, national borders, and ways of knowing beyond just academia. The rapid improvements we need will come from open-mindedness and welcoming diversity."
+        },
+        {
+          "title": "Ecology is not just a science of the environment",
+          "text": "In spite of our brain's need to categorise everything neatly, all ecology is necessarily intertwined with people, inequality, industry, and politics. Although some research will focus less on the interface with people than others, all ecological research is - in some way - relevant to people, our lifestyles, our systems, and our wellbeing. Which carries important implications too often overlooked."
+        }
+      ]
+    },
+    {
+      "heading": "Acknowledgements",
+      "tag": "Gratitude",
+      "text": "(perhaps sam should write this)"
+    },
+    {
+      "heading": "Invitation to collaborate",
+      "tag": "Join us",
+      "text": "We are a small and new lab group constantly developing new ideas and looking for new perspectives. We will answer your email, we value collaboration, and we love hosting guest speakers and lunches where outside-the-box ideas are never too outside-the-box."
     }
   ],
-  "sections": [
-    {
-      "heading": "Why this matters",
-      "text": "Natural products continue to play a central role in global healthcare, yet the ecosystems and communities that sustain them often encounter disproportionate risks. Our work aims to identify opportunities for discovery while championing equitable research practices, open data standards, and shared intellectual frameworks."
-    },
-    {
-      "heading": "How we collaborate",
-      "text": "We work closely with Indigenous communities, botanic gardens, conservation networks, public health partners, and computational research teams. Formal agreements on data sovereignty, authorship, training, and resource sharing are standard components of our collaborations, ensuring mutual respect and long-term impact."
-    },
-    {
-      "heading": "Where we are headed",
-      "text": "Our next steps include scaling climate-resilient crop libraries, co-developing accessible AI tools for laboratories in the Global South, expanding integrative metabolomic datasets, and deepening exchange programmes that bring computational and place-based knowledge into direct dialogue."
-    }
-  ],
-  "closing": "Our work is continuously evolving. We welcome new collaborations, field sites, datasets, and conversations that help advance a more equitable and imaginative future for plant-derived therapeutics."
+  "sections": [],
+  "closing": ""
 }

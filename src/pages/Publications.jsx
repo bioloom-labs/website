@@ -6,6 +6,7 @@ import {
   useState,
   useLayoutEffect,
 } from "react";
+import { useLocation } from "react-router-dom";
 import { ExternalLink } from "lucide-react";
 import { fetchJSONC } from "../utils/jsonc.js";
 
@@ -396,17 +397,32 @@ function PubItem({
 // ---------- MAIN PAGE ----------
 
 export default function Publications() {
+  const location = useLocation();
   const [labAuthors, setLabAuthors] = useState([]); // from JSONC
   const [pubs, setPubs] = useState([]); // flattened + normalised works
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   // Filters
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState(() => {
+    if (typeof window === "undefined") return "";
+    const params = new URLSearchParams(window.location.search);
+    return params.get("search") || "";
+  });
   const [authorFilter, setAuthorFilter] = useState(""); // author.id (short OpenAlex ID)
   const [yearFrom, setYearFrom] = useState("");
   const [yearTo, setYearTo] = useState("");
   const [typeFilter, setTypeFilter] = useState(""); // type label
+  const lastLocationSearchRef = useRef(location.search);
+
+  // Sync search box with ?search= query param when navigating from other pages
+  useEffect(() => {
+    if (location.search === lastLocationSearchRef.current) return;
+    lastLocationSearchRef.current = location.search;
+    const params = new URLSearchParams(location.search);
+    const q = params.get("search");
+    setSearch(q || "");
+  }, [location.search]);
 
   // ---------- FETCH + DEDUPE (BY TITLE) + EDITS ----------
 
