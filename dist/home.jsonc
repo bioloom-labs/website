@@ -4,8 +4,8 @@
     "fade_ms": 900,
     "hero": {
         "lead": "Led by Dr. Samuel Pironon",
-        "title": "🚧 Under Construction",
-        "subtitle": "This website is currently under development. Our lab studies how people and plants are connected through nutrition, medicine, and culture—combining data science, field ecology, and network thinking to map, model, and safeguard nature’s pharmacopeia.",
+        "title": "Researching the Interwoven Fabric of Biodiversity and People",
+        "subtitle": "Our lives are predicated on a global ecosystem that is being increasingly disrupted – putting food, medicine, water, and wellbeing at risk. BIOLOOM is a biodiversity research group investigating this fraying connection and how to reweave it. We use macroecology, machine learning, functional traits, and ecological networks to identify, map and model biodiversity and its contributions to people. Striving toward a healthier relationship that upholds the wellbeing of our public and our planet for future generations.",
         "cta_primary": {
             "label": "Explore research",
             "to": "/research"

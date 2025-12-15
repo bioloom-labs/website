@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://bioloomlabs.com/sitemap.xml
+Sitemap: https://bioloom-labs.com/sitemap.xml
