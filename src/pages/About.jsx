@@ -75,8 +75,8 @@ function NarrativeCard({ block, index }) {
   const paragraphs = Array.isArray(block.paragraphs)
     ? block.paragraphs
     : block.text
-    ? [block.text]
-    : [];
+      ? [block.text]
+      : [];
   const hasList = Array.isArray(block.list) && block.list.length > 0;
   const hasValues = Array.isArray(block.values) && block.values.length > 0;
 
@@ -325,6 +325,11 @@ function OptimizedBackgroundVideo({
 
 function VideoPlayer({ src, poster, isActive, shouldPreload, isIdle, onReady }) {
   const videoRef = useRef(null);
+  const [hasBeenActive, setHasBeenActive] = useState(false);
+
+  useEffect(() => {
+    if (isActive) setHasBeenActive(true);
+  }, [isActive]);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -344,7 +349,11 @@ function VideoPlayer({ src, poster, isActive, shouldPreload, isIdle, onReady }) 
 
   return (
     <div
-      className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${isActive ? "opacity-100 z-10" : "opacity-0 z-0"
+      className={`absolute inset-0 ${isActive
+          ? "opacity-100 z-10 transition-opacity duration-1000 ease-in-out"
+          : hasBeenActive
+            ? "opacity-0 z-0 transition-opacity duration-1000 ease-in-out"
+            : "opacity-0 z-0"
         }`}
     >
       <video

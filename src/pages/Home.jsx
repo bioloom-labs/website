@@ -140,7 +140,7 @@ export default function Home() {
           ready ? "opacity-100 translate-y-0" : "opacity-0 translate-y-3",
         ].join(" ")}
       >
-        {hero.lead && <span className="pill">{hero.lead}</span>}
+        {hero.lead && <span className="pill px-4 py-2" style={{ fontSize: "20px" }}>{hero.lead}</span>}
         <h1 className="h1-grad mt-4">{hero.title}</h1>
         {hero.subtitle && (
           <p className="mt-8 max-w-2xl text-lg text-white/80 leading-relaxed">
