@@ -4,7 +4,7 @@ import { ChevronDown } from "lucide-react";
 import { fetchJSONC } from "../utils/jsonc.js";
 
 const sceneCardClass =
-  "rounded-[2.5rem] border border-emerald-300/20 bg-emerald-950/60 px-8 py-10 backdrop-blur-xl shadow-[0_30px_120px_rgba(2,6,23,0.45)]";
+  "rounded-[2.5rem] border border-white/20 bg-white/10 px-8 py-10 backdrop-blur-[5px] shadow-[inset_0_1px_0_rgba(255,255,255,0.25),inset_0_-1px_0_rgba(255,255,255,0.05),0_20px_60px_rgba(0,0,0,0.35)]";
 
 /* -------------------- Paragraph stack (intro text) -------------------- */
 
@@ -31,12 +31,8 @@ function AboutHero({ eyebrow, title, introParagraphs }) {
         "relative overflow-hidden px-6 py-10 md:px-10 md:py-14",
       ].join(" ")}
     >
-      {/* Floating blobs */}
-      <div className="pointer-events-none absolute inset-0">
-        <div className="absolute -top-40 -right-24 h-72 w-72 rounded-full bg-emerald-400/20 blur-3xl" />
-        <div className="absolute -bottom-32 -left-10 h-64 w-64 rounded-full bg-brand-400/20 blur-3xl" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_10%_0,rgba(45,212,191,0.2),transparent_55%),radial-gradient(circle_at_90%_100%,rgba(34,211,238,0.25),transparent_55%)] opacity-70" />
-      </div>
+      {/* Specular highlight strip */}
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent rounded-t-[2.5rem]" />
 
       <div className="relative">
         {eyebrow && (
@@ -49,9 +45,6 @@ function AboutHero({ eyebrow, title, introParagraphs }) {
           <h2 className="h2-grad text-3xl md:text-4xl lg:text-5xl">
             {title || "Inside the Lab"}
           </h2>
-          <span className="rounded-full border border-white/20 bg-black/20 px-3 py-1 text-xs text-white/70">
-            Story mode
-          </span>
         </div>
 
         <ParagraphStack intro={introParagraphs} />
@@ -101,29 +94,18 @@ function NarrativeCard({ block, index }) {
           "relative w-full overflow-hidden isolation-isolate bg-clip-padding",
         ].join(" ")}
       >
-        {/* Fixed Gradient Layer */}
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_0%_0%,rgba(16,185,129,0.25),transparent_55%),radial-gradient(circle_at_100%_100%,rgba(56,189,248,0.25),transparent_55%)] opacity-70" />
+        {/* Specular highlight strip */}
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent rounded-t-[2.5rem]" />
 
         <div className="relative space-y-4 z-20">
-          <div className="flex flex-wrap items-center gap-3">
-            {block.tag && (
-              <span className="pill text-xs text-brand-100 border-brand-200/60">
-                {block.tag}
-              </span>
-            )}
-            <span className="rounded-full bg-black/40 px-3 py-1 text-[0.7rem] uppercase tracking-[0.2em] text-white/70">
-              Scene {String(index + 1).padStart(2, "0")}
-            </span>
-          </div>
-
           {block.heading && (
-            <h3 className="text-3xl md:text-4xl font-semibold text-white">
+            <h3 className="text-3xl md:text-4xl font-semibold text-emerald-200">
               {block.heading}
             </h3>
           )}
 
           {paragraphs.length > 0 && (
-            <div className="space-y-3 text-white/85 text-lg leading-relaxed max-w-3xl">
+            <div className="space-y-3 text-emerald-50/90 text-lg leading-relaxed">
               {paragraphs.map((text, idx) => (
                 <p key={`paragraph-${idx}`}>{text}</p>
               ))}
@@ -131,7 +113,7 @@ function NarrativeCard({ block, index }) {
           )}
 
           {hasList && (
-            <ul className="mt-2 space-y-2 text-white/85 text-base leading-relaxed list-disc list-inside max-w-3xl">
+            <ul className="mt-2 space-y-2 text-emerald-50/90 text-base leading-relaxed list-disc list-inside">
               {block.list.map((item, idx) => (
                 <li key={`list-${idx}`} className="pl-1">
                   {item}
@@ -145,15 +127,15 @@ function NarrativeCard({ block, index }) {
               {block.values.map((value, idx) => (
                 <div
                   key={value.title || idx}
-                  className="rounded-xl border border-white/10 bg-white/5 p-4 space-y-2"
+                  className="rounded-xl border border-white/15 bg-white/8 p-4 space-y-2 backdrop-blur-sm shadow-[inset_0_1px_0_rgba(255,255,255,0.15)]"
                 >
                   {value.title && (
-                    <h4 className="text-base font-semibold text-brand-200">
+                    <h4 className="text-base font-semibold text-emerald-200">
                       {value.title}
                     </h4>
                   )}
                   {value.text && (
-                    <p className="text-sm text-white/80 leading-relaxed">
+                    <p className="text-sm text-emerald-50/85 leading-relaxed">
                       {value.text}
                     </p>
                   )}
@@ -205,56 +187,151 @@ function SectionGrid({ sections = [] }) {
 function CollaboratorsScene() {
   const partners = [
     {
+      name: "Queen Mary University of London",
+      logo: "/images/logos/qmul.png",
+      href: "https://www.qmul.ac.uk/",
+    },
+    {
       name: "Royal Botanic Gardens, Kew",
       logo: "/images/logos/kew.png",
       href: "https://www.kew.org/",
     },
     {
-      name: "Queen Mary University of London",
-      logo: "/images/logos/qmul.png",
-      href: "https://www.qmul.ac.uk/",
+      name: "UKRI BBSRC",
+      logo: "/images/logos/bbsrc.png",
+      href: "https://www.ukri.org/councils/bbsrc/",
+    },
+    {
+      name: "The Calleva Foundation",
+      logo: "/images/logos/calleva.png",
+      href: null,
     },
   ];
 
   return (
-    <div className="text-center space-y-6 mx-auto max-w-5xl rounded-[2.5rem] border border-emerald-300/20 bg-emerald-950/60 px-8 py-10 backdrop-blur-xl shadow-[0_30px_120px_rgba(2,6,23,0.45)]">
+    <div className="text-center space-y-6 mx-auto max-w-5xl rounded-[2.5rem] border border-white/20 bg-white/10 px-8 py-10 backdrop-blur-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.25),inset_0_-1px_0_rgba(255,255,255,0.05),0_20px_60px_rgba(0,0,0,0.35)]">
       <div className="space-y-4">
-        <p className="text-sm uppercase tracking-[0.3em] text-white/60">
+        <p className="text-sm uppercase tracking-[0.3em] text-emerald-50/60">
           With gratitude
         </p>
-        <h3 className="text-3xl md:text-4xl font-semibold text-white">
-          Thank you to our collaborators and hosts
+        <h3 className="text-3xl md:text-4xl font-semibold text-emerald-200">
+          Thank you to our partners and hosts
         </h3>
-        <p className="text-lg text-white/80 leading-relaxed">
-          Our work depends on long-term partnerships and shared stewardship.
-          Explore our home institutions and the botanical collections that make
-          this journey possible.
+        <p className="text-lg text-emerald-50/90 leading-relaxed">
+          Our work is built on long-term partnerships and shared stewardship.
+          Discover the institutions that make it possible.
         </p>
       </div>
       <div className="mt-8 flex flex-wrap items-center justify-center gap-10">
-        {partners.map((partner) => (
-          <a
-            key={partner.name}
-            href={partner.href}
-            target="_blank"
-            rel="noreferrer"
-            className="group inline-flex flex-col items-center gap-3"
-          >
-            <div className="rounded-2xl border border-white/15 bg-white/5 px-6 py-4 transition group-hover:border-brand-200/70">
-              <img
-                src={partner.logo}
-                alt={partner.name}
-                className="h-16 w-auto object-contain filter brightness-0 invert"
-                loading="lazy"
-              />
+        {partners.map((partner) => {
+          const inner = (
+            <>
+              <div className="rounded-2xl border border-white/15 bg-white/5 px-6 py-4 transition group-hover:border-brand-200/70">
+                <img
+                  src={partner.logo}
+                  alt={partner.name}
+                  className="h-16 w-auto object-contain filter brightness-0 invert"
+                  loading="lazy"
+                />
+              </div>
+              <span className="text-sm text-white/75 group-hover:text-white">
+                {partner.name}
+              </span>
+            </>
+          );
+          return partner.href ? (
+            <a
+              key={partner.name}
+              href={partner.href}
+              target="_blank"
+              rel="noreferrer"
+              className="group inline-flex flex-col items-center gap-3"
+            >
+              {inner}
+            </a>
+          ) : (
+            <div key={partner.name} className="group inline-flex flex-col items-center gap-3">
+              {inner}
             </div>
-            <span className="text-sm text-white/75 group-hover:text-white">
-              {partner.name}
-            </span>
-          </a>
-        ))}
+          );
+        })}
       </div>
     </div>
+  );
+}
+
+/* -------------------- Transparency demo -------------------- */
+
+function TransparencyDemoScene({ id, onInView, videoSrc }) {
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const node = ref.current;
+    if (!node || typeof IntersectionObserver === "undefined") return;
+    const observer = new IntersectionObserver(
+      (entries) => entries.forEach((e) => { if (e.isIntersecting) onInView?.(id); }),
+      { threshold: 0.55 }
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [id, onInView]);
+
+  const levels = [
+    { label: "5%",  bg: "bg-white/5"  },
+    { label: "10%", bg: "bg-white/10" },
+    { label: "15%", bg: "bg-white/15" },
+    { label: "20%", bg: "bg-white/20" },
+    { label: "25%", bg: "bg-white/25" },
+    { label: "30%", bg: "bg-white/30" },
+  ];
+
+  return (
+    <section
+      id={id}
+      ref={ref}
+      className="about-scene relative flex min-h-screen items-center justify-center px-4 overflow-hidden"
+    >
+      <div className="relative z-10 w-full max-w-6xl space-y-6">
+        <p className="text-xs uppercase tracking-[0.25em] text-emerald-50/50">
+          Transparency reference — pick your favourite
+        </p>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          {levels.map(({ label, bg }) => (
+            <div
+              key={label}
+              className="relative overflow-hidden rounded-[2.5rem] shadow-[0_20px_60px_rgba(0,0,0,0.35)]"
+            >
+              {/* Individual video per panel */}
+              <video
+                className="absolute inset-0 h-full w-full object-cover"
+                src={videoSrc}
+                muted
+                loop
+                playsInline
+                autoPlay
+              />
+              {/* Glass overlay */}
+              <div
+                className={[
+                  bg,
+                  "relative z-10 border border-white/20 rounded-[2.5rem] px-8 py-10 backdrop-blur-2xl",
+                  "shadow-[inset_0_1px_0_rgba(255,255,255,0.25),inset_0_-1px_0_rgba(255,255,255,0.05)]",
+                  "space-y-3",
+                ].join(" ")}
+              >
+                <p className="text-[0.65rem] uppercase tracking-[0.2em] text-emerald-50/50">{label}</p>
+                <h3 className="text-xl font-semibold text-emerald-200">
+                  The quick brown fox
+                </h3>
+                <p className="text-emerald-50/90 text-sm leading-relaxed">
+                  The quick brown fox jumps over the lazy dog. The quick brown fox jumps over the lazy dog.
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -643,15 +720,6 @@ export default function About() {
           if (scene.type === "narrative") {
             return (
               <Scene key={scene.id} id={scene.id} onInView={setActiveSceneId}>
-                {/* Narrative Header only on first narrative block */}
-                {scene.index === 0 && (
-                  <div className="space-y-3 max-w-xl mb-10">
-                    <p className="text-xs uppercase tracking-[0.25em] text-white/60">Narrative arc</p>
-                    <h3 className="text-xl md:text-2xl font-semibold text-white">
-                      Why the biodiversity-people weave guides every part of BioLoom Labs.
-                    </h3>
-                  </div>
-                )}
                 <NarrativeCard block={scene.block} index={scene.index} />
               </Scene>
             );
@@ -684,6 +752,16 @@ export default function About() {
               <Scene key={scene.id} id={scene.id} onInView={setActiveSceneId}>
                 <CollaboratorsScene />
               </Scene>
+            );
+          }
+          if (scene.type === "transparency-demo") {
+            return (
+              <TransparencyDemoScene
+                key={scene.id}
+                id={scene.id}
+                onInView={setActiveSceneId}
+                videoSrc={scene.video}
+              />
             );
           }
           return null;

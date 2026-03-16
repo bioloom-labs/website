@@ -28,6 +28,10 @@ export default function Contact() {
         <section className="section">
             <h2 className="h2-grad">Contact</h2>
 
+            <p className="mt-4 max-w-2xl text-white/70 leading-relaxed">
+                We are a small and new lab group constantly developing new ideas and looking for new perspectives. We will answer your email, we value collaboration, and we love hosting guest speakers and lunches where outside-the-box ideas are never too outside-the-box.
+            </p>
+
             <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-3">
                 {/* Left: General enquiries with message form */}
                 <div className="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur">

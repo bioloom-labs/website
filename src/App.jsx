@@ -9,6 +9,7 @@ import People from "./pages/People.jsx";
 import Publications from "./pages/Publications.jsx";
 import News from "./pages/News.jsx";
 import Contact from "./pages/Contact.jsx";
+import TransparencyTest from "./pages/TransparencyTest.jsx";
 import { fetchJSONC } from "./utils/jsonc.js";
 
 export default function App() {
@@ -66,7 +67,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[radial-gradient(1200px_600px_at_80%_-10%,rgba(16,185,129,0.2),transparent),radial-gradient(800px_400px_at_10%_20%,rgba(4,120,87,0.15),transparent)] bg-brand-950 text-white">
-      <Navbar />
+      {location.pathname !== "/transparency-test" && <Navbar />}
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/about" element={<About />} />
@@ -75,8 +76,9 @@ export default function App() {
         <Route path="/publications" element={<Publications />} />
         <Route path="/news" element={<News />} />
         <Route path="/contact" element={<Contact />} />
+        <Route path="/transparency-test" element={<TransparencyTest />} />
       </Routes>
-      {location.pathname === "/about" ? null : <Footer />}
+      {["/about", "/transparency-test"].includes(location.pathname) ? null : <Footer />}
     </div>
   );
 }

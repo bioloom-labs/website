@@ -6,10 +6,7 @@
     "narrative": [
       "/images/videos/about/1080p_gymnocalyciumcactus.mp4",
       "/images/videos/about/1080p_handseeds.mp4",
-      "/images/videos/about/1080p_butterflyonhand.mp4",
-      "/images/videos/about/1080p_europeangreenfinch.mp4",
-      "/images/videos/about/1080p_beereddahlia.mp4",
-      "/images/videos/about/1080p_handseeds.mp4"
+      "/images/videos/about/1080p_europeangreenfinch.mp4"
     ],
     "sections": "/images/videos/about/1080p_beereddahlia.mp4"
   },
@@ -20,38 +17,19 @@
     },
     "narrative": [
       {
-        // gymnocalyciumcactus.mp4 → “Timelapses”
         "label": "Timelapses Stock Videos by Vecteezy",
         "href": "https://www.vecteezy.com/free-videos/timelapses"
       },
       {
-        // handseeds.mp4 → “Hand”
         "label": "Hand Stock Videos by Vecteezy",
         "href": "https://www.vecteezy.com/free-videos/hand"
       },
       {
-        // butterflyonhand.mp4 → “Garden”
-        "label": "Garden Stock Videos by Vecteezy",
-        "href": "https://www.vecteezy.com/free-videos/garden"
-      },
-      {
-        // europeangreenfinch.mp4 → “Nature Birds”
         "label": "Nature Birds Stock Videos by Vecteezy",
         "href": "https://www.vecteezy.com/free-videos/nature-birds"
-      },
-      {
-        // beereddahlia.mp4 → “Pollination”
-        "label": "Pollination Stock Videos by Vecteezy",
-        "href": "https://www.vecteezy.com/free-videos/pollination"
-      },
-      {
-        // handseeds.mp4 → “Hand”
-        "label": "Hand Stock Videos by Vecteezy",
-        "href": "https://www.vecteezy.com/free-videos/hand"
       }
     ],
     "sections": {
-      // beereddahlia.mp4 → “Pollination”
       "label": "Pollination Stock Videos by Vecteezy",
       "href": "https://www.vecteezy.com/free-videos/pollination"
     }
@@ -76,17 +54,6 @@
       "text": "To illuminate biodiversity and its contribution to people's lifestyles and livelihoods, using ecological approaches, to help inform a more sustainable human-nature weave."
     },
     {
-      "heading": "Mission",
-      "tag": "Mission",
-      "list": [
-        "Applying macroecology, up to global scale, to map biodiversity, darkspots in our knowledge of it, and link it to people. With a special focus on the Nature's provision of food and medicine.",
-        "Designing novel computational techniques to enhance our ability to see and document species uses, their links to functional and biochemical traits, and do so rapidly on scale.",
-        "Applying network ecology to people and biodiversity simultaneously in 'socio-ecological networks' to model how disruptions cascade between ecosystem and social system.",
-        "Developing concepts and methods that can improve conservation while balancing sustainable livelihoods and human wellbeing.",
-        "Helping produce open access resources for linking biodiversity to people in order to boost NCP research all over the world."
-      ]
-    },
-    {
       "heading": "Lab Values",
       "tag": "Values",
       "values": [
@@ -103,16 +70,6 @@
           "text": "In spite of our brain's need to categorise everything neatly, all ecology is necessarily intertwined with people, inequality, industry, and politics. Although some research will focus less on the interface with people than others, all ecological research is - in some way - relevant to people, our lifestyles, our systems, and our wellbeing. Which carries important implications too often overlooked."
         }
       ]
-    },
-    {
-      "heading": "Acknowledgements",
-      "tag": "Gratitude",
-      "text": "(perhaps sam should write this)"
-    },
-    {
-      "heading": "Invitation to collaborate",
-      "tag": "Join us",
-      "text": "We are a small and new lab group constantly developing new ideas and looking for new perspectives. We will answer your email, we value collaboration, and we love hosting guest speakers and lunches where outside-the-box ideas are never too outside-the-box."
     }
   ],
   "sections": [],
