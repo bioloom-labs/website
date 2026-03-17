@@ -5,8 +5,12 @@ import {
   Github,
   X as CloseIcon,
   ChevronDown,
+  Copy,
+  Check,
+  ExternalLink,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
 
 // --- Helpers ---------------------------------------------------------------
@@ -77,6 +81,43 @@ function normalizeUrl(url = "") {
   if (/^mailto:/i.test(u)) return u;
   if (/^https?:\/\//i.test(u)) return u;
   return `https://${u}`;
+}
+
+function extractHandle(href = "", platform = "") {
+  try {
+    if (platform === "email") return href.replace(/^mailto:/i, "");
+    const url = new URL(normalizeUrl(href));
+    if (platform === "linkedin") {
+      const m = url.pathname.match(/\/in\/([^/]+)/);
+      return m ? m[1] : null;
+    }
+    if (platform === "github") {
+      const parts = url.pathname.split("/").filter(Boolean);
+      return parts[0] || null;
+    }
+    if (platform === "x" || platform === "twitter") {
+      const parts = url.pathname.split("/").filter(Boolean);
+      return parts[0] ? `@${parts[0]}` : null;
+    }
+    if (platform === "bluesky") {
+      const m = url.pathname.match(/\/profile\/([^/]+)/);
+      return m ? `@${m[1]}` : null;
+    }
+    if (platform === "orcid") {
+      const parts = url.pathname.split("/").filter(Boolean);
+      return parts[0] || null;
+    }
+    if (platform === "researchgate") {
+      const m = url.pathname.match(/\/profile\/([^/]+)/);
+      return m ? m[1] : null;
+    }
+    if (platform === "website") {
+      return url.hostname.replace(/^www\./, "");
+    }
+  } catch {
+    // fall through
+  }
+  return null;
 }
 
 function getFaviconFromUrl(url = "") {
@@ -153,6 +194,178 @@ function formatBlurbWithLinks(blurb = "") {
   }
 
   return nodes.length ? nodes : blurb;
+}
+
+function TooltipLink({ href, icon, label, type = "link" }) {
+  const ref = useRef(null);
+  const [hovered, setHovered] = useState(false);
+  const [pos, setPos] = useState(null);
+  const [copied, setCopied] = useState(false);
+
+  function handleMouseEnter() {
+    setHovered(true);
+    if (type === "email" && ref.current) {
+      const r = ref.current.getBoundingClientRect();
+      setPos({ top: r.top + r.height / 2, left: r.right + 8 });
+    }
+  }
+
+  function handleMouseLeave() {
+    setHovered(false);
+    setPos(null);
+  }
+
+  async function handleClick(e) {
+    if (type !== "email") return;
+    e.preventDefault();
+    try {
+      await navigator.clipboard.writeText(label);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      window.location.href = href;
+    }
+  }
+
+  const iconKey = type === "email"
+    ? (copied ? "check" : hovered ? "copy" : "default")
+    : (hovered ? "external" : "default");
+
+  const iconNode = type === "email"
+    ? (copied
+        ? <Check className="h-4 w-4 shrink-0 text-green-400" />
+        : hovered
+          ? <Copy className="h-4 w-4 shrink-0" />
+          : icon)
+    : (hovered ? <ExternalLink className="h-4 w-4 shrink-0" /> : icon);
+
+  const tooltipText = type === "email" ? (copied ? "Copied!" : label) : null;
+
+  return (
+    <div ref={ref} className="relative w-full" onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
+      <a
+        href={normalizeUrl(href)}
+        target={type === "email" ? undefined : "_blank"}
+        rel={type === "email" ? undefined : "noopener noreferrer"}
+        onClick={handleClick}
+        className="inline-flex items-center gap-2 w-full justify-start rounded-xl border border-white/15 bg-white/5 px-3 py-2 text-xs text-white/80 hover:bg-white/10 transition overflow-hidden"
+      >
+        <span className="relative h-4 w-4 shrink-0 flex items-center justify-center overflow-hidden">
+          <AnimatePresence mode="popLayout" initial={false}>
+            <motion.span
+              key={iconKey}
+              initial={{ x: 10, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              exit={{ x: -10, opacity: 0 }}
+              transition={{ duration: 0.15, ease: "easeInOut" }}
+              className="absolute inset-0 flex items-center justify-center"
+            >
+              {iconNode}
+            </motion.span>
+          </AnimatePresence>
+        </span>
+        <span className="font-medium tracking-wide truncate">{label}</span>
+      </a>
+      {pos && tooltipText && createPortal(
+        <div
+          className="fixed z-[200] pointer-events-none"
+          style={{ top: pos.top, left: pos.left, transform: "translateY(-50%)" }}
+        >
+          <div className="whitespace-nowrap rounded-lg bg-slate-800 border border-white/15 px-2.5 py-1.5 text-xs text-white/90 shadow-lg">
+            {tooltipText}
+          </div>
+        </div>,
+        document.body
+      )}
+    </div>
+  );
+}
+
+function CompactIconButton({ href, icon, label, type = "link" }) {
+  const ref = useRef(null);
+  const [hovered, setHovered] = useState(false);
+  const [pos, setPos] = useState(null);
+  const [copied, setCopied] = useState(false);
+
+  function handleMouseEnter() {
+    setHovered(true);
+    if (ref.current) {
+      const r = ref.current.getBoundingClientRect();
+      setPos({ top: r.top - 8, left: r.left + r.width / 2 });
+    }
+  }
+
+  function handleMouseLeave() {
+    setHovered(false);
+    setPos(null);
+  }
+
+  async function handleClick(e) {
+    if (type !== "email") return;
+    e.preventDefault();
+    try {
+      await navigator.clipboard.writeText(label);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      window.location.href = href;
+    }
+  }
+
+  const iconKey = type === "email"
+    ? (copied ? "check" : hovered ? "copy" : "default")
+    : (hovered ? "external" : "default");
+
+  const iconNode = type === "email"
+    ? (copied
+        ? <Check className="h-3.5 w-3.5 text-green-400" />
+        : hovered ? <Copy className="h-3.5 w-3.5" /> : icon)
+    : (hovered ? <ExternalLink className="h-3.5 w-3.5" /> : icon);
+
+  const tooltipText = type === "email" ? (copied ? "Copied!" : label) : label;
+
+  return (
+    <div
+      ref={ref}
+      className="relative"
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
+      <a
+        href={normalizeUrl(href)}
+        target={type === "email" ? undefined : "_blank"}
+        rel={type === "email" ? undefined : "noopener noreferrer"}
+        onClick={handleClick}
+        className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-white/5 border border-white/15 text-white/80 hover:bg-white/10 overflow-hidden"
+      >
+        <span className="relative h-3.5 w-3.5 flex items-center justify-center overflow-hidden">
+          <AnimatePresence mode="popLayout" initial={false}>
+            <motion.span
+              key={iconKey}
+              initial={{ x: 8, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              exit={{ x: -8, opacity: 0 }}
+              transition={{ duration: 0.15, ease: "easeInOut" }}
+              className="absolute inset-0 flex items-center justify-center"
+            >
+              {iconNode}
+            </motion.span>
+          </AnimatePresence>
+        </span>
+      </a>
+      {pos && hovered && createPortal(
+        <div
+          className="fixed z-[200] pointer-events-none"
+          style={{ top: pos.top, left: pos.left, transform: "translate(-50%, -100%)" }}
+        >
+          <div className="whitespace-nowrap rounded-lg bg-slate-800 border border-white/15 px-2.5 py-1.5 text-xs text-white/90 shadow-lg mb-1">
+            {tooltipText}
+          </div>
+        </div>,
+        document.body
+      )}
+    </div>
+  );
 }
 
 // --- Component -------------------------------------------------------------
@@ -235,7 +448,7 @@ export default function PersonCard({
     email && {
       key: "email",
       href: `mailto:${email}`,
-      label: "Email",
+      label: email,
       icon: <Mail className="h-4 w-4" />,
     },
     websiteUrl && {
@@ -324,21 +537,9 @@ export default function PersonCard({
 
   // Staggered fade-in
   useEffect(() => {
-    if (hasAppeared) return;
-    const delay = appearOrder * 20;
-    const timer = setTimeout(() => setHasAppeared(true), delay);
+    const timer = setTimeout(() => setHasAppeared(true), appearOrder * 20);
     return () => clearTimeout(timer);
-  }, [appearOrder, hasAppeared]);
-
-  useEffect(() => {
-    if (hasAppeared) return;
-    if (typeof window === "undefined" || !window.requestAnimationFrame) {
-      setHasAppeared(true);
-      return;
-    }
-    const raf = window.requestAnimationFrame(() => setHasAppeared(true));
-    return () => window.cancelAnimationFrame(raf);
-  }, [hasAppeared]);
+  }, [appearOrder]);
 
   useEffect(() => {
     setPhotoErrored(false);
@@ -414,126 +615,70 @@ export default function PersonCard({
                 onClick={(e) => e.stopPropagation()}
               >
                 {email && (
-                  <a
+                  <CompactIconButton
                     href={`mailto:${email}`}
-                    className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-white/5 border border-white/15 text-white/80 hover:bg-white/10"
-                    title="Email"
-                  >
-                    <Mail className="h-3.5 w-3.5" />
-                  </a>
+                    icon={<Mail className="h-3.5 w-3.5" />}
+                    label={email}
+                    type="email"
+                  />
                 )}
-
                 {websiteUrl && (
-                  <a
+                  <CompactIconButton
                     href={websiteUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-white/5 border border-white/15 text-white/80 hover:bg-white/10"
-                    title="Website"
-                  >
-                    <Globe className="h-3.5 w-3.5" />
-                  </a>
+                    icon={<Globe className="h-3.5 w-3.5" />}
+                    label="Website"
+                  />
                 )}
-
                 {twitterUrl && (
-                  <a
+                  <CompactIconButton
                     href={twitterUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-white/5 border border-white/15 text-white/80 hover:bg-white/10"
-                    title="X"
-                  >
-                    <XLogoIcon className="h-3.5 w-3.5" />
-                  </a>
+                    icon={<XLogoIcon className="h-3.5 w-3.5" />}
+                    label="X"
+                  />
                 )}
-
                 {linkedinUrl && (
-                  <a
+                  <CompactIconButton
                     href={linkedinUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-white/5 border border-white/15 text-white/80 hover:bg-white/10"
-                    title="LinkedIn"
-                  >
-                    <Linkedin className="h-3.5 w-3.5" />
-                  </a>
+                    icon={<Linkedin className="h-3.5 w-3.5" />}
+                    label="LinkedIn"
+                  />
                 )}
-
                 {githubUrl && (
-                  <a
+                  <CompactIconButton
                     href={githubUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-white/5 border border-white/15 text-white/80 hover:bg-white/10"
-                    title="GitHub"
-                  >
-                    <Github className="h-3.5 w-3.5" />
-                  </a>
+                    icon={<Github className="h-3.5 w-3.5" />}
+                    label="GitHub"
+                  />
                 )}
-
                 {auto.map((item, idx) => {
                   let iconNode = null;
                   if (item.icon === "x") {
                     iconNode = <XLogoIcon className="h-3.5 w-3.5" />;
                   } else if (item.icon === "bluesky") {
-                    iconNode = (
-                      <img
-                        src="/images/socials/bluesky.svg"
-                        alt="Bluesky icon"
-                        className="h-3.5 w-3.5 object-contain"
-                      />
-                    );
+                    iconNode = <img src="/images/socials/bluesky.svg" alt="" className="h-3.5 w-3.5 object-contain" />;
                   } else if (item.icon === "linkedin") {
                     iconNode = <Linkedin className="h-3.5 w-3.5" />;
                   } else if (item.icon === "github") {
                     iconNode = <Github className="h-3.5 w-3.5" />;
                   } else if (item.icon === "orcid") {
-                    iconNode = (
-                      <img
-                        src="/images/socials/orcid.png"
-                        alt="ORCID icon"
-                        className="h-3.5 w-3.5 object-contain"
-                      />
-                    );
+                    iconNode = <img src="/images/socials/orcid.png" alt="" className="h-3.5 w-3.5 object-contain" />;
                   } else if (item.icon === "google-scholar") {
-                    iconNode = (
-                      <img
-                        src="/images/socials/googlescholar.png"
-                        alt="Google Scholar icon"
-                        className="h-3.5 w-3.5 object-contain"
-                      />
-                    );
+                    iconNode = <img src="/images/socials/googlescholar.png" alt="" className="h-3.5 w-3.5 object-contain" />;
                   } else if (item.icon === "researchgate") {
-                    iconNode = (
-                      <img
-                        src="/images/socials/researchgate.png"
-                        alt="ResearchGate icon"
-                        className="h-3.5 w-3.5 object-contain"
-                      />
-                    );
+                    iconNode = <img src="/images/socials/researchgate.png" alt="" className="h-3.5 w-3.5 object-contain" />;
                   } else if (item.icon === "mail") {
                     iconNode = <Mail className="h-3.5 w-3.5" />;
                   } else {
-                    iconNode = (
-                      <FaviconIcon
-                        href={item.href}
-                        label="External link"
-                        fallback={Globe}
-                      />
-                    );
+                    iconNode = <FaviconIcon href={item.href} label="External link" fallback={Globe} />;
                   }
-
                   return (
-                    <a
+                    <CompactIconButton
                       key={`auto-compact-${idx}`}
-                      href={normalizeUrl(item.href)}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-white/5 border border-white/15 text-white/80 hover:bg-white/10"
-                      title={item.label || "Link"}
-                    >
-                      {iconNode}
-                    </a>
+                      href={item.href}
+                      icon={iconNode}
+                      label={item.label || "Link"}
+                      type={item.icon === "mail" ? "email" : "link"}
+                    />
                   );
                 })}
               </div>
@@ -625,18 +770,13 @@ export default function PersonCard({
                     >
                       <div className="flex flex-col gap-2 w-full">
                         {modalLinks.map((link) => (
-                          <a
+                          <TooltipLink
                             key={link.key}
-                            href={normalizeUrl(link.href)}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-2 w-full justify-start rounded-xl border border-white/15 bg-white/5 px-3 py-2 text-xs text-white/80 hover:bg-white/10 transition"
-                          >
-                            {link.icon}
-                            <span className="font-medium tracking-wide">
-                              {link.label}
-                            </span>
-                          </a>
+                            href={link.href}
+                            icon={link.icon}
+                            label={link.label}
+                            type={link.key === "email" ? "email" : "link"}
+                          />
                         ))}
                       </div>
                     </div>

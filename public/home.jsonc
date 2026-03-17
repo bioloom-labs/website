@@ -4,8 +4,8 @@
     "fade_ms": 900,
     "hero": {
         "lead": "Led by Dr. Samuel Pironon",
-        "title": "Researching the Interwoven Fabric of Biodiversity and People",
-        "subtitle": "Our lives are predicated on a global ecosystem that is being increasingly disrupted – putting food, medicine, water, and wellbeing at risk. BIOLOOM is a biodiversity research group investigating this fraying connection and how to reweave it. We use macroecology, machine learning, functional traits, and ecological networks to identify, map and model biodiversity and its contributions to people. Striving toward a healthier relationship that upholds the wellbeing of our public and our planet for future generations.",
+        "title": "Where Biodiversity and Human Wellbeing are Woven Together",
+        "subtitle": "The ecosystems that sustain our food, medicine, water, and wellbeing are under growing pressure. Understanding how biodiversity supports human societies—and how this relationship is changing—is one of the defining challenges of our time.\n\nBIOLOOM is a biodiversity research group exploring the connections between people and nature. We combine large-scale data and macroecological approaches to understand, map, and predict the past, present and future of biodiversity and its contributions to people.\n\nOur goal is to generate knowledge that helps reconnect people and nature for a flourishing future.",
         "cta_primary": {
             "label": "Explore research",
             "to": "/research"
