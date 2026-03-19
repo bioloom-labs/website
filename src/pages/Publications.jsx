@@ -367,7 +367,7 @@ export default function Publications() {
         }
 
         const pubsArray = data
-          .filter((p) => !!p.year) // drop entries with no year (catches garbled/supplementary items)
+          .filter((p) => !!p.year)
           .map((p, i) => {
             const authors = Array.isArray(p.authors) ? p.authors : [];
             const labInPaper = [];
@@ -387,13 +387,6 @@ export default function Publications() {
               }
             });
 
-            // Always credit the lab member whose Scholar page this came from —
-            // some papers list them under initials or a variant not caught above
-            const fetchedFor = p._fetched_for;
-            if (fetchedFor && labNames.includes(fetchedFor) && !labInPaper.includes(fetchedFor)) {
-              labInPaper.push(fetchedFor);
-            }
-
             return {
               id: `scholar-${i}`,
               title: p.title || "Untitled",
@@ -406,7 +399,8 @@ export default function Publications() {
               labAuthorNames: labInPaper,
               citations: p.citations || 0,
             };
-          });
+          })
+          .filter((p) => p.labAuthorNames.length > 0); // only show papers where a lab author is credited
 
         setPubs(pubsArray);
       } catch (e) {
