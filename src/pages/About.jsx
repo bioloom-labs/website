@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { motion } from "framer-motion";
+import { motion, useInView } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 import { fetchJSONC } from "../utils/jsonc.js";
 
@@ -60,6 +60,102 @@ function NarrativeSection({ blocks = [] }) {
   // In a real file, ensure you keep the full NarrativeSection code here
   // or import it if you've split files.
   return null;
+}
+
+/* -------------------- BioLoom logo — 4-layer vectorised animation -------------------- */
+// Each layer traced separately from bioloom.png via potrace (800×239 viewBox).
+// Outer <motion.g> handles animation; inner <g> holds the potrace coordinate transform
+// so framer-motion never clobbers the SVG transform attribute.
+
+const PT = "translate(0,239) scale(0.1,-0.1)";
+
+const FABRIC_D = "M535 924 c-71 -7 -189 -22 -262 -34 -73 -11 -137 -20 -142 -20 -6 0 -15 -9 -21 -21 -19 -34 2 -46 98 -54 93 -7 258 -41 267 -55 3 -5 -21 -17 -52 -27 -45 -14 -59 -23 -61 -40 -6 -40 24 -43 140 -13 l107 28 68 -47 c105 -74 105 -76 31 -98 -56 -16 -63 -22 -66 -46 -5 -43 27 -43 169 -1 18 5 156 -162 144 -174 -3 -4 -25 -14 -48 -22 -33 -12 -43 -21 -45 -42 -4 -35 22 -43 78 -23 67 24 76 21 121 -47 57 -85 99 -128 125 -128 38 0 41 37 6 74 -34 36 -92 120 -92 134 0 5 45 17 99 26 l100 18 79 -81 c81 -82 120 -103 147 -81 25 21 17 36 -39 79 -112 87 -108 95 55 106 l97 7 53 -42 c91 -72 158 -93 173 -54 9 24 -4 42 -37 54 -18 5 -45 21 -62 34 l-30 24 44 9 c52 10 72 33 51 58 -14 17 -76 16 -146 -1 -17 -4 -32 4 -63 35 -52 52 -51 59 5 63 113 7 79 68 -37 68 l-79 0 -25 40 c-31 49 -31 48 6 52 77 8 58 68 -22 68 -44 0 -51 4 -91 46 -74 79 -186 107 -538 134 -154 11 -135 12 -305 -6z m293 -94 c70 -30 66 -37 -25 -45 -43 -4 -103 -10 -133 -15 -39 -5 -62 -4 -80 5 -14 7 -56 22 -93 35 -81 26 -80 29 15 40 125 14 256 6 316 -20z m299 -5 c187 -27 237 -62 72 -51 -130 9 -171 18 -205 45 l-27 21 26 0 c15 0 75 -7 134 -15z m-68 -161 c29 -31 51 -58 49 -59 -2 -2 -58 -9 -126 -15 l-122 -12 -63 58 c-34 31 -63 61 -65 65 -4 9 58 14 189 17 l87 2 51 -56z m222 30 l87 -6 21 -38 c11 -21 21 -40 21 -44 0 -3 -47 -6 -104 -6 l-104 0 -36 50 c-44 61 -44 64 -3 57 17 -3 71 -9 118 -13z m-109 -181 c20 -24 78 -121 78 -131 0 -5 -35 -14 -77 -21 -43 -7 -89 -14 -103 -17 -22 -5 -34 5 -89 76 -73 94 -73 92 22 100 129 12 153 11 169 -7z m285 9 c12 -4 40 -30 62 -59 l41 -51 -37 -6 c-21 -3 -72 -8 -113 -11 l-75 -6 -29 48 c-17 26 -36 58 -44 71 l-14 22 93 -1 c52 -1 104 -4 116 -7z";
+
+const PLANT_D = "M1030 2332 c-291 -106 -445 -404 -346 -672 14 -38 15 -52 4 -92 -17 -68 -24 -60 -31 35 -19 267 -183 435 -458 469 -153 19 -186 -13 -157 -152 60 -284 210 -427 471 -447 l78 -6 15 -36 c31 -73 43 -150 49 -324 l7 -177 -44 0 c-143 -1 -496 -58 -509 -82 -18 -33 5 -45 99 -53 93 -7 258 -41 267 -55 3 -5 -20 -17 -52 -27 -101 -32 -82 -46 53 -39 138 6 120 6 209 -1 63 -4 68 -3 56 11 -20 24 -16 25 130 32 l134 6 24 -26 c29 -31 136 -42 111 -11 -7 9 -11 17 -9 20 8 8 234 -18 241 -28 9 -15 140 1 158 19 26 26 0 48 -61 54 -49 4 -59 10 -94 48 -67 75 -216 112 -512 129 l-102 6 -5 36 c-47 323 -3 609 100 646 240 85 354 255 354 525 -1 217 -28 247 -180 192z m-202 -1502 c70 -30 66 -37 -25 -45 -43 -4 -103 -10 -133 -15 -39 -5 -62 -4 -80 5 -14 7 -56 22 -93 35 -81 26 -80 29 15 40 125 14 256 6 316 -20z m299 -5 c187 -27 237 -62 72 -51 -130 9 -171 18 -205 45 l-27 21 26 0 c15 0 75 -7 134 -15z";
+
+const PEOPLE_DS = [
+  "M660 1570 c0 -29 3 -50 7 -46 7 7 5 87 -3 95 -2 2 -4 -20 -4 -49z",
+  "M864 1546 c-58 -49 -20 -146 57 -146 70 0 106 94 54 145 -31 32 -75 32 -111 1z",
+  "M871 1366 c-45 -25 -50 -49 -51 -243 l0 -182 -27 -3 c-16 -3 8 -5 51 -6 44 -1 99 -4 123 -8 l43 -6 0 205 0 205 -31 26 c-33 28 -71 33 -108 12z",
+  "M1093 1320 c-46 -19 -55 -69 -18 -105 58 -59 152 21 98 83 -22 25 -51 33 -80 22z",
+  "M1067 1160 c-26 -21 -27 -24 -27 -130 0 -78 -4 -110 -12 -112 -7 -3 21 -8 63 -11 42 -4 83 -9 93 -13 26 -10 24 236 -3 260 -31 28 -82 31 -114 6z",
+];
+
+const TEXT_DS = [
+  "M2775 1688 c-63 -37 -59 -112 8 -137 50 -19 97 16 97 72 0 51 -63 90 -105 65z",
+  "M3395 1686 c-250 -61 -406 -326 -340 -579 138 -531 925 -426 925 123 0 316 -276 531 -585 456z m238 -132 c230 -75 287 -416 98 -586 -225 -203 -562 -33 -549 277 10 245 215 385 451 309z",
+  "M5173 1685 c-450 -122 -469 -768 -26 -905 283 -87 570 90 614 380 51 336 -259 613 -588 525z m263 -140 c210 -94 260 -397 93 -564 -162 -162 -430 -118 -531 87 -145 294 144 608 438 477z",
+  "M6231 1685 c-454 -128 -455 -794 -1 -911 431 -110 764 358 517 727 -103 156 -330 236 -516 184z m276 -146 c120 -58 183 -164 183 -309 0 -404 -556 -481 -656 -91 -74 290 207 528 473 400z",
+  "M7010 1681 c-15 -30 -14 -883 2 -899 16 -16 103 -15 117 1 7 9 12 113 13 313 l3 300 140 -170 c174 -212 143 -212 316 0 l144 177 5 -314 5 -314 60 0 60 0 3 458 c3 578 31 554 -250 215 -213 -260 -151 -262 -384 17 -196 235 -214 252 -234 216z",
+  "M1932 1682 c-10 -7 -12 -105 -10 -458 l3 -449 160 -3 c248 -4 359 21 429 98 102 113 61 324 -71 364 -22 7 -21 9 19 39 136 104 105 315 -54 381 -76 31 -437 52 -476 28z m407 -144 c171 -85 68 -242 -159 -243 l-125 0 -3 124 c-1 69 0 131 3 139 9 25 225 9 284 -20z m2 -379 c213 -72 100 -263 -156 -264 l-130 0 -3 138 -3 137 129 0 c71 0 144 -5 163 -11z",
+  "M4172 1682 c-10 -7 -12 -105 -10 -458 l3 -449 275 0 275 0 3 54 c4 72 9 71 -225 71 l-203 0 0 389 c0 432 5 401 -68 401 -20 0 -43 -4 -50 -8z",
+  "M2755 1445 l-25 -24 0 -326 0 -325 75 0 75 0 0 329 0 330 -26 20 c-35 28 -69 26 -99 -4z",
+];
+
+function BioloomLogoAnim() {
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: false, amount: 0.4 });
+  const [animKey, setAnimKey] = useState(0);
+  useEffect(() => {
+    if (isInView) setAnimKey((k) => k + 1);
+  }, [isInView]);
+
+  const ease = [0.22, 1, 0.36, 1];
+
+  return (
+    <div ref={ref} className="flex justify-center pt-8">
+      <svg
+        key={animKey}
+        viewBox="0 0 800 239"
+        style={{ height: "110px", width: "auto" }}
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        {/* 1. Fabric — rises up first */}
+        <motion.g
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.55, delay: 0, ease }}
+        >
+          <g transform={PT} fill="#10b981" stroke="none">
+            <path d={FABRIC_D} />
+          </g>
+        </motion.g>
+
+        {/* 2. Plant — rises from ground */}
+        <motion.g
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.55, delay: 0.45, ease }}
+        >
+          <g transform={PT} fill="#10b981" stroke="none">
+            <path d={PLANT_D} />
+          </g>
+        </motion.g>
+
+        {/* 3. People — rise up */}
+        <motion.g
+          initial={{ opacity: 0, y: 18 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.9, ease: [0.34, 1.4, 0.64, 1] }}
+        >
+          <g transform={PT} fill="#a7f3d0" stroke="none">
+            {PEOPLE_DS.map((d, i) => <path key={i} d={d} />)}
+          </g>
+        </motion.g>
+
+        {/* 4. Text — slides in from left */}
+        <motion.g
+          initial={{ opacity: 0, x: -50 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.6, delay: 1.3, ease }}
+        >
+          <g transform={PT} fill="#a7f3d0" stroke="none">
+            {TEXT_DS.map((d, i) => <path key={i} d={d} />)}
+          </g>
+        </motion.g>
+      </svg>
+    </div>
+  );
 }
 
 function NarrativeCard({ block, index }) {
@@ -123,25 +219,28 @@ function NarrativeCard({ block, index }) {
           )}
 
           {hasValues && (
-            <div className="grid gap-4 md:grid-cols-3">
-              {block.values.map((value, idx) => (
-                <div
-                  key={value.title || idx}
-                  className="rounded-xl border border-white/15 bg-white/8 p-4 space-y-2 backdrop-blur-sm shadow-[inset_0_1px_0_rgba(255,255,255,0.15)]"
-                >
-                  {value.title && (
-                    <h4 className="text-base font-semibold text-emerald-200">
-                      {value.title}
-                    </h4>
-                  )}
-                  {value.text && (
-                    <p className="text-sm text-emerald-50/85 leading-relaxed">
-                      {value.text}
-                    </p>
-                  )}
-                </div>
-              ))}
-            </div>
+            <>
+              <div className="grid gap-4 md:grid-cols-3">
+                {block.values.map((value, idx) => (
+                  <div
+                    key={value.title || idx}
+                    className="rounded-xl border border-white/15 bg-white/8 p-4 space-y-2 backdrop-blur-sm shadow-[inset_0_1px_0_rgba(255,255,255,0.15)]"
+                  >
+                    {value.title && (
+                      <h4 className="text-base font-semibold text-emerald-200">
+                        {value.title}
+                      </h4>
+                    )}
+                    {value.text && (
+                      <p className="text-sm text-emerald-50/85 leading-relaxed">
+                        {value.text}
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
+              <BioloomLogoAnim />
+            </>
           )}
         </div>
       </motion.div>

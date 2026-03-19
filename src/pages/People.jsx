@@ -22,6 +22,34 @@ const PARALLAX_IMAGES = [
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
+function formatBlurbWithLinks(blurb = "") {
+  if (!blurb) return null;
+  const regex = /\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g;
+  const nodes = [];
+  let lastIndex = 0;
+  let match;
+  let key = 0;
+  while ((match = regex.exec(blurb)) !== null) {
+    const [fullMatch, label, url] = match;
+    if (match.index > lastIndex) nodes.push(blurb.slice(lastIndex, match.index));
+    nodes.push(
+      <a
+        key={`blurb-link-${key++}`}
+        href={url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-brand-200 underline decoration-dotted underline-offset-2 font-medium hover:text-brand-100 transition"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {label}
+      </a>
+    );
+    lastIndex = match.index + fullMatch.length;
+  }
+  if (lastIndex < blurb.length) nodes.push(blurb.slice(lastIndex));
+  return nodes.length ? nodes : blurb;
+}
+
 function normalizeUrl(url = "") {
   const u = url.trim();
   if (!u) return "";
@@ -243,7 +271,7 @@ function MemberModal({ person, onClose }) {
               <div className="h-px bg-white/8" />
 
               <p className="text-sm leading-relaxed text-white/65">
-                {person.description || "Lab member at BioLoom Labs."}
+                {formatBlurbWithLinks(person.description) || "Lab member at BioLoom Labs."}
               </p>
             </div>
           </div>
@@ -333,7 +361,7 @@ function PIHero({ person }) {
               style={{ height: "7.5rem" }}
             >
               <p className="max-w-2xl text-sm leading-relaxed text-white/65 md:text-base">
-                {bio}
+                {formatBlurbWithLinks(bio)}
               </p>
             </motion.div>
             {isLong && (
@@ -412,7 +440,7 @@ function MemberCard({ person, index }) {
             style={{ maxHeight: hovered ? "120px" : "0px", opacity: hovered ? 1 : 0 }}
           >
             <p className="mt-1 text-[11px] leading-relaxed text-white/55 line-clamp-4">
-              {person.description || "Lab member at BioLoom Labs."}
+              {formatBlurbWithLinks(person.description) || "Lab member at BioLoom Labs."}
             </p>
             {links.length > 0 && (
               <div className="mt-2.5 flex flex-wrap gap-1.5">
