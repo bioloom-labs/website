@@ -366,38 +366,47 @@ export default function Publications() {
           return null;
         }
 
-        const pubsArray = data.map((p, i) => {
-          const authors = Array.isArray(p.authors) ? p.authors : [];
-          const labInPaper = [];
+        const pubsArray = data
+          .filter((p) => !!p.year) // drop entries with no year (catches garbled/supplementary items)
+          .map((p, i) => {
+            const authors = Array.isArray(p.authors) ? p.authors : [];
+            const labInPaper = [];
 
-          // Normalise author list — replace abbreviated lab names with full names
-          const normalisedAuthors = authors.map((a) => {
-            for (const ln of labNames) {
-              if (matchLabAuthor(a, ln)) return ln;
+            // Normalise author list — replace abbreviated lab names with full names
+            const normalisedAuthors = authors.map((a) => {
+              for (const ln of labNames) {
+                if (matchLabAuthor(a, ln)) return ln;
+              }
+              return a;
+            });
+
+            // Collect unique matched lab authors from normalised list
+            normalisedAuthors.forEach((a) => {
+              if (labNameSet.has(a.toLowerCase()) && !labInPaper.includes(a)) {
+                labInPaper.push(a);
+              }
+            });
+
+            // Always credit the lab member whose Scholar page this came from —
+            // some papers list them under initials or a variant not caught above
+            const fetchedFor = p._fetched_for;
+            if (fetchedFor && labNames.includes(fetchedFor) && !labInPaper.includes(fetchedFor)) {
+              labInPaper.push(fetchedFor);
             }
-            return a;
-          });
 
-          // Collect unique matched lab authors
-          normalisedAuthors.forEach((a) => {
-            if (labNameSet.has(a.toLowerCase()) && !labInPaper.includes(a)) {
-              labInPaper.push(a);
-            }
+            return {
+              id: `scholar-${i}`,
+              title: p.title || "Untitled",
+              year: p.year || null,
+              journal: p.journal || "",
+              journalUrl: p.url || "",
+              link: p.url || "",
+              abstractText: p.abstract || "",
+              authorsText: normalisedAuthors.join(", "),
+              labAuthorNames: labInPaper,
+              citations: p.citations || 0,
+            };
           });
-
-          return {
-            id: `scholar-${i}`,
-            title: p.title || "Untitled",
-            year: p.year || null,
-            journal: p.journal || "",
-            journalUrl: p.url || "",
-            link: p.url || "",
-            abstractText: p.abstract || "",
-            authorsText: normalisedAuthors.join(", "),
-            labAuthorNames: labInPaper,
-            citations: p.citations || 0,
-          };
-        });
 
         setPubs(pubsArray);
       } catch (e) {
