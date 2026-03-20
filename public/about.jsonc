@@ -2,11 +2,11 @@
   "title": "The Origins of BIOLOOM",
   "eyebrow": "About Us",
   "videos": {
-    "intro": "/images/videos/about/1080p_holdingplant.mp4",
+    "intro": "/images/videos/about/1080p_weavingloom.mp4",
     "narrative": [
-      "/images/videos/about/1080p_gymnocalyciumcactus.mp4",
       "/images/videos/about/1080p_handseeds.mp4",
-      "/images/videos/about/1080p_europeangreenfinch.mp4"
+      "/images/videos/about/1080p_europeangreenfinch.mp4",
+      "/images/videos/about/1080p_holdingplant.mp4"
     ],
     "sections": "/images/videos/about/1080p_beereddahlia.mp4"
   },
