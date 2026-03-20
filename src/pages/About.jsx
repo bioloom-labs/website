@@ -876,7 +876,7 @@ export default function About() {
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
-            className="pointer-events-none fixed bottom-6 left-1/2 -translate-x-1/2 z-40"
+            className="pointer-events-none fixed bottom-6 inset-x-0 flex justify-center z-40"
           >
             <button
               type="button"
