@@ -161,6 +161,7 @@ function BioloomLogoAnim() {
 function NarrativeCard({ block, index }) {
   if (!block) return null;
 
+  const isCentered = !!block.centered;
   const paragraphs = Array.isArray(block.paragraphs)
     ? block.paragraphs
     : block.text
@@ -171,13 +172,11 @@ function NarrativeCard({ block, index }) {
 
   return (
     <motion.article
-      // Added z-index and layout projection
       layout
       initial={{ y: 40, opacity: 0 }}
       whileInView={{ y: 0, opacity: 1 }}
       viewport={{ once: true, margin: "-20% 0px -20% 0px" }}
       transition={{ duration: 0.7, ease: "easeOut" }}
-      // Moved GPU triggers to the motion parent
       className="relative z-10 transform-gpu will-change-transform"
     >
       <motion.div
@@ -188,61 +187,97 @@ function NarrativeCard({ block, index }) {
         className={[
           sceneCardClass,
           "relative w-full overflow-hidden isolation-isolate bg-clip-padding",
+          isCentered ? "text-center" : "",
         ].join(" ")}
       >
         {/* Specular highlight strip */}
         <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent rounded-t-[2.5rem]" />
 
-        <div className="relative space-y-4 z-20">
-          {block.heading && (
-            <h3 className="text-3xl md:text-4xl font-semibold text-emerald-200">
-              {block.heading}
-            </h3>
-          )}
+        {/* Centered "Who we are / Vision" layout */}
+        {isCentered ? (
+          <div className="relative z-20 space-y-10 mx-auto max-w-3xl">
+            {block.who && (
+              <div className="space-y-3">
+                <p className="text-sm uppercase tracking-[0.3em] text-emerald-50/60">
+                  Who we are
+                </p>
+                <p className="text-lg text-emerald-50/90 leading-relaxed">
+                  {block.who}
+                </p>
+              </div>
+            )}
+            {block.vision && (
+              <div className="space-y-3">
+                <p className="text-sm uppercase tracking-[0.3em] text-emerald-50/60">
+                  Our vision
+                </p>
+                <p className="text-2xl md:text-3xl font-semibold text-emerald-200 leading-snug">
+                  {block.vision}
+                </p>
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="relative space-y-4 z-20">
+            {(block.tag || block.heading) && (
+              <div className="text-center space-y-2">
+                {block.tag && (
+                  <p className="text-sm uppercase tracking-[0.3em] text-emerald-50/60">
+                    {block.tag}
+                  </p>
+                )}
+                {block.heading && (
+                  <h3 className="text-3xl md:text-4xl font-semibold text-emerald-200">
+                    {block.heading}
+                  </h3>
+                )}
+              </div>
+            )}
 
-          {paragraphs.length > 0 && (
-            <div className="space-y-3 text-emerald-50/90 text-lg leading-relaxed">
-              {paragraphs.map((text, idx) => (
-                <p key={`paragraph-${idx}`}>{text}</p>
-              ))}
-            </div>
-          )}
-
-          {hasList && (
-            <ul className="mt-2 space-y-2 text-emerald-50/90 text-base leading-relaxed list-disc list-inside">
-              {block.list.map((item, idx) => (
-                <li key={`list-${idx}`} className="pl-1">
-                  {item}
-                </li>
-              ))}
-            </ul>
-          )}
-
-          {hasValues && (
-            <>
-              <div className="grid gap-4 md:grid-cols-3">
-                {block.values.map((value, idx) => (
-                  <div
-                    key={value.title || idx}
-                    className="rounded-xl border border-white/15 bg-white/8 p-4 space-y-2 backdrop-blur-sm shadow-[inset_0_1px_0_rgba(255,255,255,0.15)]"
-                  >
-                    {value.title && (
-                      <h4 className="text-base font-semibold text-emerald-200">
-                        {value.title}
-                      </h4>
-                    )}
-                    {value.text && (
-                      <p className="text-sm text-emerald-50/85 leading-relaxed">
-                        {value.text}
-                      </p>
-                    )}
-                  </div>
+            {paragraphs.length > 0 && (
+              <div className="space-y-3 text-emerald-50/90 text-lg leading-relaxed">
+                {paragraphs.map((text, idx) => (
+                  <p key={`paragraph-${idx}`}>{text}</p>
                 ))}
               </div>
-              <BioloomLogoAnim />
-            </>
-          )}
-        </div>
+            )}
+
+            {hasList && (
+              <ul className="mt-2 space-y-2 text-emerald-50/90 text-base leading-relaxed list-disc list-inside">
+                {block.list.map((item, idx) => (
+                  <li key={`list-${idx}`} className="pl-1">
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            {hasValues && (
+              <>
+                <div className="grid gap-4 md:grid-cols-3">
+                  {block.values.map((value, idx) => (
+                    <div
+                      key={value.title || idx}
+                      className="rounded-xl border border-white/15 bg-white/8 p-4 space-y-2 backdrop-blur-sm shadow-[inset_0_1px_0_rgba(255,255,255,0.15)]"
+                    >
+                      {value.title && (
+                        <h4 className="text-base font-semibold text-emerald-200">
+                          {value.title}
+                        </h4>
+                      )}
+                      {value.text && (
+                        <p className="text-sm text-emerald-50/85 leading-relaxed">
+                          {value.text}
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+                <BioloomLogoAnim />
+              </>
+            )}
+          </div>
+        )}
       </motion.div>
     </motion.article>
   );

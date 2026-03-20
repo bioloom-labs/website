@@ -6,6 +6,7 @@
     "narrative": [
       "/images/videos/about/1080p_handseeds.mp4",
       "/images/videos/about/1080p_europeangreenfinch.mp4",
+      "/images/videos/about/1080p_butterflyonhand.mp4",
       "/images/videos/about/1080p_holdingplant.mp4"
     ],
     "sections": "/images/videos/about/1080p_beereddahlia.mp4"
@@ -17,16 +18,20 @@
     },
     "narrative": [
       {
-        "label": "Timelapses Stock Videos by Vecteezy",
-        "href": "https://www.vecteezy.com/free-videos/timelapses"
-      },
-      {
         "label": "Hand Stock Videos by Vecteezy",
         "href": "https://www.vecteezy.com/free-videos/hand"
       },
       {
         "label": "Nature Birds Stock Videos by Vecteezy",
         "href": "https://www.vecteezy.com/free-videos/nature-birds"
+      },
+      {
+        "label": "Butterfly Stock Videos by Vecteezy",
+        "href": "https://www.vecteezy.com/free-videos/butterfly"
+      },
+      {
+        "label": "Nature Stock Videos by Vecteezy",
+        "href": "https://www.vecteezy.com/free-videos/nature"
       }
     ],
     "sections": {
@@ -41,17 +46,28 @@
   ],
   "narrative": [
     {
+      "heading": "Who We Are & Our Vision",
+      "tag": "About us",
+      "centered": true,
+      "who": "BIOLOOM is a diverse, interdisciplinary team of researchers and students using data and ecological insight to explore how biodiversity and people are connected across the globe.",
+      "vision": "To understand and sustain the fabric of life by illuminating the threads that weave biodiversity, human wellbeing, and planetary health together."
+    },
+    {
       "heading": "Why Biodiversity-People Research Matters",
       "tag": "Why this matters",
       "paragraphs": [
-        "Our ecosystems have experienced dramatic declines in wetlands, reefs, pollinators, large animals, old growth forests, and diversity -among much more- as a result of the pressures we put on it. As all of these systems are vital providers of Nature's Contribution to People across the globe, our destructive relationship with our planetary partners is undermining our own system. Already, this is limiting food security, clean water access, public health, achievement of sustainable development goals, and siphoning trillions from national and local economies.",
-        "As such, it has never been more critical for ecologists to contribute their knowledge and methods to the study, and intervention, of this biodiversity-people relationship. Applying our side of the story, our ecological expertise, to the interwoven ecosystem and social-system; the Fabric of Life."
+        "Ecosystems—from reefs and forests to wetlands and mangroves—are the foundation of our food, water, health, and economies. When biodiversity thrives, people thrive. When it falters, so do we.",
+        "Studying the connections between nature and human well-being shows us the path forward. By protecting and restoring ecosystems, we can secure our resources, strengthen communities, and build a future where people and biodiversity flourish together."
       ]
     },
     {
-      "heading": "Vision",
-      "tag": "Vision",
-      "text": "To illuminate biodiversity and its contribution to people's lifestyles and livelihoods, using ecological approaches, to help inform a more sustainable human-nature weave."
+      "heading": "Why BIOLOOM?",
+      "tag": "Our name",
+      "paragraphs": [
+        "The loom is one of humanity's earliest technologies built in partnership with biodiversity: wood for the frame, plant fibres such as cotton and flax, and animal fibres like wool and silk. In human hands, this simple device has provided warmth, beauty, and creative expression for millennia.",
+        "By weaving threads into intricate patterns and colours, the loom showed how complexity can arise from simple connections, reflecting the richness and interdependence of the living world. This idea even inspired early computing—tools we now use to explore the hidden structure of biodiversity and its contributions to people.",
+        "BIOLOOM takes its name from this idea. Just as threads form the fabric of life, biodiversity and people are woven together in dynamic ways. Our research seeks to understand these connections and help sustain, restore, and wisely manage biodiversity—the living fabric that underpins flourishing ecosystems, cultures, and economies."
+      ]
     },
     {
       "heading": "Lab Values",
