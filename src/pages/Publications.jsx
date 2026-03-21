@@ -7,7 +7,7 @@ import {
   useState,
 } from "react";
 import { useLocation } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, useScroll, useTransform } from "framer-motion";
 import { ExternalLink } from "lucide-react";
 import { fetchJSONC } from "../utils/jsonc.js";
 
@@ -83,6 +83,66 @@ function BioloomLoading() {
         Loading publications…
       </p>
     </div>
+  );
+}
+
+// ---------- YEAR IMAGES (nature / botanical) ----------
+
+const YEAR_IMAGES = [
+  "https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?auto=format&fit=crop&w=1920&q=80",
+  "https://images.unsplash.com/photo-1513836279014-a89f7a76ae86?auto=format&fit=crop&w=1920&q=80",
+  "https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1920&q=80",
+  "https://images.unsplash.com/photo-1465146344425-f00d5f5c8f07?auto=format&fit=crop&w=1920&q=80",
+  "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=1920&q=80",
+  "https://images.unsplash.com/photo-1426604966848-d7adac402bff?auto=format&fit=crop&w=1920&q=80",
+  "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&w=1920&q=80",
+];
+
+function ParallaxYearBanner({ year, count, imageUrl }) {
+  const ref = useRef(null);
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
+  const y = useTransform(scrollYProgress, [0, 1], ["-15%", "15%"]);
+
+  return (
+    <div ref={ref} className="relative overflow-hidden h-20 md:h-24 rounded-2xl mt-10 mb-4 first:mt-0">
+      <motion.div style={{ y }} className="absolute inset-0 scale-[1.4] pointer-events-none">
+        <img src={imageUrl} alt="" className="h-full w-full object-cover" loading="lazy" />
+      </motion.div>
+      <div className="absolute inset-0 bg-black/58 pointer-events-none" />
+      <div className="relative flex items-center h-full px-6 gap-4">
+        <span
+          className="text-4xl md:text-5xl font-black tracking-tight text-white/90"
+          style={{ fontFamily: "'DM Serif Display', Georgia, serif" }}
+        >
+          {year}
+        </span>
+        <span className="text-sm text-white/45 font-medium">
+          {count} publication{count !== 1 ? "s" : ""}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+// ---------- AUTHOR TEXT with lab members bolded ----------
+
+function AuthorList({ authorsText, labAuthorNames }) {
+  if (!authorsText) return null;
+  const labSet = new Set((labAuthorNames || []).map((n) => n.toLowerCase()));
+  const parts = authorsText.split(", ");
+  return (
+    <>
+      {parts.map((author, i) => (
+        <span key={i}>
+          {i > 0 && ", "}
+          {labSet.has(author.toLowerCase()) ? (
+            <strong className="font-semibold text-white/90">{author}</strong>
+          ) : (
+            author
+          )}
+        </span>
+      ))}
+    </>
   );
 }
 
@@ -251,7 +311,7 @@ function PubItem({
 
             {/* Authors + year */}
             <div className={["mt-1 text-sm text-white/70", expanded ? "" : "line-clamp-2"].join(" ")}>
-              {authorsText}
+              <AuthorList authorsText={authorsText} labAuthorNames={labAuthorNames} />
               {year && <> · {year}</>}
             </div>
 
@@ -572,11 +632,13 @@ export default function Publications() {
           </p>
 
           <div className="mt-6">
-            {groupedByYear.map((group) => (
+            {groupedByYear.map((group, idx) => (
               <div key={group.year} className="mb-6">
-                <h3 className="mt-4 mb-2 text-sm font-semibold uppercase tracking-wide text-white/60">
-                  {group.year}
-                </h3>
+                <ParallaxYearBanner
+                  year={group.year}
+                  count={group.items.length}
+                  imageUrl={YEAR_IMAGES[idx % YEAR_IMAGES.length]}
+                />
                 <div className="list-vertical">
                   {group.items.map((p) => (
                     <PubItem

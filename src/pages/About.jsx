@@ -741,22 +741,22 @@ export default function About() {
       attributions.collaborators || attributions.sections || null;
 
     const scenesList = [
-      {
-        id: "about-intro",
-        type: "intro",
-        video: videos.intro || "/images/videos/about/holdingplant.mov",
-        poster: posters.intro,
-        credit: attributions.intro || null,
-      },
-      ...narrativeBlocks.map((block, idx) => ({
-        id: `about-narrative-${idx}`,
-        type: "narrative",
-        block,
-        index: idx,
-        video: narrativeVideos[idx] || "/images/videos/about/handseeds.mov",
-        poster: narrativePosters[idx],
-        credit: narrativeAttributions[idx] || null,
-      })),
+      ...narrativeBlocks.map((block, idx) => {
+        const isWhyBioloom = block.heading === "Why BIOLOOM?";
+        return {
+          id: `about-narrative-${idx}`,
+          type: "narrative",
+          block,
+          index: idx,
+          video: isWhyBioloom
+            ? (videos.intro || narrativeVideos[idx])
+            : (narrativeVideos[idx] || "/images/videos/about/handseeds.mov"),
+          poster: isWhyBioloom ? (posters.intro || narrativePosters[idx]) : narrativePosters[idx],
+          credit: isWhyBioloom
+            ? (attributions.intro || narrativeAttributions[idx] || null)
+            : (narrativeAttributions[idx] || null),
+        };
+      }),
     ];
 
     if ((sections && sections.length) || data.closing) {

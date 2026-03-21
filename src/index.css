@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -48,10 +50,11 @@ body {
 }
 
 .h2-grad {
-    @apply text-2xl md:text-4xl font-semibold tracking-tight;
+    @apply text-2xl md:text-4xl font-semibold tracking-tight pb-1;
     background: linear-gradient(to right, #a7f3d0, #6ee7b7, #34d399);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
+    background-clip: text;
 }
 
 .pill {

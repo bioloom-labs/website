@@ -1,130 +1,400 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
 import { fetchJSONC } from "../utils/jsonc.js";
 
-function ResearchCard({ item, index }) {
-  const targetLink = item.link
-    ? item.link
-    : item.search
-    ? `/publications?search=${encodeURIComponent(item.search)}`
-    : null;
-  const comingSoon = Boolean(item.comingSoon);
-  const clickable = Boolean(targetLink) && !comingSoon;
-
-  const bgStyle = item.image
-    ? {
-        backgroundImage: `linear-gradient(135deg, rgba(16,185,129,0.32), rgba(34,197,235,0.12)), url(${item.image})`,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-      }
-    : {
-        backgroundImage:
-          "radial-gradient(circle at 20% 20%, rgba(16,185,129,0.35), transparent 45%), radial-gradient(circle at 80% 0%, rgba(59,130,246,0.25), transparent 40%), radial-gradient(circle at 50% 100%, rgba(6,95,70,0.4), transparent 45%)",
-      };
-
-  const Wrapper = clickable ? Link : "div";
-  const wrapperProps = clickable ? { to: targetLink } : {};
-
+/* ── Icons ──────────────────────────────────────────────────────────────── */
+function ArrowUpRight({ className = "" }) {
   return (
-    <Wrapper
-      {...wrapperProps}
-      className={[
-        "group relative block rounded-3xl overflow-hidden",
-        "border border-emerald-300/20 bg-brand-950/70",
-        "shadow-[0_25px_60px_rgba(0,0,0,0.35)]",
-        "transition transform-gpu",
-        clickable ? "hover:-translate-y-1.5 hover:shadow-emerald-900/40" : "",
-        "focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-300",
-      ].join(" ")}
-      style={bgStyle}
+    <svg
+      className={className}
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.75"
+      strokeLinecap="round"
+      strokeLinejoin="round"
     >
-      <div className="absolute inset-0 bg-gradient-to-br from-brand-900/70 via-brand-950/80 to-black/70" />
-      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition bg-[radial-gradient(circle_at_20%_30%,rgba(74,222,128,0.2),transparent_45%),radial-gradient(circle_at_80%_10%,rgba(56,189,248,0.18),transparent_45%)]" />
-
-      <div className="relative p-6 flex flex-col gap-4 min-h-[240px]">
-        <div className="flex items-center justify-between gap-3">
-          <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-[11px] uppercase tracking-[0.12em] text-white/70">
-            Theme {String(index + 1).padStart(2, "0")}
-          </span>
-          {comingSoon && (
-            <span className="rounded-full bg-amber-400/20 px-3 py-1 text-[11px] font-semibold text-amber-200">
-              Coming soon
-            </span>
-          )}
-        </div>
-
-        <div className="space-y-3">
-          <h3 className="text-xl md:text-2xl font-semibold text-white">
-            {item.title}
-          </h3>
-          <p className="text-white/80 leading-relaxed text-sm md:text-base">
-            {item.text}
-          </p>
-        </div>
-
-        <div className="flex-1" />
-
-        {clickable && (
-          <div className="inline-flex items-center gap-2 text-brand-100 font-semibold text-sm">
-            View publications
-            <span className="transition-transform group-hover:translate-x-1">
-              →
-            </span>
-          </div>
-        )}
-      </div>
-    </Wrapper>
+      <path d="M3 13L13 3M13 3H6M13 3v7" />
+    </svg>
   );
 }
 
+function ArrowRight({ className = "" }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 20 20"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M4 10h12M10 4l6 6-6 6" />
+    </svg>
+  );
+}
+
+/* ── Per-thread accent palette ──────────────────────────────────────────── */
+const ACCENTS = [
+  { hex: "#6ee7b7", bg: "rgba(110,231,183,0.08)", glow: "rgba(110,231,183,0.14)" },
+  { hex: "#5eead4", bg: "rgba(94,234,212,0.08)",  glow: "rgba(94,234,212,0.13)"  },
+  { hex: "#67e8f9", bg: "rgba(103,232,249,0.07)", glow: "rgba(103,232,249,0.12)" },
+  { hex: "#86efac", bg: "rgba(134,239,172,0.07)", glow: "rgba(134,239,172,0.12)" },
+  { hex: "#34d399", bg: "rgba(52,211,153,0.08)",  glow: "rgba(52,211,153,0.14)"  },
+  { hex: "#2dd4bf", bg: "rgba(45,212,191,0.08)",  glow: "rgba(45,212,191,0.13)"  },
+  { hex: "#22d3ee", bg: "rgba(34,211,238,0.07)",  glow: "rgba(34,211,238,0.12)"  },
+  { hex: "#4ade80", bg: "rgba(74,222,128,0.07)",  glow: "rgba(74,222,128,0.12)"  },
+  { hex: "#10b981", bg: "rgba(16,185,129,0.08)",  glow: "rgba(16,185,129,0.14)"  },
+  { hex: "#14b8a6", bg: "rgba(20,184,166,0.08)",  glow: "rgba(20,184,166,0.13)"  },
+];
+
+/* ── Animation variants ─────────────────────────────────────────────────── */
+const fadeUp = {
+  hidden: { opacity: 0, y: 26 },
+  show: (i = 0) => ({
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.6,
+      delay: i * 0.055,
+      ease: [0.215, 0.61, 0.355, 1.0],
+    },
+  }),
+};
+
+/* ── Research entry row ─────────────────────────────────────────────────── */
+function ResearchEntry({ item, index, featured = false }) {
+  const accent = ACCENTS[index % ACCENTS.length];
+  const link =
+    item.link ??
+    (item.search
+      ? `/publications?search=${encodeURIComponent(item.search)}`
+      : null);
+  const clickable = Boolean(link) && !item.comingSoon;
+  const Wrapper = clickable ? Link : "div";
+  const wrapperProps = clickable ? { to: link } : {};
+
+  return (
+    <motion.div
+      variants={fadeUp}
+      initial="hidden"
+      whileInView="show"
+      custom={Math.min(index, 5)}
+      viewport={{ once: true, margin: "-30px" }}
+      className={featured ? "col-span-full" : ""}
+    >
+      <Wrapper
+        {...wrapperProps}
+        className="group relative block rounded-xl border border-white/[0.055] overflow-hidden transition-colors duration-300"
+        style={{ cursor: clickable ? "pointer" : "default", background: "rgba(255,255,255,0.015)" }}
+      >
+        {/* Hover glow sweep */}
+        <div
+          className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
+          style={{
+            background: `radial-gradient(ellipse 50% 70% at 0% 50%, ${accent.glow}, transparent)`,
+          }}
+        />
+
+        {/* Left accent strip */}
+        <div
+          className="absolute left-0 top-[18%] bottom-[18%] w-[2px] rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+          style={{
+            background: `linear-gradient(to bottom, transparent, ${accent.hex}, transparent)`,
+          }}
+        />
+
+        <div
+          className={[
+            "relative flex items-start gap-5 px-6",
+            featured ? "py-7 md:py-8" : "py-5",
+          ].join(" ")}
+        >
+          {/* Thread number */}
+          <span
+            className="flex-shrink-0 font-black font-mono tabular-nums transition-all duration-200 group-hover:opacity-80"
+            style={{
+              color: accent.hex,
+              opacity: 0.4,
+              fontSize: featured ? "1.5rem" : "1.125rem",
+              lineHeight: 1.2,
+              marginTop: "1px",
+            }}
+          >
+            {String(index + 1).padStart(2, "0")}
+          </span>
+
+          {/* Content */}
+          <div className="flex-1 min-w-0">
+            <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-1 mb-1.5">
+              <h3
+                className={[
+                  "font-semibold text-white/90 leading-snug",
+                  featured ? "text-xl md:text-2xl" : "text-base",
+                ].join(" ")}
+              >
+                {item.title}
+              </h3>
+              {item.comingSoon && (
+                <span className="flex-shrink-0 text-[9px] font-black tracking-[0.18em] uppercase bg-amber-400/[0.09] text-amber-300/70 px-2.5 py-1 rounded-full border border-amber-400/15">
+                  Soon
+                </span>
+              )}
+            </div>
+            <p
+              className={[
+                "text-white/45 leading-relaxed",
+                featured ? "text-base max-w-2xl" : "text-sm",
+              ].join(" ")}
+            >
+              {item.text}
+            </p>
+
+            {/* Inline CTA for featured */}
+            {featured && clickable && (
+              <p
+                className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                style={{ color: accent.hex }}
+              >
+                View publications
+                <ArrowRight className="w-4 h-4" />
+              </p>
+            )}
+          </div>
+
+          {/* Arrow for non-featured */}
+          {!featured && clickable && (
+            <div
+              className="flex-shrink-0 mt-0.5 opacity-0 group-hover:opacity-100 -translate-x-1.5 group-hover:translate-x-0 transition-all duration-200"
+              style={{ color: accent.hex }}
+            >
+              <ArrowUpRight className="w-4 h-4" />
+            </div>
+          )}
+        </div>
+      </Wrapper>
+    </motion.div>
+  );
+}
+
+/* ── Main page ──────────────────────────────────────────────────────────── */
 export default function Research() {
   const [items, setItems] = useState([]);
   const [error, setError] = useState(null);
-  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     fetchJSONC("/research.jsonc")
-      .then((data) => {
-        setItems(data);
-        setTimeout(() => setLoaded(true), 60);
-      })
-      .catch((e) =>
-        setError(e?.message || "Failed to load research topics")
-      );
+      .then(setItems)
+      .catch((e) => setError(e?.message ?? "Failed to load research topics"));
   }, []);
 
+  const [featured, ...rest] = items;
+
   return (
-    <section className="section space-y-8">
-      <div className="space-y-3 max-w-3xl">
-        <p className="text-xs uppercase tracking-[0.25em] text-white/60">
-          Our research threads
-        </p>
-        <h2 className="h2-grad">Research Themes</h2>
-        <p className="text-white/75">
-          Click a theme to jump into our publications filtered to that topic. If a
-          theme is still in progress, you will see it marked as coming soon.
-        </p>
-      </div>
+    <div className="min-h-screen">
+      {/* ══ Hero ═══════════════════════════════════════════════════════════ */}
+      <header className="relative overflow-hidden pt-20 pb-20 md:pt-32 md:pb-28 min-h-[520px] md:min-h-[620px]">
+        {/* Photo background */}
+        <div className="absolute inset-0">
+          <img
+            src="https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&w=1920&q=85"
+            alt=""
+            aria-hidden="true"
+            className="w-full h-full object-cover object-center"
+          />
+          {/* Dark overlay — heavy on left for text, lighter on right */}
+          <div
+            className="absolute inset-0"
+            style={{
+              background:
+                "linear-gradient(105deg, rgba(2,44,34,0.97) 0%, rgba(2,44,34,0.88) 35%, rgba(2,44,34,0.55) 65%, rgba(2,44,34,0.35) 100%)",
+            }}
+          />
+          {/* Bottom fade into page */}
+          <div
+            className="absolute bottom-0 left-0 right-0 h-40"
+            style={{
+              background: "linear-gradient(to top, rgba(2,44,34,1), transparent)",
+            }}
+          />
+        </div>
 
-      {error && (
-        <p className="mt-4 text-red-300">Error: {error}</p>
-      )}
+        <div className="relative max-w-7xl mx-auto px-6 md:px-10">
+          {/* Eyebrow */}
+          <motion.p
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+            className="text-[10px] font-black tracking-[0.32em] uppercase text-emerald-400/55 mb-7"
+          >
+            Research · BioLoom Labs
+          </motion.p>
 
-      <div
-        className={[
-          "grid gap-6 md:grid-cols-2 xl:grid-cols-3",
-          "transition-opacity duration-700",
-          loaded ? "opacity-100" : "opacity-0",
-        ].join(" ")}
-      >
-        {items.map((item, idx) => (
-          <ResearchCard key={item.id ?? idx} item={item} index={idx} />
-        ))}
-      </div>
+          {/* Display heading */}
+          <motion.h1
+            initial={{ opacity: 0, y: 26 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.75, delay: 0.08, ease: [0.215, 0.61, 0.355, 1.0] }}
+            className="text-white mb-8"
+            style={{
+              fontFamily: "'DM Serif Display', 'Georgia', serif",
+              fontSize: "clamp(2.9rem, 8vw, 6.8rem)",
+              lineHeight: 0.92,
+              letterSpacing: "-0.015em",
+            }}
+          >
+            Weaving the
+            <br />
+            <em
+              style={{
+                fontStyle: "italic",
+                display: "inline-block",
+                lineHeight: 1.15,
+                padding: "0.08em 0.18em 0.18em 0.22em",
+                background:
+                  "linear-gradient(125deg, #6ee7b7 0%, #2dd4bf 50%, #38bdf8 100%)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                backgroundClip: "text",
+              }}
+            >
+              fabric of life
+            </em>
+          </motion.h1>
 
-      {!error && items.length === 0 && (
-        <p className="mt-4 text-zinc-400">No research topics found.</p>
-      )}
-    </section>
+          {/* Lead */}
+          <motion.p
+            initial={{ opacity: 0, y: 18 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.22, ease: "easeOut" }}
+            className="text-lg md:text-xl text-white/50 max-w-xl leading-relaxed"
+          >
+            We map where biodiversity thrives, how it is changing, and what it
+            means for people — weaving ecology, data science, and human
+            wellbeing into one coherent picture.
+          </motion.p>
+
+          {/* Animated rule */}
+          <motion.div
+            initial={{ opacity: 0, scaleX: 0 }}
+            animate={{ opacity: 1, scaleX: 1 }}
+            transition={{ duration: 0.9, delay: 0.38, ease: [0.215, 0.61, 0.355, 1.0] }}
+            className="mt-12 h-px origin-left max-w-2xl"
+            style={{
+              background:
+                "linear-gradient(90deg, rgba(16,185,129,0.45), rgba(20,184,166,0.2), transparent)",
+            }}
+          />
+        </div>
+      </header>
+
+      {/* ══ Research threads ═══════════════════════════════════════════════ */}
+      <main className="max-w-7xl mx-auto px-6 md:px-10 pb-24">
+        {/* Section label */}
+        <motion.div
+          variants={fadeUp}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true }}
+          className="mb-10"
+        >
+          <div className="flex items-baseline gap-4 flex-wrap">
+            <h2
+              className="text-3xl md:text-4xl font-normal text-white"
+              style={{ fontFamily: "'DM Serif Display', Georgia, serif" }}
+            >
+              Active Research Threads
+            </h2>
+            {items.length > 0 && (
+              <span className="text-sm font-mono text-white/30">
+                {items.length} areas
+              </span>
+            )}
+          </div>
+          <div
+            className="mt-3 h-px max-w-xs"
+            style={{
+              background:
+                "linear-gradient(90deg, rgba(16,185,129,0.35), transparent)",
+            }}
+          />
+        </motion.div>
+
+        {error && (
+          <p className="mb-8 text-sm text-red-300/80">Error: {error}</p>
+        )}
+
+        {/* Featured first entry — full width */}
+        {featured && (
+          <div className="mb-2">
+            <ResearchEntry item={featured} index={0} featured />
+          </div>
+        )}
+
+        {/* Rest in 2-column grid */}
+        {rest.length > 0 && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+            {rest.map((item, i) => (
+              <ResearchEntry key={item.id ?? i + 1} item={item} index={i + 1} />
+            ))}
+          </div>
+        )}
+
+        {/* ── Publications CTA ─────────────────────────────────────────── */}
+        <motion.div
+          variants={fadeUp}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true }}
+          className="mt-10"
+        >
+          <Link
+            to="/publications"
+            className="group relative flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5 rounded-2xl border border-white/[0.055] px-8 py-8 overflow-hidden transition-all duration-300 hover:border-emerald-500/25"
+            style={{
+              background:
+                "linear-gradient(135deg, rgba(16,185,129,0.05), rgba(6,78,59,0.12))",
+            }}
+          >
+            {/* Hover sweep */}
+            <div
+              className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
+              style={{
+                background:
+                  "radial-gradient(ellipse 55% 100% at 0% 50%, rgba(16,185,129,0.07), transparent)",
+              }}
+            />
+            <div className="relative">
+              <p className="text-[9px] font-black tracking-[0.28em] uppercase text-emerald-400/55 mb-2">
+                Publications
+              </p>
+              <h3
+                className="text-2xl md:text-3xl text-white font-normal"
+                style={{ fontFamily: "'DM Serif Display', Georgia, serif" }}
+              >
+                Browse the full research catalogue
+              </h3>
+              <p className="mt-2 text-sm text-white/40 max-w-md leading-relaxed">
+                Peer-reviewed papers, data releases, and opinion pieces from
+                BioLoom Labs, indexed and searchable by research thread.
+              </p>
+            </div>
+            <span
+              className="relative flex-shrink-0 inline-flex items-center gap-2 text-sm font-semibold px-5 py-2.5 rounded-xl border transition-all duration-200 group-hover:bg-emerald-500/10"
+              style={{
+                color: "#6ee7b7",
+                borderColor: "rgba(110,231,183,0.2)",
+                background: "rgba(110,231,183,0.05)",
+              }}
+            >
+              View all
+              <ArrowUpRight className="w-3.5 h-3.5" />
+            </span>
+          </Link>
+        </motion.div>
+      </main>
+    </div>
   );
 }
