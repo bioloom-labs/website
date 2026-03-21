@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { fetchJSONC } from "../utils/jsonc.js";
@@ -179,6 +179,129 @@ function ResearchEntry({ item, index, featured = false }) {
   );
 }
 
+/* ── Scroll hint pill ───────────────────────────────────────────────────── */
+function ScrollHint() {
+  const [visible, setVisible] = useState(true);
+
+  useEffect(() => {
+    const onScroll = () => setVisible(window.scrollY <= 10);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: visible ? 1 : 0, y: visible ? 0 : 6 }}
+      transition={{ duration: visible ? 0.5 : 0.3, delay: visible ? 0.55 : 0, ease: "easeOut" }}
+      className="mt-8 flex items-center gap-2.5 w-fit"
+      aria-hidden="true"
+    >
+      <span
+        className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs font-semibold tracking-wide text-emerald-300/70 border border-emerald-500/20"
+        style={{ background: "rgba(16,185,129,0.06)" }}
+      >
+        Scroll to explore our research
+        {/* animated chevron */}
+        <motion.svg
+          viewBox="0 0 12 12"
+          className="w-3 h-3"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          animate={{ y: [0, 2, 0] }}
+          transition={{ duration: 1.4, repeat: Infinity, ease: "easeInOut" }}
+        >
+          <path d="M2 4l4 4 4-4" />
+        </motion.svg>
+      </span>
+    </motion.div>
+  );
+}
+
+/* ── Canvas-keyed handwriting video ─────────────────────────────────────── */
+// Renders the .mov frame-by-frame: white → transparent, dark ink → gradient.
+// This is the only reliable way to get clean alpha from a white-bg screen recording.
+function FabricOfLifeVideo() {
+  const videoRef = useRef(null);
+  const canvasRef = useRef(null);
+  const rafRef = useRef(null);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+    if (!video || !canvas) return;
+
+    const ctx = canvas.getContext("2d", { willReadFrequently: true });
+
+    // Gradient stops: emerald → teal → sky
+    const STOPS = [
+      [110, 231, 183], // #6ee7b7
+      [34,  211, 238], // #22d3ee
+      [103, 232, 249], // #67e8f9
+    ];
+
+    function lerpCh(a, b, t) { return Math.round(a + (b - a) * t); }
+
+    function gradientAt(t) {
+      if (t < 0.5) {
+        const s = t * 2;
+        return [lerpCh(STOPS[0][0], STOPS[1][0], s), lerpCh(STOPS[0][1], STOPS[1][1], s), lerpCh(STOPS[0][2], STOPS[1][2], s)];
+      }
+      const s = (t - 0.5) * 2;
+      return [lerpCh(STOPS[1][0], STOPS[2][0], s), lerpCh(STOPS[1][1], STOPS[2][1], s), lerpCh(STOPS[1][2], STOPS[2][2], s)];
+    }
+
+    function render() {
+      if (video.readyState < 2) { rafRef.current = requestAnimationFrame(render); return; }
+
+      const vw = video.videoWidth  || 800;
+      const vh = video.videoHeight || 240;
+      // Crop 3% from each horizontal edge to remove recording-frame border lines
+      const CROP_X = Math.round(vw * 0.03);
+      const CROP_Y = Math.round(vh * 0.02);
+      const cw = vw - CROP_X * 2;
+      const ch = vh - CROP_Y * 2;
+      if (canvas.width !== cw || canvas.height !== ch) { canvas.width = cw; canvas.height = ch; }
+
+      // Draw only the inner region of the video (skip the border artifacts)
+      ctx.drawImage(video, CROP_X, CROP_Y, cw, ch, 0, 0, cw, ch);
+      const img = ctx.getImageData(0, 0, cw, ch);
+      const d = img.data;
+      const THRESHOLD = 210; // pixels brighter than this → transparent
+
+      for (let i = 0; i < d.length; i += 4) {
+        const gray = 0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2];
+        if (gray >= THRESHOLD) {
+          d[i + 3] = 0;
+        } else {
+          const x = (i / 4) % cw;
+          const [r, g, b] = gradientAt(x / cw);
+          d[i] = r; d[i + 1] = g; d[i + 2] = b;
+          // soft alpha: fully opaque in the darkest ink, fading at edges
+          d[i + 3] = Math.round(((THRESHOLD - gray) / THRESHOLD) * 255);
+        }
+      }
+
+      ctx.putImageData(img, 0, 0);
+      rafRef.current = requestAnimationFrame(render);
+    }
+
+    video.addEventListener("loadeddata", render);
+    video.play().catch(() => {});
+    return () => cancelAnimationFrame(rafRef.current);
+  }, []);
+
+  return (
+    <span style={{ display: "inline-block", verticalAlign: "bottom", height: "1.65em", border: "none", outline: "none" }}>
+      <video ref={videoRef} src="/images/research/fabric-of-life.mov" muted playsInline style={{ display: "none" }} />
+      <canvas ref={canvasRef} aria-label="fabric of life" style={{ display: "block", height: "100%", width: "auto", border: "none", outline: "none" }} />
+    </span>
+  );
+}
+
 /* ── Main page ──────────────────────────────────────────────────────────── */
 export default function Research() {
   const [items, setItems] = useState([]);
@@ -247,21 +370,7 @@ export default function Research() {
           >
             Weaving the
             <br />
-            <em
-              style={{
-                fontStyle: "italic",
-                display: "inline-block",
-                lineHeight: 1.15,
-                padding: "0.08em 0.18em 0.18em 0.22em",
-                background:
-                  "linear-gradient(125deg, #6ee7b7 0%, #2dd4bf 50%, #38bdf8 100%)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                backgroundClip: "text",
-              }}
-            >
-              fabric of life
-            </em>
+            <FabricOfLifeVideo />
           </motion.h1>
 
           {/* Lead */}
@@ -275,6 +384,9 @@ export default function Research() {
             means for people — weaving ecology, data science, and human
             wellbeing into one coherent picture.
           </motion.p>
+
+          {/* Scroll hint pill */}
+          <ScrollHint />
 
           {/* Animated rule */}
           <motion.div
