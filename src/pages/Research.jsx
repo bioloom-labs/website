@@ -289,8 +289,20 @@ function FabricOfLifeVideo() {
       rafRef.current = requestAnimationFrame(render);
     }
 
-    video.addEventListener("loadeddata", render);
-    video.play().catch(() => {});
+    function start() {
+      video.currentTime = 0;
+      render();
+      video.play().catch(() => {});
+    }
+
+    // Safari may already have the video buffered (readyState ≥ 2) before the
+    // listener is attached, so check immediately and fall back to the event.
+    if (video.readyState >= 2) {
+      start();
+    } else {
+      video.addEventListener("loadeddata", start, { once: true });
+    }
+
     return () => cancelAnimationFrame(rafRef.current);
   }, []);
 
