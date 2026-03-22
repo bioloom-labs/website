@@ -289,16 +289,28 @@ function FabricOfLifeVideo() {
       rafRef.current = requestAnimationFrame(render);
     }
 
-    function start() {
-      video.currentTime = 0;
+    function begin() {
       render();
       video.play().catch(() => {});
+    }
+
+    function start() {
+      // On iOS Safari, seeking currentTime is async — wait for seeked before
+      // rendering to avoid a flash of a partial/wrong frame at startup.
+      if (video.currentTime === 0) {
+        begin();
+      } else {
+        video.addEventListener("seeked", begin, { once: true });
+        video.currentTime = 0;
+      }
     }
 
     // Safari may already have the video buffered (readyState ≥ 2) before the
     // listener is attached, so check immediately and fall back to the event.
     if (video.readyState >= 2) {
-      start();
+      // Force a seek to frame 0 so iOS doesn't flash a mid-stream frame
+      video.addEventListener("seeked", begin, { once: true });
+      video.currentTime = 0;
     } else {
       video.addEventListener("loadeddata", start, { once: true });
     }
