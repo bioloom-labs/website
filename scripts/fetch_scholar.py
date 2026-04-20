@@ -40,6 +40,9 @@ def fetch_pubs_for_author(scholar_id, name, max_pubs=None):
     print(f"\nFetching: {name} ({scholar_id})")
 
     author = scholarly.search_author_id(scholar_id)
+    if author is None:
+        print(f"  Author not found or Scholar returned empty result for {scholar_id}")
+        return []
     author = scholarly.fill(author, sections=["publications"])
 
     publications = author.get("publications", [])
@@ -131,6 +134,10 @@ def main():
             print(f"  -> added {added} unique pubs ({len(pubs) - added} duplicates skipped)")
         except Exception as e:
             print(f"ERROR fetching {name}: {e}", file=sys.stderr)
+
+    if not all_pubs:
+        print("\nNo publications fetched — keeping existing file unchanged.")
+        sys.exit(0)
 
     # Sort newest first, then by citation count
     all_pubs.sort(
