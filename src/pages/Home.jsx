@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from "react";
 import { fetchJSONC } from "../utils/jsonc.js";
 
 export default function Home() {
-  const layerRef = useRef(null);
   const timerRef = useRef(null);
 
   const [slides, setSlides] = useState([]);
@@ -39,15 +38,6 @@ export default function Home() {
     if (slides.length && index >= slides.length) setIndex(0);
   }, [slides, index]);
 
-  // Parallax scroll
-  useEffect(() => {
-    const handleScroll = () => {
-      const y = window.scrollY * 0.3;
-      if (layerRef.current) layerRef.current.style.transform = `translateY(${y}px)`;
-    };
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
 
   // Preload images
   useEffect(() => {
@@ -91,12 +81,11 @@ export default function Home() {
   const current = slides[index] || {};
 
   return (
-    <section className="relative overflow-hidden min-h-screen">
+    <section className="relative overflow-hidden flex-1 min-h-0">
       {/* Background slideshow */}
       <div className="absolute inset-0 z-0">
         <div
-          ref={layerRef}
-          className="absolute inset-0 will-change-transform transition-transform duration-300 ease-out"
+          className="absolute inset-0"
           aria-hidden
         >
           {/* Base fallback image that gently fades out once slides are loaded */}
@@ -136,7 +125,7 @@ export default function Home() {
       {/* Foreground text */}
       <div
         className={[
-          "section relative z-10 transition-all duration-700",
+          "relative z-10 flex flex-col justify-center mx-auto max-w-7xl px-4 py-10 h-full transition-all duration-700",
           ready ? "opacity-100 translate-y-0" : "opacity-0 translate-y-3",
         ].join(" ")}
       >

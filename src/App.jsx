@@ -66,7 +66,10 @@ export default function App() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(1200px_600px_at_80%_-10%,rgba(16,185,129,0.2),transparent),radial-gradient(800px_400px_at_10%_20%,rgba(4,120,87,0.15),transparent)] bg-brand-950 text-white">
+    <div className={[
+      "bg-[radial-gradient(1200px_600px_at_80%_-10%,rgba(16,185,129,0.2),transparent),radial-gradient(800px_400px_at_10%_20%,rgba(4,120,87,0.15),transparent)] bg-brand-950 text-white",
+      location.pathname === "/" ? "h-dvh flex flex-col overflow-hidden" : "min-h-screen",
+    ].join(" ")}>
       {location.pathname !== "/transparency-test" && <Navbar />}
       <Routes>
         <Route path="/" element={<Home />} />
@@ -78,7 +81,7 @@ export default function App() {
         <Route path="/contact" element={<Contact />} />
         <Route path="/transparency-test" element={<TransparencyTest />} />
       </Routes>
-      {["/about", "/transparency-test"].includes(location.pathname) ? null : <Footer />}
+      {["/", "/about", "/transparency-test"].includes(location.pathname) ? null : <Footer />}
     </div>
   );
 }

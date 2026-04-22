@@ -537,9 +537,11 @@ function OptimizedBackgroundVideo({
 function VideoPlayer({ src, poster, isActive, shouldPreload, isIdle, onReady }) {
   const videoRef = useRef(null);
   const [hasBeenActive, setHasBeenActive] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
 
   useEffect(() => {
     if (isActive) setHasBeenActive(true);
+    if (!isActive) setIsPlaying(false);
   }, [isActive]);
 
   useEffect(() => {
@@ -558,9 +560,11 @@ function VideoPlayer({ src, poster, isActive, shouldPreload, isIdle, onReady }) 
     }
   }, [isActive]);
 
+  const showVideo = isActive && isPlaying;
+
   return (
     <div
-      className={`absolute inset-0 ${isActive
+      className={`absolute inset-0 ${showVideo
           ? "opacity-100 z-10 transition-opacity duration-1000 ease-in-out"
           : hasBeenActive
             ? "opacity-0 z-0 transition-opacity duration-1000 ease-in-out"
@@ -573,14 +577,13 @@ function VideoPlayer({ src, poster, isActive, shouldPreload, isIdle, onReady }) 
         muted
         loop
         playsInline
-        // Only load the video data if it's active or the "next up" video
         preload={shouldPreload ? "auto" : "none"}
         poster={poster}
-        onCanPlay={isActive ? onReady : undefined}
+        onPlaying={() => {
+          setIsPlaying(true);
+          onReady?.();
+        }}
       >
-        {/* Using key={src} inside here is NOT needed because the parent 
-              VideoPlayer is already keyed by src. The node persists.
-            */}
         <source src={src} />
       </video>
 
