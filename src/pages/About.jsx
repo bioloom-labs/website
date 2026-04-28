@@ -70,19 +70,25 @@ function BioloomLogoAnim() {
   const isInView = useInView(ref, { once: false, amount: 0.4 });
 
   useEffect(() => {
-    if (isInView && videoRef.current) {
-      videoRef.current.currentTime = 0;
-      videoRef.current.play();
+    const vid = videoRef.current;
+    if (!vid) return;
+    if (isInView) {
+      vid.currentTime = 0;
+      vid.play();
+    } else {
+      vid.pause();
     }
   }, [isInView]);
 
   return (
-    <div ref={ref} className="flex justify-center pt-2 -mb-4">
+    <div ref={ref} className="flex justify-center pt-2 -mb-100">
       <video
         ref={videoRef}
         muted
         playsInline
-        style={{ height: "220px", width: "auto" }}
+        preload="none"
+        style={{ height: "220px", width: "auto", imageRendering: "auto" }}
+        className="antialiased"
       >
         <source src="/images/logos/DrawBioLoomLogo_hevc.mov" type='video/mp4; codecs="hvc1"' />
         <source src="/images/logos/DrawBioLoomLogo.webm" type="video/webm" />
@@ -344,7 +350,7 @@ function TransparencyDemoScene({ id, onInView, videoSrc }) {
   }, [id, onInView]);
 
   const levels = [
-    { label: "5%",  bg: "bg-white/5"  },
+    { label: "5%", bg: "bg-white/5" },
     { label: "10%", bg: "bg-white/10" },
     { label: "15%", bg: "bg-white/15" },
     { label: "20%", bg: "bg-white/20" },
@@ -498,10 +504,10 @@ function VideoPlayer({ src, poster, isActive, shouldPreload, isIdle, onReady }) 
   return (
     <div
       className={`absolute inset-0 ${showVideo
-          ? "opacity-100 z-10 transition-opacity duration-1000 ease-in-out"
-          : hasBeenActive
-            ? "opacity-0 z-0 transition-opacity duration-1000 ease-in-out"
-            : "opacity-0 z-0"
+        ? "opacity-100 z-10 transition-opacity duration-1000 ease-in-out"
+        : hasBeenActive
+          ? "opacity-0 z-0 transition-opacity duration-1000 ease-in-out"
+          : "opacity-0 z-0"
         }`}
     >
       <video
