@@ -1,0 +1,20 @@
+// Google Scholar authors — used by scripts/fetch_scholar.py to pull publications.
+// Run: python scripts/fetch_scholar.py
+// Output: public/scholar-publications.json  (read by the Publications page)
+//
+// Fields:
+//   scholar_id  — the "user=..." part of the Google Scholar profile URL (required)
+//   name        — display name, used to highlight lab authors in each paper
+//   max_pubs    — optional cap on how many publications to fetch (default: all)
+[
+  {
+    "scholar_id": "pRpsOngAAAAJ",
+    "name": "Samuel Pironon"
+    // "max_pubs": 100
+  }
+  // Add more lab members here, e.g.:
+  // {
+  //   "scholar_id": "XXXXXXXXXXXX",
+  //   "name": "Collaborator Name"
+  // }
+]

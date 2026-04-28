@@ -4,7 +4,7 @@
     "fade_ms": 900,
     "hero": {
         "lead": "Led by Dr. Samuel Pironon",
-        "title": "Where Biodiversity and Human Wellbeing are Woven Together",
+        "title": "Where People and Biodiversity are Woven Together",
         "subtitle": "The ecosystems that sustain our food, medicine, water, and wellbeing are under growing pressure. Understanding how biodiversity supports human societies—and how this relationship is changing—is one of the defining challenges of our time.\n\nBIOLOOM is a biodiversity research group exploring the connections between people and nature. We combine large-scale data and macroecological approaches to understand, map, and predict the past, present and future of biodiversity and its contributions to people.\n\nOur goal is to generate knowledge that helps reconnect people and nature for a flourishing future.",
         "cta_primary": {
             "label": "Explore research",
@@ -30,6 +30,70 @@
             "credit": {
                 "name": "Nick Fewings",
                 "url": "https://unsplash.com/@jannerboy62"
+            }
+        },
+        {
+            "src": "/images/home/life-on-the-road-ZUmWioDpUPM-unsplash.jpg",
+            "alt": "Traditional net fishing along a river",
+            "credit": {
+                "name": "Life on the Road",
+                "url": "https://unsplash.com/@lifeontheroad"
+            }
+        },
+        {
+            "src": "/images/home/rs-riduan-dcn4xqKLQTI-unsplash.jpg",
+            "alt": "Rice paddy planting with mountains in the background",
+            "credit": {
+                "name": "RS Riduan",
+                "url": "https://unsplash.com/@riduan222"
+            }
+        },
+        {
+            "src": "/images/home/hikarinoshita-hikari-PPUDKi-IhGQ-unsplash.jpg",
+            "alt": "Rice paddies at sunset",
+            "credit": {
+                "name": "Hikarinoshita Hikari",
+                "url": "https://unsplash.com/@hikarinoshita"
+            }
+        },
+        {
+            "src": "/images/home/quang-nguyen-vinh-pwNnOJg_Quc-unsplash.jpg",
+            "alt": "Sorting tobacco leaves",
+            "credit": {
+                "name": "Quang Nguyen Vinh",
+                "url": "https://unsplash.com/@quangpraha"
+            }
+        },
+        {
+            "src": "/images/home/fabian-wiktor-fW-stt_HDPs-unsplash.jpg",
+            "alt": "Hand picking a wild mushroom from the forest floor",
+            "credit": {
+                "name": "Fabian Wiktor",
+                "url": "https://unsplash.com/@fabianwiktor"
+            }
+        },
+        {
+            "src": "/images/home/barbara-krysztofiak-TYqb66Jlkww-unsplash.jpg",
+            "alt": "Basket of foraged mushrooms",
+            "credit": {
+                "name": "Barbara Krysztofiak",
+                "url": "https://unsplash.com/@b_krysztofiak"
+            }
+        },
+        {
+            "src": "/images/home/wietse-jongsma-a880S9Ha0Ak-unsplash.jpg",
+            "alt": "Herder walking cattle along a misty road",
+            "credit": {
+                "name": "Wietse Jongsma",
+                "url": "https://unsplash.com/@wietsej"
+            }
+        },
+        {
+            "src": "/images/home/william-zhang-qiHeIonjVXY-unsplash.jpg",
+            "alt": "Cormorant fisher on the Li River among karst mountains",
+            "credit": {
+                "name": "William Zhang",
+                "url": "https://unsplash.com/@ceye2eye"
             }
         }
     ]
