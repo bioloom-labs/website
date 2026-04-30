@@ -1,18 +1,9 @@
-import {
-  useEffect,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
-import { ExternalLink } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { ArrowUpRight } from "lucide-react";
+import { motion } from "framer-motion";
 import { fetchJSONC } from "../utils/jsonc.js";
 
-const dateFormatter = new Intl.DateTimeFormat("en-GB", {
-  day: "numeric",
-  month: "short",
-  year: "numeric",
-});
+/* ─── Date helpers ─── */
 
 function parseDate(value) {
   if (!value) return null;
@@ -20,11 +11,7 @@ function parseDate(value) {
   return Number.isNaN(d.getTime()) ? null : d;
 }
 
-function formatDate(value) {
-  const d = parseDate(value);
-  if (!d) return "Date TBA";
-  return dateFormatter.format(d);
-}
+/* ─── Loading state ─── */
 
 function LoadingPen({ label = "Loading news…" }) {
   return (
@@ -45,213 +32,103 @@ function LoadingPen({ label = "Loading news…" }) {
           />
         </svg>
       </div>
-
       <p className="text-sm tracking-wide uppercase text-white/60">{label}</p>
     </div>
   );
 }
 
-function NewsCard({ item, status = "past", appearOrder = 0 }) {
-  const {
-    title,
-    text,
-    link,
-    formattedDate,
-    dateObj,
-    thumbnail,
-    tags = [],
-  } = item;
-  const [expanded, setExpanded] = useState(false);
-  const [height, setHeight] = useState("auto");
-  const innerRef = useRef(null);
-  const [hoverEnabled, setHoverEnabled] = useState(false);
-  const [hasAppeared, setHasAppeared] = useState(false);
+/* ─── Single timeline entry ─── */
 
-  const chips = [
-    status === "upcoming" ? "Upcoming" : "Recent",
-    ...(Array.isArray(tags) ? tags : []),
-  ].filter(Boolean);
-  const hasLink = Boolean(link);
+function NewsEntry({ item, index, isUpcoming = false, isLast = false }) {
+  const { title, text, link, dateObj, tags = [] } = item;
 
-  useEffect(() => {
-    if (typeof window === "undefined" || !window.matchMedia) return;
-    const mq = window.matchMedia("(hover: hover) and (pointer: fine)");
-    const handler = (ev) => setHoverEnabled(ev.matches);
-    setHoverEnabled(mq.matches);
-    if (mq.addEventListener) mq.addEventListener("change", handler);
-    else if (mq.addListener) mq.addListener(handler);
-    return () => {
-      if (mq.removeEventListener) mq.removeEventListener("change", handler);
-      else if (mq.removeListener) mq.removeListener(handler);
-    };
-  }, []);
-
-  useLayoutEffect(() => {
-    if (!innerRef.current) {
-      setHeight("auto");
-      return;
-    }
-    if (expanded) {
-      setHeight(innerRef.current.scrollHeight + "px");
-    } else {
-      const firstChild = innerRef.current.firstChild;
-      const collapsed = firstChild
-        ? firstChild.scrollHeight
-        : innerRef.current.scrollHeight;
-      setHeight(collapsed + "px");
-    }
-  }, [expanded, text, hasLink, chips.length]);
-
-  useEffect(() => {
-    if (hasAppeared) return;
-    const delay = appearOrder * 20;
-    const timer = setTimeout(() => setHasAppeared(true), delay);
-    return () => clearTimeout(timer);
-  }, [appearOrder, hasAppeared]);
-
-  const isInteractive = Boolean(text || hasLink);
-  const cardClass = [
-    "rounded-2xl",
-    "border",
-    "border-white/10",
-    "bg-white/5",
-    "backdrop-blur",
-    "overflow-hidden",
-    "transform-gpu",
-    isInteractive ? "cursor-pointer" : "cursor-default",
-    expanded
-      ? "scale-[1.015] shadow-xl shadow-brand-900/40 border-brand-300/60"
-      : "scale-100",
-    hasAppeared ? "opacity-100 translate-y-0" : "opacity-0 translate-y-3",
-  ].join(" ");
-
-  const statusAccent =
-    status === "upcoming"
-      ? "text-emerald-300 bg-emerald-400/10 border-emerald-300/40"
-      : "text-brand-200 bg-brand-300/10 border-brand-200/40";
-
-  function handleClick() {
-    if (!isInteractive) return;
-    setExpanded((prev) => !prev);
-  }
-
-  function handleMouseEnter() {
-    if (!hoverEnabled || !isInteractive) return;
-    setExpanded(true);
-  }
-
-  function handleMouseLeave() {
-    if (!hoverEnabled || !isInteractive) return;
-    setExpanded(false);
-  }
+  const day = dateObj ? dateObj.getDate() : "—";
+  const month = dateObj
+    ? dateObj.toLocaleString("en-GB", { month: "short" }).toUpperCase()
+    : "";
+  const year = dateObj ? dateObj.getFullYear() : "";
 
   return (
-    <article
-      className={cardClass}
-      onClick={handleClick}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-      style={{
-        height: isInteractive ? height : "auto",
-        transition:
-          "height 220ms ease, transform 220ms ease, border-color 220ms ease, box-shadow 220ms ease, opacity 220ms ease",
+    <motion.article
+      className="group grid grid-cols-[3.5rem_2px_1fr] md:grid-cols-[5rem_2px_1fr] gap-4 md:gap-6"
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-40px" }}
+      transition={{
+        duration: 0.5,
+        delay: index * 0.08,
+        ease: [0.25, 0.1, 0.25, 1],
       }}
-      aria-expanded={isInteractive ? expanded : undefined}
     >
-      <div ref={innerRef}>
-        <div className="px-6 py-5 flex items-center gap-4">
-          {thumbnail ? (
-            <img
-              src={thumbnail}
-              alt=""
-              className="h-20 w-24 rounded-xl object-cover border border-white/10"
-              loading="lazy"
-              aria-hidden="true"
-            />
-          ) : (
-            <div className="h-20 w-24 rounded-xl bg-gradient-to-br from-brand-500/40 to-emerald-400/20 border border-white/10 flex items-center justify-center text-sm font-medium text-white/70">
-              {dateObj ? dateObj.toLocaleString("en-GB", { month: "short" }) : "-"}
-            </div>
-          )}
-
-          <div className="flex-1 min-w-0">
-            <div className="flex flex-wrap items-center gap-2 text-xs text-white/60">
-              <span className="tracking-[0.2em] uppercase">{formattedDate}</span>
-            </div>
-            <h3 className="mt-2 text-lg font-semibold text-white">{title}</h3>
-            {chips.length > 0 && (
-              <div className="mt-3 flex flex-wrap gap-2 text-xs">
-                {chips.map((chip, idx) => (
-                  <span
-                    key={`${chip}-${idx}`}
-                    className={[
-                      "pill text-[0.7rem]",
-                      idx === 0 ? statusAccent : "text-white/70 border-white/15",
-                    ].join(" ")}
-                  >
-                    {chip}
-                  </span>
-                ))}
-              </div>
-            )}
-          </div>
+      {/* Date column */}
+      <div className="text-right pt-0.5">
+        <span className="font-display text-3xl md:text-4xl text-white/80 leading-none">
+          {day}
+        </span>
+        <div className="font-editorial text-[10px] tracking-[0.2em] text-white/40 mt-1">
+          {month}
         </div>
+        <div className="font-editorial text-xs text-white/25 mt-0.5">
+          {year}
+        </div>
+      </div>
 
-        {isInteractive && (
-          <div
-            className={[
-              "px-6 pb-6 text-sm text-white/80 leading-relaxed",
-              "transition-all duration-200",
-              expanded
-                ? "opacity-100 translate-y-0"
-                : "opacity-0 -translate-y-1 pointer-events-none",
-            ].join(" ")}
-          >
-            {text && <p>{text}</p>}
-            {hasLink && (
-              <a
-                href={link}
-                className="mt-3 inline-flex items-center gap-2 text-brand-200 hover:text-brand-100 transition"
-                target="_blank"
-                rel="noreferrer"
-                onClick={(e) => e.stopPropagation()}
+      {/* Timeline spine + dot */}
+      <div className="relative flex flex-col items-center">
+        {/* Dot */}
+        <div
+          className={[
+            "h-3 w-3 rounded-full border-2 border-brand-950 mt-2 z-10 shrink-0 transition-colors",
+            isUpcoming
+              ? "bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.5)]"
+              : "bg-white/20 group-hover:bg-brand-300",
+          ].join(" ")}
+        />
+        {/* Connecting line — hidden on last item */}
+        {!isLast && <div className="flex-1 w-px bg-white/10" />}
+      </div>
+
+      {/* Content */}
+      <div className={isLast ? "pb-0" : "pb-10"}>
+        <h3 className="font-display text-xl md:text-[1.35rem] text-white/95 leading-snug">
+          {title}
+        </h3>
+
+        {text && (
+          <p className="mt-2 font-editorial text-base text-white/50 leading-relaxed">
+            {text}
+          </p>
+        )}
+
+        {tags.length > 0 && (
+          <div className="mt-3 flex flex-wrap gap-2">
+            {tags.map((tag, i) => (
+              <span
+                key={i}
+                className="pill text-[0.7rem] text-white/60 border-white/15"
               >
-                Read more
-                <ExternalLink className="h-3.5 w-3.5" />
-              </a>
-            )}
+                {tag}
+              </span>
+            ))}
           </div>
         )}
+
+        {link && (
+          <a
+            href={link}
+            target="_blank"
+            rel="noreferrer"
+            className="mt-3 inline-flex items-center gap-1.5 font-editorial text-sm text-brand-300/70 hover:text-brand-200 transition-colors"
+          >
+            Read more <ArrowUpRight className="h-3.5 w-3.5" />
+          </a>
+        )}
       </div>
-    </article>
+    </motion.article>
   );
 }
 
-function NewsSection({ title, blurb, items = [], status, offset = 0 }) {
-  if (!items.length) return null;
-  return (
-    <div className="space-y-4">
-      <div>
-        <div className="flex items-center gap-3">
-          <h3 className="text-xl font-semibold text-white">{title}</h3>
-          <span className="pill text-xs text-white/70 bg-white/5 border-white/25">
-            {items.length} {items.length === 1 ? "item" : "items"}
-          </span>
-        </div>
-        {blurb && <p className="mt-2 mb-2 text-sm text-white/70">{blurb}</p>}      </div>
-      <div className="grid gap-5">
-        {items.map((item, idx) => (
-          <NewsCard
-            key={item.id || `${item.title}-${idx}`}
-            item={item}
-            status={status}
-            appearOrder={offset + idx}
-          />
-        ))}
-      </div>
-    </div>
-  );
-}
+/* ─── Page ─── */
 
 export default function News() {
   const [items, setItems] = useState([]);
@@ -291,7 +168,6 @@ export default function News() {
       const enriched = {
         ...item,
         dateObj,
-        formattedDate: formatDate(item.date),
         id: item.id || `${item.title || "news"}-${idx}`,
       };
       if (dateObj && dateObj >= today) {
@@ -319,16 +195,24 @@ export default function News() {
 
   return (
     <section className="section">
-      <div className="max-w-3xl">
-        <h2 className="h2-grad">News & Updates</h2>
-        <p className="mt-3 text-white/80">
+      {/* ─── Page header ─── */}
+      <motion.div
+        className="max-w-3xl mb-16 md:mb-20"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.7, ease: [0.25, 0.1, 0.25, 1] }}
+      >
+        <h2 className="font-display text-4xl md:text-5xl lg:text-6xl text-white/95 pb-1">
+          News &amp; Updates
+        </h2>
+        <p className="mt-4 font-editorial text-lg text-white/45 max-w-xl leading-relaxed">
           Follow what BioLoom Labs is preparing next and catch up on recent
           highlights, publications, and events.
         </p>
-      </div>
+      </motion.div>
 
       {error && (
-        <p className="mt-6 text-red-300">
+        <p className="mt-6 text-red-300 font-editorial">
           Unable to load news right now: {error}
         </p>
       )}
@@ -336,23 +220,62 @@ export default function News() {
       {loading ? (
         <LoadingPen label="Gathering the latest…" />
       ) : (
-        <div className="mt-10 space-y-12">
-          <NewsSection
-            title="Upcoming events & launches"
-            blurb="Mark your calendar for upcoming talks, releases, and opportunities."
-            items={upcoming}
-            status="upcoming"
-            offset={0}
-          />
-          <NewsSection
-            title="Recent highlights"
-            blurb="Past activities, announcements, and milestones from the lab."
-            items={past}
-            status="past"
-            offset={upcoming.length}
-          />
+        <div className="max-w-3xl space-y-16">
+          {/* Upcoming */}
+          {upcoming.length > 0 && (
+            <div>
+              <motion.h3
+                className="font-editorial text-sm tracking-[0.2em] uppercase text-emerald-300/60 mb-8"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+              >
+                Upcoming
+              </motion.h3>
+              {upcoming.map((item, i) => (
+                <NewsEntry
+                  key={item.id}
+                  item={item}
+                  index={i}
+                  isUpcoming
+                  isLast={i === upcoming.length - 1}
+                />
+              ))}
+            </div>
+          )}
+
+          {/* Divider between sections */}
+          {upcoming.length > 0 && past.length > 0 && (
+            <div className="home-rule" />
+          )}
+
+          {/* Past / recent */}
+          {past.length > 0 && (
+            <div>
+              <motion.h3
+                className="font-editorial text-sm tracking-[0.2em] uppercase text-white/30 mb-8"
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5 }}
+              >
+                Recent
+              </motion.h3>
+              {past.map((item, i) => (
+                <NewsEntry
+                  key={item.id}
+                  item={item}
+                  index={i}
+                  isLast={i === past.length - 1}
+                />
+              ))}
+            </div>
+          )}
+
           {!upcoming.length && !past.length && (
-            <p className="text-sm text-white/60">No news items yet.</p>
+            <p className="font-editorial text-base text-white/40">
+              No news items yet.
+            </p>
           )}
         </div>
       )}
