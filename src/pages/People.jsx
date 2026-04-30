@@ -203,6 +203,7 @@ function LinkIconBtn({ link }) {
 function MemberModal({ person, onClose }) {
   const [imgErr, setImgErr] = useState(false);
   const links = buildLinks(person);
+  const modalPhoto = person.focusPhoto || person.photo;
 
   useEffect(() => {
     function onKey(e) { if (e.key === "Escape") onClose(); }
@@ -242,7 +243,7 @@ function MemberModal({ person, onClose }) {
             {/* Left: photo + links */}
             <div className="relative md:w-56 shrink-0">
               <img
-                src={imgErr || !person.photo ? PLACEHOLDER : person.photo}
+                src={imgErr || !modalPhoto ? PLACEHOLDER : modalPhoto}
                 alt={person.name}
                 onError={() => setImgErr(true)}
                 className="w-full h-48 md:h-full object-cover"

@@ -333,81 +333,6 @@ function CollaboratorsScene() {
   );
 }
 
-/* -------------------- Transparency demo -------------------- */
-
-function TransparencyDemoScene({ id, onInView, videoSrc }) {
-  const ref = useRef(null);
-
-  useEffect(() => {
-    const node = ref.current;
-    if (!node || typeof IntersectionObserver === "undefined") return;
-    const observer = new IntersectionObserver(
-      (entries) => entries.forEach((e) => { if (e.isIntersecting) onInView?.(id); }),
-      { threshold: 0.55 }
-    );
-    observer.observe(node);
-    return () => observer.disconnect();
-  }, [id, onInView]);
-
-  const levels = [
-    { label: "5%", bg: "bg-white/5" },
-    { label: "10%", bg: "bg-white/10" },
-    { label: "15%", bg: "bg-white/15" },
-    { label: "20%", bg: "bg-white/20" },
-    { label: "25%", bg: "bg-white/25" },
-    { label: "30%", bg: "bg-white/30" },
-  ];
-
-  return (
-    <section
-      id={id}
-      ref={ref}
-      className="about-scene relative flex min-h-screen items-center justify-center px-4 overflow-hidden"
-    >
-      <div className="relative z-10 w-full max-w-6xl space-y-6">
-        <p className="text-xs uppercase tracking-[0.25em] text-emerald-50/50">
-          Transparency reference — pick your favourite
-        </p>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-          {levels.map(({ label, bg }) => (
-            <div
-              key={label}
-              className="relative overflow-hidden rounded-[2.5rem] shadow-[0_20px_60px_rgba(0,0,0,0.35)]"
-            >
-              {/* Individual video per panel */}
-              <video
-                className="absolute inset-0 h-full w-full object-cover"
-                src={videoSrc}
-                muted
-                loop
-                playsInline
-                autoPlay
-              />
-              {/* Glass overlay */}
-              <div
-                className={[
-                  bg,
-                  "relative z-10 border border-white/20 rounded-[2.5rem] px-8 py-10 backdrop-blur-2xl",
-                  "shadow-[inset_0_1px_0_rgba(255,255,255,0.25),inset_0_-1px_0_rgba(255,255,255,0.05)]",
-                  "space-y-3",
-                ].join(" ")}
-              >
-                <p className="text-[0.65rem] uppercase tracking-[0.2em] text-emerald-50/50">{label}</p>
-                <h3 className="text-xl font-semibold text-emerald-200">
-                  The quick brown fox
-                </h3>
-                <p className="text-emerald-50/90 text-sm leading-relaxed">
-                  The quick brown fox jumps over the lazy dog. The quick brown fox jumps over the lazy dog.
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
 /* -------------------- OPTIMIZED BACKGROUND VIDEO MANAGER -------------------- */
 
 /**
@@ -564,7 +489,7 @@ function Scene({ id, onInView, children }) {
     <section
       id={id}
       ref={ref}
-      className="about-scene relative flex min-h-screen items-center justify-center px-4"
+      className="about-scene relative flex py-20 md:py-0 md:min-h-screen items-center justify-center px-4"
     >
       <div className="w-full max-w-6xl space-y-10">{children}</div>
     </section>
@@ -828,16 +753,6 @@ export default function About() {
               <Scene key={scene.id} id={scene.id} onInView={setActiveSceneId}>
                 <CollaboratorsScene />
               </Scene>
-            );
-          }
-          if (scene.type === "transparency-demo") {
-            return (
-              <TransparencyDemoScene
-                key={scene.id}
-                id={scene.id}
-                onInView={setActiveSceneId}
-                videoSrc={scene.video}
-              />
             );
           }
           return null;

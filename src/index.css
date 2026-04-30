@@ -34,7 +34,13 @@ body {
 }
 
 .about-scroll-container {
-    scroll-snap-type: y mandatory;
+    scroll-snap-type: none;
+}
+
+@media (min-width: 768px) {
+    .about-scroll-container {
+        scroll-snap-type: y mandatory;
+    }
 }
 
 .about-scene {
