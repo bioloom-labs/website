@@ -17,6 +17,10 @@
     },
     "images": [
         {
+            "src": "/images/home/Harvesting-water-lily.jpg",
+            "alt": "Harvesting water lily"
+        },
+        {
             "src": "/images/home/kew-gardens.jpg",
             "alt": "Palm House, Kew Gardens",
             "credit": {

@@ -1,7 +1,7 @@
 import { ChevronRight, ChevronDown } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion } from "framer-motion";
 import { fetchJSONC } from "../utils/jsonc.js";
 
 const fadeUp = {
@@ -19,15 +19,10 @@ const fadeUp = {
 
 export default function Home() {
   const [data, setData] = useState(null);
-  const [showScrollHint, setShowScrollHint] = useState(true);
-  const heroRef = useRef(null);
-
-  const { scrollYProgress } = useScroll({
-    target: heroRef,
-    offset: ["start start", "end start"],
-  });
-  const heroY = useTransform(scrollYProgress, [0, 1], [0, 150]);
-  const heroOpacity = useTransform(scrollYProgress, [0, 0.7], [1, 0]);
+  const [active, setActive] = useState(0);
+  // Slide being previewed while the pointer hovers an indicator dot.
+  const [preview, setPreview] = useState(null);
+  const reducedMotion = useRef(false);
 
   useEffect(() => {
     fetchJSONC("/home.jsonc")
@@ -35,27 +30,20 @@ export default function Home() {
       .catch((err) => console.error("home.jsonc load error:", err));
   }, []);
 
-  // Hide scroll hint when near the bottom of the page
   useEffect(() => {
-    function handleScroll() {
-      const viewport = window.innerHeight;
-      const scrollY = window.scrollY || window.pageYOffset || 0;
-      const full =
-        document.documentElement.scrollHeight ||
-        document.body.scrollHeight ||
-        0;
-      if (full <= viewport + 100) {
-        setShowScrollHint(false);
-        return;
-      }
-      const atBottom = scrollY + viewport >= full - 150;
-      setShowScrollHint(!atBottom);
-    }
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    const mql = window.matchMedia("(prefers-reduced-motion: reduce)");
+    reducedMotion.current = mql.matches;
   }, []);
 
-  // Preload images once data arrives
+  // Full-screen vertical snap on the document root (matches the About page
+  // approach); cleaned up on unmount so other routes scroll normally.
+  useEffect(() => {
+    const root = document.documentElement;
+    root.classList.add("snap-y-container");
+    return () => root.classList.remove("snap-y-container");
+  }, []);
+
+  // Preload all slideshow images up front
   useEffect(() => {
     if (!data?.images) return;
     data.images.forEach((s) => {
@@ -64,52 +52,91 @@ export default function Home() {
     });
   }, [data]);
 
+  // Advance the slideshow; the timer resets whenever the active slide
+  // changes (auto OR manual) so the progress circle stays in sync.
+  // Paused while a dot is being previewed.
+  useEffect(() => {
+    const images = data?.images || [];
+    if (images.length < 2) return;
+    if (preview !== null) return;
+    const interval = data?.interval_ms || 5000;
+    const id = setTimeout(() => {
+      setActive((i) => (i + 1) % images.length);
+    }, interval);
+    return () => clearTimeout(id);
+  }, [data, active, preview]);
+
   if (!data) {
-    return <div className="min-h-screen" />;
+    return <div className="min-h-dvh" />;
   }
 
-  const { hero, images = [] } = data;
-  const heroImage = images[0];
-  const mosaicImages = images.slice(1, 7);
+  const { hero, images = [], fade_ms = 900 } = data;
+  const interval = data?.interval_ms || 5000;
+  // While hovering a dot we show its slide; otherwise the live one.
+  const display = preview !== null ? preview : active;
+  const current = images[display];
   const subtitleParagraphs = hero?.subtitle?.split("\n\n") || [];
+
+  function scrollToMission() {
+    document
+      .getElementById("mission")
+      ?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
 
   return (
     <>
-      {/* ═══════════════════════════ HERO ═══════════════════════════ */}
-      <section ref={heroRef} className="relative h-dvh overflow-hidden">
-        {/* Parallax background image */}
-        <motion.div className="absolute inset-0 scale-110" style={{ y: heroY }}>
-          <div
-            className="absolute inset-0"
-            style={{
-              backgroundImage: heroImage ? `url(${heroImage.src})` : "none",
-              backgroundSize: "cover",
-              backgroundPosition: "center",
-            }}
-          />
-          {/* Gradient overlay — lets image breathe up top, anchors text at bottom */}
+      {/* ════════════ SCREEN 1 — slideshow hero (no description) ════════════ */}
+      <section className="snap-screen relative h-dvh w-full overflow-hidden">
+        {/* ── Crossfading slideshow background (V1) ── */}
+        <div className="absolute inset-0">
+          {images.map((img, i) => (
+            <div
+              key={img.src}
+              aria-hidden={i !== display}
+              className="absolute inset-0 transition-opacity ease-in-out"
+              style={{
+                opacity: i === display ? 1 : 0,
+                transitionDuration: `${fade_ms}ms`,
+              }}
+            >
+              <div
+                className="absolute inset-0 will-change-transform"
+                style={{
+                  backgroundImage: `url(${img.src})`,
+                  backgroundSize: "cover",
+                  backgroundPosition: "center",
+                  transform:
+                    i === display && !reducedMotion.current
+                      ? "scale(1.08)"
+                      : "scale(1)",
+                  transition: reducedMotion.current
+                    ? "none"
+                    : `transform ${interval + fade_ms}ms linear`,
+                }}
+              />
+            </div>
+          ))}
+
+          {/* Bottom-anchored neutral scrim — keeps the bottom-left text legible */}
           <div
             className="absolute inset-0"
             style={{
               background: [
                 "linear-gradient(to bottom,",
-                "rgba(2,44,34,0.25) 0%,",
-                "rgba(2,44,34,0.10) 35%,",
-                "rgba(2,44,34,0.50) 70%,",
-                "rgba(2,44,34,0.92) 100%)",
+                "rgba(0,0,0,0.25) 0%,",
+                "rgba(0,0,0,0.05) 35%,",
+                "rgba(0,0,0,0.45) 70%,",
+                "rgba(0,0,0,0.92) 100%)",
               ].join(" "),
             }}
           />
-        </motion.div>
+        </div>
 
-        {/* Hero content — anchored to bottom */}
-        <motion.div
-          className="relative z-10 flex flex-col justify-end h-full max-w-7xl mx-auto px-6 md:px-10 pb-24 md:pb-32"
-          style={{ opacity: heroOpacity }}
-        >
+        {/* ── Hero content — V2 layout, bottom-left, no subtitle ── */}
+        <div className="relative z-10 flex h-full max-w-7xl flex-col justify-end px-6 pb-28 md:px-10 md:pb-32 mx-auto">
           {hero?.lead && (
             <motion.span
-              className="inline-flex items-center self-start rounded-full border border-white/20 bg-white/5 backdrop-blur px-4 py-1.5 text-sm md:text-base tracking-wide text-white/90"
+              className="inline-flex items-center self-start rounded-full border border-white/20 bg-white/5 px-4 py-1.5 text-sm tracking-wide text-white/90 backdrop-blur md:text-base"
               variants={fadeUp}
               initial="hidden"
               animate="visible"
@@ -120,13 +147,14 @@ export default function Home() {
           )}
 
           <motion.h1
-            className="font-display text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-[6.5rem] leading-[1.05] tracking-tight mt-5 max-w-5xl pb-2"
+            className="mt-5 max-w-5xl pb-2 font-display text-5xl leading-[1.05] tracking-tight sm:text-6xl md:text-7xl lg:text-8xl xl:text-[6.5rem]"
             style={{
               background:
                 "linear-gradient(135deg, #ffffff 0%, #d1fae5 40%, #6ee7b7 100%)",
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",
               backgroundClip: "text",
+              filter: "drop-shadow(0 3px 16px rgba(0,0,0,0.55))",
             }}
             variants={fadeUp}
             initial="hidden"
@@ -148,8 +176,7 @@ export default function Home() {
                 to={hero.cta_primary.to}
                 className="btn-primary text-base px-7 py-3.5"
               >
-                {hero.cta_primary.label}{" "}
-                <ChevronRight className="h-4 w-4" />
+                {hero.cta_primary.label} <ChevronRight className="h-4 w-4" />
               </Link>
             )}
             {hero?.cta_secondary && (
@@ -161,26 +188,99 @@ export default function Home() {
               </Link>
             )}
           </motion.div>
-        </motion.div>
 
-        {/* Photo credit */}
-        {heroImage?.credit?.url && heroImage?.credit?.name && (
+          {/* ── Slide indicators with hover-preview (V1) ── */}
+          {images.length > 1 && (
+            <div
+              className="mt-10 flex items-center self-start"
+              onMouseLeave={() => {
+                if (preview !== null) {
+                  setActive(preview);
+                  setPreview(null);
+                }
+              }}
+            >
+              {images.map((img, i) => {
+                const isCurrent = i === display;
+                const showProgress = preview === null && i === active;
+                return (
+                  <button
+                    key={img.src}
+                    type="button"
+                    aria-label={`Show slide ${i + 1}`}
+                    onMouseEnter={() => setPreview(i)}
+                    onFocus={() => setPreview(i)}
+                    onClick={() => {
+                      setActive(i);
+                      setPreview(null);
+                    }}
+                    className="group flex cursor-pointer items-center px-1.5 py-3"
+                  >
+                    <span
+                      className={`relative block h-2 rounded-full transition-all duration-500 ${
+                        isCurrent
+                          ? showProgress
+                            ? "w-10 bg-white/25"
+                            : "w-10 bg-brand-300"
+                          : "w-2 bg-white/40 group-hover:bg-white/70"
+                      }`}
+                    >
+                      {showProgress && (
+                        <motion.span
+                          key={active}
+                          className="absolute left-0 top-0 h-2 w-2 rounded-full bg-brand-300 shadow-[0_0_8px_rgba(110,231,183,0.85)]"
+                          initial={{ x: 0 }}
+                          animate={{ x: 32 }}
+                          transition={{
+                            duration: interval / 1000,
+                            ease: "linear",
+                          }}
+                        />
+                      )}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* ── Photo credit for the current slide ── */}
+        {current?.credit?.url && current?.credit?.name && (
           <a
-            href={heroImage.credit.url}
+            href={current.credit.url}
             target="_blank"
             rel="noreferrer"
-            className="absolute bottom-8 right-6 z-10 text-[10px] text-white/25 hover:text-white/50 transition-colors font-editorial"
+            className="absolute bottom-6 right-6 z-10 font-editorial text-[10px] text-white/35 transition-colors hover:text-white/70"
           >
-            Photo: {heroImage.credit.name}
+            Photo: {current.credit.name}
           </a>
         )}
+
+        {/* ── Scroll-down cue ── */}
+        <motion.button
+          type="button"
+          onClick={scrollToMission}
+          aria-label="Scroll to mission"
+          className="absolute bottom-6 left-1/2 z-10 -translate-x-1/2 rounded-full border border-white/20 bg-white/10 p-2.5 backdrop-blur transition-colors hover:bg-white/20"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1, y: [0, 6, 0] }}
+          transition={{
+            opacity: { duration: 0.6, delay: 0.8 },
+            y: { duration: 1.8, repeat: Infinity, ease: "easeInOut" },
+          }}
+        >
+          <ChevronDown className="h-4 w-4 text-white/90" />
+        </motion.button>
       </section>
 
-      {/* ═══════════════════════ MISSION ═══════════════════════ */}
-      <section className="relative py-24 md:py-36">
-        <div className="max-w-7xl mx-auto px-6 md:px-10">
-          <div className="grid md:grid-cols-12 gap-10 md:gap-16">
-            {/* Left column — editorial heading */}
+      {/* ════════════ SCREEN 2 — mission (V2) ════════════ */}
+      <section
+        id="mission"
+        className="snap-screen relative flex min-h-dvh items-center py-24 md:py-0"
+      >
+        <div className="mx-auto w-full max-w-7xl px-6 md:px-10">
+          <div className="grid gap-10 md:grid-cols-12 md:gap-16">
             <motion.div
               className="md:col-span-5"
               initial={{ opacity: 0, x: -20 }}
@@ -188,16 +288,14 @@ export default function Home() {
               viewport={{ once: true, margin: "-80px" }}
               transition={{ duration: 0.8, ease: [0.25, 0.1, 0.25, 1] }}
             >
-              <h2 className="font-display text-3xl md:text-4xl lg:text-5xl leading-[1.15] text-white/95">
-                Reconnecting{" "}
-                <em className="text-brand-300">people</em> and{" "}
+              <h2 className="font-display text-3xl leading-[1.15] text-white/95 md:text-4xl lg:text-5xl">
+                Reconnecting <em className="text-brand-300">people</em> and{" "}
                 <em className="text-brand-300">nature</em> through research
               </h2>
             </motion.div>
 
-            {/* Right column — body text */}
             <motion.div
-              className="md:col-span-6 md:col-start-7 space-y-5"
+              className="space-y-5 md:col-span-6 md:col-start-7"
               initial={{ opacity: 0, x: 20 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true, margin: "-80px" }}
@@ -210,7 +308,7 @@ export default function Home() {
               {subtitleParagraphs.map((para, i) => (
                 <p
                   key={i}
-                  className="font-editorial text-base md:text-lg text-white/55 leading-relaxed"
+                  className="font-editorial text-base leading-relaxed text-white/60 md:text-lg"
                 >
                   {para}
                 </p>
@@ -219,118 +317,6 @@ export default function Home() {
           </div>
         </div>
       </section>
-
-      {/* Divider */}
-      <div className="max-w-7xl mx-auto px-6 md:px-10">
-        <div className="home-rule" />
-      </div>
-
-      {/* ═══════════════════ IMAGE MOSAIC ═══════════════════ */}
-      <section className="py-20 md:py-28">
-        <div className="max-w-7xl mx-auto px-6 md:px-10">
-          <motion.p
-            className="font-editorial text-sm tracking-[0.2em] uppercase text-white/30 mb-8"
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-          >
-            People &amp; biodiversity
-          </motion.p>
-
-          <div className="home-mosaic">
-            {mosaicImages.map((img, i) => (
-              <motion.div
-                key={img.src}
-                className={`home-mosaic-item home-mosaic-item-${i + 1} group relative overflow-hidden rounded-2xl`}
-                initial={{ opacity: 0, y: 40 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-40px" }}
-                transition={{
-                  duration: 0.7,
-                  delay: i * 0.08,
-                  ease: [0.25, 0.1, 0.25, 1],
-                }}
-              >
-                <img
-                  src={img.src}
-                  alt={img.alt}
-                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                  loading="lazy"
-                />
-                {/* Hover caption */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                <p className="absolute bottom-4 left-4 right-4 font-editorial text-sm text-white/90 opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-500">
-                  {img.alt}
-                </p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Divider */}
-      <div className="max-w-7xl mx-auto px-6 md:px-10">
-        <div className="home-rule" />
-      </div>
-
-      {/* ═══════════════════ CLOSING CTA ═══════════════════ */}
-      <section className="py-24 md:py-32">
-        <motion.div
-          className="max-w-3xl mx-auto px-6 md:px-10 text-center"
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8, ease: [0.25, 0.1, 0.25, 1] }}
-        >
-          <h2 className="font-display text-3xl md:text-5xl text-white/95">
-            Interested in our work?
-          </h2>
-          <p className="mt-5 text-lg text-white/45 font-editorial">
-            We're always looking for collaborators, students, and partners.
-          </p>
-          <div className="mt-10 flex flex-wrap justify-center gap-4">
-            <Link
-              to="/research"
-              className="btn-primary text-base px-7 py-3.5"
-            >
-              Explore research <ChevronRight className="h-4 w-4" />
-            </Link>
-            <Link
-              to="/contact"
-              className="btn-secondary text-base px-7 py-3.5"
-            >
-              Get in touch
-            </Link>
-          </div>
-        </motion.div>
-      </section>
-
-      {/* ═══════════ Fixed "Keep scrolling" indicator ═══════════ */}
-      {showScrollHint && (
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: 20 }}
-          transition={{ duration: 0.4 }}
-          className="pointer-events-none fixed bottom-6 inset-x-0 flex justify-center z-40"
-        >
-          <button
-            type="button"
-            onClick={() => {
-              window.scrollBy({ top: window.innerHeight, behavior: "smooth" });
-            }}
-            className="pointer-events-auto flex items-center gap-3 rounded-2xl bg-white/10 border border-white/20 backdrop-blur px-4 py-3 shadow-[0_8px_30px_rgba(0,0,0,0.25)] hover:bg-white/15 transition-colors"
-          >
-            <span className="inline-flex h-6 w-6 items-center justify-center rounded-xl bg-white/20">
-              <ChevronDown className="h-3.5 w-3.5 text-white/90" />
-            </span>
-            <span className="text-sm font-medium text-white/90 tracking-wide">
-              Keep scrolling
-            </span>
-          </button>
-        </motion.div>
-      )}
     </>
   );
 }

@@ -79,7 +79,9 @@ export default function App() {
         <Route path="/news" element={<News />} />
         <Route path="/contact" element={<Contact />} />
       </Routes>
-      {location.pathname === "/about" ? null : <Footer />}
+      {location.pathname === "/" || location.pathname === "/about"
+        ? null
+        : <Footer />}
     </div>
   );
 }

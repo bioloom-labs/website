@@ -13,6 +13,27 @@ body {
     background: var(--bg-grad), theme(colors.brand.950);
 }
 
+/* Scale typography & rem-based spacing up on large / extended displays.
+   Tailwind sizes (text, padding, gaps, max-widths) are rem-based, so
+   bumping the root font-size scales the whole site proportionally.
+   Standard laptops and monitors (<1600px) stay at the 16px baseline so
+   existing layouts are unchanged; only big screens get the boost. */
+@media (min-width: 1600px) {
+    html { font-size: 17px; }
+}
+
+@media (min-width: 1920px) {
+    html { font-size: 18px; }
+}
+
+@media (min-width: 2560px) {
+    html { font-size: 20px; }
+}
+
+@media (min-width: 3200px) {
+    html { font-size: 22px; }
+}
+
 .glass {
     @apply bg-white/5 backdrop-blur border border-white/10;
 }
@@ -44,6 +65,22 @@ body {
 }
 
 .about-scene {
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+}
+
+/* Generic full-screen vertical snap (used by the Home page). */
+.snap-y-container {
+    scroll-snap-type: none;
+}
+
+@media (min-width: 768px) {
+    .snap-y-container {
+        scroll-snap-type: y mandatory;
+    }
+}
+
+.snap-screen {
     scroll-snap-align: start;
     scroll-snap-stop: always;
 }
