@@ -237,3 +237,91 @@ body {
     height: 1px;
     background: linear-gradient(to right, transparent, rgba(110, 231, 183, 0.2), transparent);
 }
+
+/* ═══ Bioloom navbar logo — hover motion ═══
+   "Stack build" sequence from the motion exploration (animation 01),
+   compressed for hover, with the "plant sway" from animation 07 as the
+   finale — the plant rocks once on its base after the wordmark settles.
+   The logo sits at its natural visible state when not hovered; .play
+   (added by React on mouseenter/focus, removed and re-armed via double
+   rAF) replays the sequence every time. */
+
+.bioloom-logo .g-fabric,
+.bioloom-logo .g-plant,
+.bioloom-logo .g-plant-wave,
+.bioloom-logo .g-people,
+.bioloom-logo .g-text {
+    transform-box: fill-box;
+}
+
+.bioloom-logo .g-fabric      { transform-origin: 50% 100%; }
+.bioloom-logo .g-plant       { transform-origin: 50% 100%; }
+.bioloom-logo .g-plant-wave  { transform-origin: 50% 100%; }
+.bioloom-logo .g-people      { transform-origin: 50% 100%; }
+.bioloom-logo .g-text        { transform-origin: 0% 50%; }
+
+.bioloom-logo.play .g-fabric {
+    animation: bl-fabric-wipe 0.45s cubic-bezier(.77, 0, .18, 1) 0s both;
+}
+
+/* Outer .g-plant carries the grow; inner .g-plant-wave carries the sway.
+   Splitting them across two elements means neither animation has to
+   share the `transform` property with the other. */
+.bioloom-logo.play .g-plant {
+    animation: bl-plant-grow 0.55s cubic-bezier(.34, 1.3, .4, 1) 0.3s both;
+}
+
+.bioloom-logo.play .g-plant-wave {
+    animation: bl-plant-wave 0.9s cubic-bezier(.36, 0, .2, 1) 1.3s both;
+}
+
+.bioloom-logo.play .g-people {
+    animation: bl-people-pop 0.4s cubic-bezier(.34, 1.56, .64, 1) 0.7s both;
+}
+
+.bioloom-logo.play .g-text {
+    animation: bl-text-fade 0.5s cubic-bezier(.22, .61, .36, 1) 0.95s both;
+}
+
+@keyframes bl-fabric-wipe {
+    0%   { opacity: 0; clip-path: inset(0 100% 0 0); }
+    1%   { opacity: 1; }
+    100% { opacity: 1; clip-path: inset(0 0 0 0); }
+}
+
+@keyframes bl-plant-grow {
+    0%   { opacity: 0; transform: scaleY(0.05) scaleX(0.7); }
+    60%  { opacity: 1; }
+    100% { opacity: 1; transform: scaleY(1) scaleX(1); }
+}
+
+@keyframes bl-people-pop {
+    0%   { opacity: 0; transform: scale(0.5); }
+    60%  { opacity: 1; }
+    100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes bl-text-fade {
+    0%   { opacity: 0; transform: translateY(4px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
+
+/* Plant sway — animation 07 from Logo Animations.html. The plant rocks
+   once on its base: left, right, settle. */
+@keyframes bl-plant-wave {
+    0%   { transform: rotate(0deg); }
+    35%  { transform: rotate(-6deg); }
+    70%  { transform: rotate(4deg); }
+    100% { transform: rotate(0deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+    .bioloom-logo.play .g-fabric,
+    .bioloom-logo.play .g-plant,
+    .bioloom-logo.play .g-plant-wave,
+    .bioloom-logo.play .g-people,
+    .bioloom-logo.play .g-text {
+        animation: none;
+    }
+}

@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { NavLink, Link, useLocation } from "react-router-dom";
 import { Menu, X } from "lucide-react";
+import BioloomLogo from "./BioloomLogo.jsx";
 
 const linkClass = ({ isActive }) =>
   `px-3 py-2 rounded-md text-sm lg:text-base transition hover:bg-white/5 ${isActive ? "text-brand-300" : "text-white/90"
@@ -55,13 +56,8 @@ export default function Navbar() {
   return (
     <header className="sticky top-0 z-50 border-b border-white/10 bg-brand-950/70 backdrop-blur supports-[backdrop-filter]:bg-brand-950/40">
       <nav className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3">
-        <Link to="/" className="flex items-center cursor-pointer">
-          <img
-            src="/images/logos/bioloom.png"
-            alt="BioLoom Labs Logo"
-            className="h-12 lg:h-16 w-auto object-contain"
-            style={{ display: "block" }}
-          />
+        <Link to="/" className="flex items-center cursor-pointer" aria-label="BioLoom Labs — home">
+          <BioloomLogo className="h-12 lg:h-16 w-auto block" />
         </Link>
 
 

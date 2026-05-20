@@ -133,7 +133,7 @@ export default function Home() {
         </div>
 
         {/* ── Hero content — V2 layout, bottom-left, no subtitle ── */}
-        <div className="relative z-10 flex h-full max-w-7xl flex-col justify-end px-6 pb-28 md:px-10 md:pb-32 mx-auto">
+        <div className="relative z-10 mx-auto flex h-full max-w-7xl flex-col justify-end px-6 pb-24 pt-24 md:px-10 md:pb-32 md:pt-0">
           {hero?.lead && (
             <motion.span
               className="inline-flex items-center self-start rounded-full border border-white/20 bg-white/5 px-4 py-1.5 text-sm tracking-wide text-white/90 backdrop-blur md:text-base"
@@ -147,8 +147,13 @@ export default function Home() {
           )}
 
           <motion.h1
-            className="mt-5 max-w-5xl pb-2 font-display text-5xl leading-[1.05] tracking-tight sm:text-6xl md:text-7xl lg:text-8xl xl:text-[6.5rem]"
+            className="mt-5 max-w-5xl pb-2 font-display tracking-tight"
             style={{
+              // Fluid size: scales with the viewport, big on desktop,
+              // auto-shrinks on small screens so it never overflows.
+              fontSize: "clamp(2.25rem, 5.2vw + 1rem, 6.5rem)",
+              lineHeight: 1.06,
+              textWrap: "balance",
               background:
                 "linear-gradient(135deg, #ffffff 0%, #d1fae5 40%, #6ee7b7 100%)",
               WebkitBackgroundClip: "text",

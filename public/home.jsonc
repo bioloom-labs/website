@@ -17,56 +17,40 @@
     },
     "images": [
         {
-            "src": "/images/home/Harvesting-water-lily.jpg",
-            "alt": "Harvesting water lily"
+            "src": "/images/home/DarioEndara_L.jpg",
+            "alt": "Andean weaver working a traditional backstrap loom with brightly coloured textiles"
         },
         {
-            "src": "/images/home/kew-gardens.jpg",
-            "alt": "Palm House, Kew Gardens",
-            "credit": {
-                "name": "Emily Underworld",
-                "url": "https://unsplash.com/@emilyunderworld"
-            }
+            "src": "/images/home/in4mal_L.jpg",
+            "alt": "Hands holding an opened achiote pod, revealing red seeds used as natural dye and spice"
         },
         {
-            "src": "/images/home/singapore.jpg",
-            "alt": "Gardens by the Bay, Singapore",
-            "credit": {
-                "name": "Nick Fewings",
-                "url": "https://unsplash.com/@jannerboy62"
-            }
+            "src": "/images/home/Javarman3_L.jpg",
+            "alt": "Worker harvesting blue agave in a field beneath a volcano"
         },
         {
-            "src": "/images/home/life-on-the-road-ZUmWioDpUPM-unsplash.jpg",
-            "alt": "Traditional net fishing along a river",
-            "credit": {
-                "name": "Life on the Road",
-                "url": "https://unsplash.com/@lifeontheroad"
-            }
+            "src": "/images/home/MuhammadAmdadHossain_L.jpg",
+            "alt": "Aerial view of a worker spreading fish to dry on woven mats"
         },
         {
-            "src": "/images/home/rs-riduan-dcn4xqKLQTI-unsplash.jpg",
-            "alt": "Rice paddy planting with mountains in the background",
-            "credit": {
-                "name": "RS Riduan",
-                "url": "https://unsplash.com/@riduan222"
-            }
+            "src": "/images/home/OlehSlobodeniuk_L.jpg",
+            "alt": "Mongolian eagle hunter on horseback releasing a golden eagle over the steppe"
         },
         {
-            "src": "/images/home/hikarinoshita-hikari-PPUDKi-IhGQ-unsplash.jpg",
-            "alt": "Rice paddies at sunset",
-            "credit": {
-                "name": "Hikarinoshita Hikari",
-                "url": "https://unsplash.com/@hikarinoshita"
-            }
+            "src": "/images/home/OlgaKaya_L.jpg",
+            "alt": "Figure in a red jacket with an umbrella crossing a misty suspension bridge through old-growth forest"
         },
         {
-            "src": "/images/home/quang-nguyen-vinh-pwNnOJg_Quc-unsplash.jpg",
-            "alt": "Sorting tobacco leaves",
-            "credit": {
-                "name": "Quang Nguyen Vinh",
-                "url": "https://unsplash.com/@quangpraha"
-            }
+            "src": "/images/home/PhamHung_L.jpg",
+            "alt": "Aerial view of a farmer arranging water lily stems and flowers in a spiral on a small boat"
+        },
+        {
+            "src": "/images/home/PreeyapornKaewsaard_L.jpg",
+            "alt": "Aerial view of two harvesters gathering reeds from clear shallow water"
+        },
+        {
+            "src": "/images/home/WiktoriaWest.jpg",
+            "alt": "Ranger's hand resting on the textured skin of a rhinoceros"
         },
         {
             "src": "/images/home/fabian-wiktor-fW-stt_HDPs-unsplash.jpg",
@@ -77,27 +61,11 @@
             }
         },
         {
-            "src": "/images/home/barbara-krysztofiak-TYqb66Jlkww-unsplash.jpg",
-            "alt": "Basket of foraged mushrooms",
-            "credit": {
-                "name": "Barbara Krysztofiak",
-                "url": "https://unsplash.com/@b_krysztofiak"
-            }
-        },
-        {
             "src": "/images/home/wietse-jongsma-a880S9Ha0Ak-unsplash.jpg",
             "alt": "Herder walking cattle along a misty road",
             "credit": {
                 "name": "Wietse Jongsma",
                 "url": "https://unsplash.com/@wietsej"
-            }
-        },
-        {
-            "src": "/images/home/william-zhang-qiHeIonjVXY-unsplash.jpg",
-            "alt": "Cormorant fisher on the Li River among karst mountains",
-            "credit": {
-                "name": "William Zhang",
-                "url": "https://unsplash.com/@ceye2eye"
             }
         }
     ]
