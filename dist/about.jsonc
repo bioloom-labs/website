@@ -74,16 +74,28 @@
       "tag": "Values",
       "values": [
         {
-          "title": "Science is for the people",
-          "text": "The public funds and relies on science, especially research that is so critical to times of ecological damage, resultant injustices, and disinformation. Impact comes from us; engagement with the public, media, other researchers, students and from using our voice. This is not just hitting impact goals, boosting awareness is a moral imperative for ecologists in times like these."
+          "title": "Beyond Boundaries",
+          "text": "Breakthroughs happen when different disciplines, perspectives, and ways of knowing meet. We build bridges across divides because no single viewpoint can see the whole picture."
         },
         {
-          "title": "Progress crosses divides",
-          "text": "The ideas and developments that advance our world and help people most arise from discussion across disciplines, perspectives, national borders, and ways of knowing beyond just academia. The rapid improvements we need will come from open-mindedness and welcoming diversity."
+          "title": "People and Planet",
+          "text": "Science thrives when it serves both people and nature. We work to generate knowledge that supports biodiversity, human well-being, and the long-term flourishing of life on Earth."
         },
         {
-          "title": "Ecology is not just a science of the environment",
-          "text": "In spite of our brain's need to categorise everything neatly, all ecology is necessarily intertwined with people, inequality, industry, and politics. Although some research will focus less on the interface with people than others, all ecological research is - in some way - relevant to people, our lifestyles, our systems, and our wellbeing. Which carries important implications too often overlooked."
+          "title": "One Fabric",
+          "text": "Humans are part of nature, not apart from it. We study ecosystems, biodiversity, and society as interconnected expressions of the same living world."
+        },
+        {
+          "title": "Questions First",
+          "text": "Methods, models, and datasets are tools, not destinations. We let meaningful questions guide our choice of methods—not the other way around."
+        },
+        {
+          "title": "What We Grow",
+          "text": "Just as ecosystems emerge from countless interactions, the way we treat each other shapes the science we produce. We strive to cultivate kindness, creativity, and connection in all that we do."
+        },
+        {
+          "title": "Planting for Tomorrow",
+          "text": "Plant trees whose shade you may never sit under. The most meaningful work often benefits people and places far beyond our own lifetimes."
         }
       ]
     }

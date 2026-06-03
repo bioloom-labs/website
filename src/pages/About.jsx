@@ -1,10 +1,14 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { motion, useInView } from "framer-motion";
+import { motion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 import { fetchJSONC } from "../utils/jsonc.js";
 
 const sceneCardClass =
   "rounded-[2.5rem] border border-white/20 bg-white/10 px-8 py-10 backdrop-blur-[5px] shadow-[inset_0_1px_0_rgba(255,255,255,0.25),inset_0_-1px_0_rgba(255,255,255,0.05),0_20px_60px_rgba(0,0,0,0.35)]";
+
+// Uniform extra dimming applied over every About background video so the
+// foreground cards/copy stay legible. Single dial for the whole section.
+const SCENE_DIM = 0.3;
 
 /* -------------------- Paragraph stack (intro text) -------------------- */
 
@@ -62,41 +66,6 @@ function NarrativeSection({ blocks = [] }) {
   return null;
 }
 
-/* -------------------- BioLoom logo — Manim-drawn video animation -------------------- */
-
-function BioloomLogoAnim() {
-  const ref = useRef(null);
-  const videoRef = useRef(null);
-  const isInView = useInView(ref, { once: false, amount: 0.4 });
-
-  useEffect(() => {
-    const vid = videoRef.current;
-    if (!vid) return;
-    if (isInView) {
-      vid.currentTime = 0;
-      vid.play();
-    } else {
-      vid.pause();
-    }
-  }, [isInView]);
-
-  return (
-    <div ref={ref} className="flex justify-center pt-2 -mb-100">
-      <video
-        ref={videoRef}
-        muted
-        playsInline
-        preload="none"
-        style={{ height: "220px", width: "auto", imageRendering: "auto" }}
-        className="antialiased"
-      >
-        <source src="/images/logos/DrawBioLoomLogo_hevc.mov" type='video/mp4; codecs="hvc1"' />
-        <source src="/images/logos/DrawBioLoomLogo.webm" type="video/webm" />
-      </video>
-    </div>
-  );
-}
-
 function NarrativeCard({ block, index }) {
   if (!block) return null;
 
@@ -108,6 +77,13 @@ function NarrativeCard({ block, index }) {
       : [];
   const hasList = Array.isArray(block.list) && block.list.length > 0;
   const hasValues = Array.isArray(block.values) && block.values.length > 0;
+
+  // The Lab Values card matches the "Thank you to our partners" panel's
+  // heavier frosted-glass treatment (backdrop-blur-2xl) rather than the
+  // subtler blur used by the other narrative cards.
+  const cardClass = hasValues
+    ? sceneCardClass.replace("backdrop-blur-[5px]", "backdrop-blur-2xl")
+    : sceneCardClass;
 
   return (
     <motion.article
@@ -124,7 +100,7 @@ function NarrativeCard({ block, index }) {
         viewport={{ once: true, margin: "-20% 0px -20% 0px" }}
         transition={{ duration: 0.6, ease: "easeOut" }}
         className={[
-          sceneCardClass,
+          cardClass,
           "relative w-full overflow-hidden isolation-isolate bg-clip-padding",
           isCentered ? "text-center" : "",
         ].join(" ")}
@@ -192,28 +168,25 @@ function NarrativeCard({ block, index }) {
             )}
 
             {hasValues && (
-              <>
-                <div className="grid gap-4 md:grid-cols-3">
-                  {block.values.map((value, idx) => (
-                    <div
-                      key={value.title || idx}
-                      className="rounded-xl border border-white/15 bg-white/8 p-4 space-y-2 backdrop-blur-sm shadow-[inset_0_1px_0_rgba(255,255,255,0.15)]"
-                    >
-                      {value.title && (
-                        <h4 className="text-base font-semibold text-emerald-200">
-                          {value.title}
-                        </h4>
-                      )}
-                      {value.text && (
-                        <p className="text-sm text-emerald-50/85 leading-relaxed">
-                          {value.text}
-                        </p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-                <BioloomLogoAnim />
-              </>
+              <div className="grid gap-4 md:grid-cols-3">
+                {block.values.map((value, idx) => (
+                  <div
+                    key={value.title || idx}
+                    className="rounded-xl border border-white/15 bg-white/8 p-4 space-y-2 backdrop-blur-sm shadow-[inset_0_1px_0_rgba(255,255,255,0.15)]"
+                  >
+                    {value.title && (
+                      <h4 className="text-base font-semibold text-emerald-200">
+                        {value.title}
+                      </h4>
+                    )}
+                    {value.text && (
+                      <p className="text-sm text-emerald-50/85 leading-relaxed">
+                        {value.text}
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
             )}
           </div>
         )}
@@ -351,6 +324,9 @@ function OptimizedBackgroundVideo({
     [scenes, activeSceneId]
   );
 
+  // Per-scene extra dimming (e.g. text-heavy scenes like Lab Values)
+  const activeDim = scenes[activeIndex]?.dim ?? 0;
+
   // De-duplicate videos. If multiple scenes use the same video URL, we only want one DOM node.
   const uniqueVideos = useMemo(() => {
     const map = new Map();
@@ -394,6 +370,16 @@ function OptimizedBackgroundVideo({
 
       {/* Global overlay for idle dimming */}
       <div className="absolute inset-0 bg-black/20" />
+
+      {/* Per-scene dimming for text-heavy scenes (animates in/out on scene change).
+          z-20 keeps it above the active video (which carries z-10) so the dim
+          actually lands on the playing footage; it still sits behind the page
+          content, which lives in a separate z-10 layer in <main>. */}
+      <motion.div
+        className="absolute inset-0 z-20 bg-black"
+        animate={{ opacity: activeDim }}
+        transition={{ duration: 1, ease: "easeInOut" }}
+      />
     </div>
   );
 }
@@ -622,6 +608,7 @@ export default function About() {
           credit: isWhyBioloom
             ? (attributions.intro || narrativeAttributions[idx] || null)
             : (narrativeAttributions[idx] || null),
+          dim: SCENE_DIM,
         };
       }),
     ];
@@ -634,6 +621,7 @@ export default function About() {
         video: videos.sections || "/images/videos/about/beereddahlia.mp4",
         poster: posters.sections,
         credit: attributions.sections || null,
+        dim: SCENE_DIM,
       });
     }
 
@@ -643,6 +631,7 @@ export default function About() {
       video: collaboratorsVideo,
       poster: collaboratorsPoster,
       credit: collaboratorsCredit,
+      dim: SCENE_DIM,
     });
 
     return scenesList;
