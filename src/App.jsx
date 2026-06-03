@@ -14,6 +14,17 @@ import { fetchJSONC } from "./utils/jsonc.js";
 export default function App() {
   const location = useLocation();
 
+  // On every route change, force the top of the page into view. Without this
+  // the window keeps its previous scroll position, so returning to an
+  // already-visited page lands mid-page instead of at the top. documentElement
+  // is the scroll/snap container for the About and Home pages, and that is what
+  // window.scrollTo drives, so this covers the snap pages too.
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    document.documentElement.scrollTop = 0;
+    if (document.body) document.body.scrollTop = 0;
+  }, [location.pathname]);
+
   // Preload About page background videos early so they are cached
   // by the time the user scrolls through the scenes.
   useEffect(() => {
