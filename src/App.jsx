@@ -31,41 +31,45 @@ export default function App() {
   useEffect(() => {
     let cancelled = false;
 
-    async function preloadAboutVideos() {
-      try {
-        const data = await fetchJSONC("/about.jsonc");
-        if (cancelled || !data?.videos) return;
+    function injectPreloadLinks(videos) {
+      if (!videos || typeof document === "undefined") return;
 
-        const { videos } = data;
-        const urls = new Set();
-
-        if (videos.intro) urls.add(videos.intro);
-        if (videos.sections) urls.add(videos.sections);
-        if (Array.isArray(videos.narrative)) {
-          videos.narrative.forEach((u) => {
-            if (u) urls.add(u);
-          });
-        }
-
-        if (typeof document === "undefined") return;
-
-        urls.forEach((href) => {
-          if (!href) return;
-          if (
-            document.querySelector(`link[data-preload-video="${href}"]`)
-          ) {
-            return;
-          }
-          const link = document.createElement("link");
-          link.rel = "preload";
-          link.as = "video";
-          link.href = href;
-          link.crossOrigin = "anonymous";
-          link.dataset.preloadVideo = href;
-          document.head.appendChild(link);
+      const urls = new Set();
+      if (videos.intro) urls.add(videos.intro);
+      if (videos.sections) urls.add(videos.sections);
+      if (Array.isArray(videos.narrative)) {
+        videos.narrative.forEach((u) => {
+          if (u) urls.add(u);
         });
-      } catch {
-        // Fail silently; About page will still load videos on demand.
+      }
+
+      urls.forEach((href) => {
+        if (!href) return;
+        if (document.querySelector(`link[data-preload-video="${href}"]`)) {
+          return;
+        }
+        const link = document.createElement("link");
+        link.rel = "preload";
+        link.as = "video";
+        link.href = href;
+        link.crossOrigin = "anonymous";
+        link.dataset.preloadVideo = href;
+        document.head.appendChild(link);
+      });
+    }
+
+    async function preloadAboutVideos() {
+      // Warm both the live About page and the about-temp test page so their
+      // first videos are cached before the user navigates. Shared clips are
+      // de-duplicated via the data-preload-video attribute.
+      for (const path of ["/about.jsonc", "/about-temp.jsonc"]) {
+        try {
+          const data = await fetchJSONC(path);
+          if (cancelled) return;
+          injectPreloadLinks(data?.videos);
+        } catch {
+          // Fail silently; pages still load videos on demand.
+        }
       }
     }
 
