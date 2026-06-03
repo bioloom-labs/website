@@ -506,7 +506,7 @@ function VideoAttributionOverlay({ activeSceneId, scenes }) {
 
 /* -------------------- Main About page -------------------- */
 
-export default function About() {
+export default function AboutTemp() {
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -520,7 +520,7 @@ export default function About() {
     let mounted = true;
     async function load() {
       try {
-        const payload = await fetchJSONC("/about.jsonc");
+        const payload = await fetchJSONC("/about-temp.jsonc");
         if (mounted) {
           setData(payload);
           setError(null);
