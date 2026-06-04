@@ -261,7 +261,7 @@ function MemberModal({ person, onClose }) {
             <div className="flex-1 min-w-0 flex flex-col gap-4 p-6 overflow-y-auto">
               <div>
                 <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-brand-300 mb-1">
-                  {person.role?.split(" at ")[0]}
+                  {person.role?.split(/ at | from /)[0]}
                 </p>
                 <h2 className="text-2xl font-bold text-white leading-tight">{person.name}</h2>
                 {person.role && (
@@ -389,7 +389,7 @@ function MemberCard({ person, index }) {
   const [hovered, setHovered] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const links = buildLinks(person);
-  const shortRole = person.role?.split(" at ")[0] ?? person.role ?? "";
+  const shortRole = person.role?.split(/ at | from /)[0] ?? person.role ?? "";
 
   return (
     <>
