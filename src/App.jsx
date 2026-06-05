@@ -6,6 +6,7 @@ import Home from "./pages/Home.jsx";
 import About from "./pages/About.jsx";
 import Research from "./pages/Research.jsx";
 import People from "./pages/People.jsx";
+import PeopleTemp from "./pages/PeopleTemp.jsx";
 import Publications from "./pages/Publications.jsx";
 import News from "./pages/News.jsx";
 import Contact from "./pages/Contact.jsx";
@@ -90,6 +91,7 @@ export default function App() {
         <Route path="/about" element={<About />} />
         <Route path="/research" element={<Research />} />
         <Route path="/people" element={<People />} />
+        <Route path="/people-temp" element={<PeopleTemp />} />
         <Route path="/publications" element={<Publications />} />
         <Route path="/news" element={<News />} />
         <Route path="/contact" element={<Contact />} />
