@@ -4,10 +4,10 @@
   "videos": {
     "intro": "/images/videos/about/1080p_weavingloom.mp4",
     "narrative": [
-      "/images/videos/about/1080p_handseeds.mp4",
-      "/images/videos/about/1080p_europeangreenfinch.mp4",
-      "/images/videos/about/1080p_butterflyonhand.mp4",
-      "/images/videos/about/1080p_holdingplant.mp4"
+      "/images/videos/about/1080p_holdingplant.mp4",
+      "/images/videos/about/deforestation.mp4",
+      null,
+      "/images/videos/about/under_tree.mp4"
     ],
     "sections": "/images/videos/about/1080p_beereddahlia.mp4"
   },
@@ -18,21 +18,12 @@
     },
     "narrative": [
       {
-        "label": "Hand Stock Videos by Vecteezy",
-        "href": "https://www.vecteezy.com/free-videos/hand"
-      },
-      {
-        "label": "Nature Birds Stock Videos by Vecteezy",
-        "href": "https://www.vecteezy.com/free-videos/nature-birds"
-      },
-      {
-        "label": "Butterfly Stock Videos by Vecteezy",
-        "href": "https://www.vecteezy.com/free-videos/butterfly"
-      },
-      {
         "label": "Nature Stock Videos by Vecteezy",
         "href": "https://www.vecteezy.com/free-videos/nature"
-      }
+      },
+      null,
+      null,
+      null
     ],
     "sections": {
       "label": "Pollination Stock Videos by Vecteezy",

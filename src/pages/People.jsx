@@ -485,13 +485,9 @@ function TeamSection({ section, sectionIndex, imageUrl }) {
         </div>
 
         <div className="mb-10 flex items-center gap-4">
-          <span className="w-20 shrink-0 font-mono text-sm font-bold text-brand-300/60">{num}</span>
           <div className="h-px flex-1 bg-white/10" />
           <h2 className="text-2xl font-bold text-white">{section.title}</h2>
           <div className="h-px flex-1 bg-white/10" />
-          <span className="pill w-20 shrink-0 justify-center border-white/10 bg-white/5 text-xs text-white/40">
-            {section.members.length} {section.members.length === 1 ? "person" : "people"}
-          </span>
         </div>
 
         <div className="flex flex-wrap justify-center gap-4 md:gap-5">
@@ -522,13 +518,9 @@ function Alumni({ members, imageUrl }) {
 
       <div className="relative mx-auto max-w-7xl px-4 py-16">
         <div className="mb-10 flex items-center gap-4">
-          <span className="w-20 shrink-0 font-mono text-sm font-bold text-brand-300/60">—</span>
           <div className="h-px flex-1 bg-white/10" />
           <h2 className="text-2xl font-bold text-white">Alumni</h2>
           <div className="h-px flex-1 bg-white/10" />
-          <span className="pill w-20 shrink-0 justify-center border-white/10 bg-white/5 text-xs text-white/40">
-            {members.length} {members.length === 1 ? "person" : "people"}
-          </span>
         </div>
 
         <div className="flex flex-wrap justify-center gap-4 md:gap-5">

@@ -194,7 +194,7 @@ function ScrollHint() {
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: visible ? 1 : 0, y: visible ? 0 : 6 }}
       transition={{ duration: visible ? 0.5 : 0.3, delay: visible ? 0.55 : 0, ease: "easeOut" }}
-      className="mt-8 flex items-center gap-2.5 w-fit"
+      className="pointer-events-none fixed bottom-6 inset-x-0 flex justify-center z-40"
       aria-hidden="true"
     >
       <span
@@ -346,17 +346,17 @@ export default function Research() {
         {/* Photo background */}
         <div className="absolute inset-0">
           <img
-            src="https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&w=1920&q=85"
+            src="/images/research/DarioEndara_L.jpg"
             alt=""
             aria-hidden="true"
             className="w-full h-full object-cover object-center"
           />
-          {/* Dark overlay — heavy on left for text, lighter on right */}
+          {/* Dark overlay — heavy on left for text, lighter on right (75% strength) */}
           <div
             className="absolute inset-0"
             style={{
               background:
-                "linear-gradient(105deg, rgba(2,44,34,0.97) 0%, rgba(2,44,34,0.88) 35%, rgba(2,44,34,0.55) 65%, rgba(2,44,34,0.35) 100%)",
+                "linear-gradient(105deg, rgba(2,44,34,0.7275) 0%, rgba(2,44,34,0.66) 35%, rgba(2,44,34,0.4125) 65%, rgba(2,44,34,0.2625) 100%)",
             }}
           />
           {/* Bottom fade into page */}
@@ -402,7 +402,7 @@ export default function Research() {
             initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.22, ease: "easeOut" }}
-            className="text-lg md:text-xl text-white/50 max-w-xl leading-relaxed"
+            className="text-lg md:text-xl text-emerald-50/90 max-w-xl leading-relaxed"
           >
             We map where biodiversity thrives, how it is changing, and what it
             means for people — weaving ecology, data science, and human

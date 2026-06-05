@@ -133,17 +133,28 @@ export default function Home() {
         </div>
 
         {/* ── Hero content — V2 layout, bottom-left, no subtitle ── */}
-        <div className="relative z-10 mx-auto flex h-full max-w-7xl flex-col justify-end px-6 pb-24 pt-24 md:px-10 md:pb-32 md:pt-0">
+        <div className="relative z-10 mx-auto flex h-full max-w-7xl flex-col justify-end px-6 pb-24 pt-24 md:px-10 md:pb-6 md:pt-0">
           {hero?.lead && (
-            <motion.span
-              className="inline-flex items-center self-start rounded-full border border-white/20 bg-white/5 px-4 py-1.5 text-sm tracking-wide text-white/90 backdrop-blur md:text-base"
+            <motion.div
+              className="self-start"
               variants={fadeUp}
               initial="hidden"
               animate="visible"
               custom={0}
             >
-              {hero.lead}
-            </motion.span>
+              {hero.lead_to ? (
+                <Link
+                  to={hero.lead_to}
+                  className="inline-flex items-center rounded-full border border-white/20 bg-white/5 px-5 py-2 text-[1.1375rem] tracking-wide text-emerald-50/90 backdrop-blur transition-colors hover:border-white/35 hover:bg-white/10 hover:text-emerald-50 md:text-[1.3rem]"
+                >
+                  {hero.lead}
+                </Link>
+              ) : (
+                <span className="inline-flex items-center rounded-full border border-white/20 bg-white/5 px-5 py-2 text-[1.1375rem] tracking-wide text-emerald-50/90 backdrop-blur md:text-[1.3rem]">
+                  {hero.lead}
+                </span>
+              )}
+            </motion.div>
           )}
 
           <motion.h1

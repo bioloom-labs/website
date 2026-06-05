@@ -4,7 +4,6 @@ import Navbar from "./components/Navbar.jsx";
 import Footer from "./components/Footer.jsx";
 import Home from "./pages/Home.jsx";
 import About from "./pages/About.jsx";
-import AboutTemp from "./pages/AboutTemp.jsx";
 import Research from "./pages/Research.jsx";
 import People from "./pages/People.jsx";
 import Publications from "./pages/Publications.jsx";
@@ -59,10 +58,10 @@ export default function App() {
     }
 
     async function preloadAboutVideos() {
-      // Warm both the live About page and the about-temp test page so their
-      // first videos are cached before the user navigates. Shared clips are
-      // de-duplicated via the data-preload-video attribute.
-      for (const path of ["/about.jsonc", "/about-temp.jsonc"]) {
+      // Warm the About page so its first videos are cached before the user
+      // navigates. Shared clips are de-duplicated via the data-preload-video
+      // attribute.
+      for (const path of ["/about.jsonc"]) {
         try {
           const data = await fetchJSONC(path);
           if (cancelled) return;
@@ -89,14 +88,13 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/about" element={<About />} />
-        <Route path="/about-temp" element={<AboutTemp />} />
         <Route path="/research" element={<Research />} />
         <Route path="/people" element={<People />} />
         <Route path="/publications" element={<Publications />} />
         <Route path="/news" element={<News />} />
         <Route path="/contact" element={<Contact />} />
       </Routes>
-      {location.pathname === "/" || location.pathname === "/about" || location.pathname === "/about-temp"
+      {location.pathname === "/" || location.pathname === "/about"
         ? null
         : <Footer />}
     </div>
