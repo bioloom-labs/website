@@ -12,31 +12,60 @@ import { fetchJSONC } from "../utils/jsonc.js";
 const PLACEHOLDER = `/images/people/placeholder.svg`;
 const SHORT_BIO = 420;
 
-// Per-section slideshow backgrounds. Each section cycles through its own set of
-// images: desert → PhD, rice terraces → MSc, ocean → Alumni.
-const DESERT_IMAGES = [
-  "/images/people/backgrounds/desert/istockphoto-178531120-1024x1024.jpg",
-  "/images/people/backgrounds/desert/istockphoto-2224906470-1024x1024.jpg",
-  "/images/people/backgrounds/desert/istockphoto-2225442080-1024x1024.jpg",
-];
-const RICE_IMAGES = [
-  "/images/people/backgrounds/rice/istockphoto-1082316496-1024x1024.jpg",
-  "/images/people/backgrounds/rice/istockphoto-1318485989-1024x1024.jpg",
-  "/images/people/backgrounds/rice/istockphoto-2244083860-1024x1024.jpg",
-];
-const OCEAN_IMAGES = [
-  "/images/people/backgrounds/ocean/istockphoto-1280262414-1024x1024.jpg",
-  "/images/people/backgrounds/ocean/istockphoto-1283696364-1024x1024.jpg",
-  "/images/people/backgrounds/ocean/istockphoto-1317183130-1024x1024.jpg",
-  "/images/people/backgrounds/ocean/istockphoto-1406486891-1024x1024.jpg",
-];
+// Two "growth" background themes, switchable via the top navigator so they can
+// be compared live. Each stage maps to a phase of growth:
+//   MSc → early growth, PhD → mid growth, PI (hero) → full growth,
+//   Alumni → grown/spread out.
+const U = (id) => `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=1920&q=80`;
 
-// Pick a slideshow set from a section title. Falls back to the desert set.
-function imagesForSection(title = "") {
+const THEMES = {
+  plant: {
+    label: "Plant → tree",
+    hero: U("1612131972021-55811e6cd096"), // figures silhouetted by a tree at sunset
+    msc: [
+      U("1611843467160-25afb8df1074"),
+      U("1622383563227-04401ab4e5ea"),
+      U("1590682680695-43b964a3ae17"),
+    ], // hands planting seedlings
+    phd: [
+      U("1698692019280-1c17d47085cd"),
+      U("1643614334017-24df277a9725"),
+      U("1777150895644-2ca253ee1c93"),
+    ], // hands planting young saplings
+    alumni: [
+      U("1770633515101-b38cf4e24537"),
+      U("1676430902543-6d290b6b82e0"),
+      U("1605167230279-f41417da905b"),
+    ], // figure (back view) walking through forest
+  },
+  mountain: {
+    label: "Mountain → summit",
+    hero: U("1500282330145-93b0dac2da02"), // silhouette on a cliff / summit
+    msc: [
+      U("1545945774-73922eb27813"),
+      U("1630509008624-08b46c401e34"),
+      U("1765403256456-693c4e3ced37"),
+    ], // silhouettes in foothill meadows
+    phd: [
+      U("1759776037670-8290e9bf0524"),
+      U("1779136930161-f327b8406fef"),
+      U("1762342895045-60e91c722e3d"),
+    ], // silhouetted hikers ascending a ridge
+    alumni: [
+      U("1729201956176-bf5ec82a6217"),
+      U("1751647670934-66f2dde5e3f9"),
+      U("1760522066318-b104c7fc9357"),
+    ], // figure (back view) taking in a range vista
+  },
+};
+
+const THEME_ORDER = ["plant", "mountain"];
+
+// Pick a theme's slideshow set from a section title (PhD / MSc).
+function sectionImages(theme, title = "") {
   const t = title.toLowerCase();
-  if (t.includes("phd")) return DESERT_IMAGES;
-  if (t.includes("msc") || t.includes("master")) return RICE_IMAGES;
-  return DESERT_IMAGES;
+  if (t.includes("msc") || t.includes("master")) return theme.msc;
+  return theme.phd;
 }
 
 // ─── helpers ────────────────────────────────────────────────────────────────
@@ -290,7 +319,7 @@ function MemberModal({ person, onClose }) {
 
               <div className="h-px bg-white/8" />
 
-              <p className="text-sm leading-relaxed text-white/65">
+              <p className="text-sm leading-relaxed text-white/65 whitespace-pre-line">
                 {formatBlurbWithLinks(person.description) || "Lab member at BioLoom Labs."}
               </p>
             </div>
@@ -305,7 +334,7 @@ function MemberModal({ person, onClose }) {
 
 // ─── PI hero ─────────────────────────────────────────────────────────────────
 
-function PIHero({ person }) {
+function PIHero({ person, bgImage }) {
   const [imgErr, setImgErr] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
@@ -321,7 +350,7 @@ function PIHero({ person }) {
       {/* Parallax bg */}
       <motion.div style={{ y }} className="absolute inset-0 scale-[1.6] pointer-events-none">
         <img
-          src="https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=1920&q=80"
+          src={bgImage}
           alt=""
           className="h-full w-full object-cover"
           loading="eager"
@@ -618,12 +647,45 @@ function Alumni({ members, images }) {
   );
 }
 
+// ─── theme navigator ──────────────────────────────────────────────────────────
+
+// Single switcher pinned below the navbar that flips every background between
+// the growth themes so they can be compared side by side.
+function ThemeNav({ themeKey, onSelect }) {
+  return (
+    <div className="pointer-events-none sticky top-[60px] z-40 flex justify-center px-4 py-3">
+      <div className="pointer-events-auto inline-flex items-center gap-1 rounded-full border border-white/15 bg-brand-950/80 px-1.5 py-1.5 shadow-lg shadow-black/40 backdrop-blur">
+        <span className="px-3 text-[10px] font-semibold uppercase tracking-[0.18em] text-white/40">
+          Theme
+        </span>
+        {THEME_ORDER.map((key) => (
+          <button
+            key={key}
+            type="button"
+            onClick={() => onSelect(key)}
+            aria-pressed={key === themeKey}
+            className={`rounded-full px-4 py-1.5 text-xs font-semibold transition ${
+              key === themeKey
+                ? "bg-brand-400 text-brand-950"
+                : "text-white/60 hover:bg-white/10 hover:text-white"
+            }`}
+          >
+            {THEMES[key].label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // ─── page ─────────────────────────────────────────────────────────────────────
 
 export default function PeopleTemp() {
   const [data, setData] = useState({ sections: [], previous: [] });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [themeKey, setThemeKey] = useState("plant");
+  const theme = THEMES[themeKey];
 
   useEffect(() => {
     async function load() {
@@ -673,19 +735,21 @@ export default function PeopleTemp() {
 
   return (
     <div className="min-h-screen text-white">
-      {pi && <PIHero person={pi} />}
+      <ThemeNav themeKey={themeKey} onSelect={setThemeKey} />
+
+      {pi && <PIHero person={pi} bgImage={theme.hero} />}
 
       {otherSections.map((section, i) => (
         <TeamSection
           key={section.title}
           section={section}
           sectionIndex={i}
-          images={imagesForSection(section.title)}
+          images={sectionImages(theme, section.title)}
         />
       ))}
 
       {data.previous.length > 0 && (
-        <Alumni members={data.previous} images={OCEAN_IMAGES} />
+        <Alumni members={data.previous} images={theme.alumni} />
       )}
     </div>
   );

@@ -58,15 +58,18 @@
         {
           "name": "Qing Zhang",
           "role": "Visiting PhD Researcher from Minzu University of China",
-          "description": "",
+          "description": "Flower-eating represents a unique way in which people interact with plants as well as their ecological environment. As edible plant organs, flowers are not only diverse food resources with nutritional value, but also carry memories, cultural meanings, and social significance. In Yunnan, Southwest China, the consumption of flowers is remarkably widespread, giving rise to a distinctive culinary tradition.\n\nWith a background in Ecology and as a PhD candidate in Ethnology at Minzu University of China, I always focus on documenting and understanding traditional botanical knowledge and its role in sustaining local food systems and agricultural heritage. My previous ethnobotanical research has explored the diversity of edible flowers in Yunnan, local knowledge associated with their use, and their contributions to biocultural diversity. I have also combined nutritional analyses and electronic tongue assessments to investigate the relationship between the biological properties of edible flowers and the cultural preferences that shape their consumption.\n\nMy current doctoral research examines edible flower traditions in Gaoligong Mountains in western Yunnan. Drawing on perspectives from multispecies ethnography and the social life of things, I conduct long-term fieldwork, combining ethnobotanical surveys, multi-sited interviews, and ethnographic observation. By tracing the movement of flowers from forests and farmlands to households, markets, restaurants, and tourism spaces, I explore how edible flower practices contribute to ethnic and regional identities, community cohesion, and collective memory. I am also interested in the transformations of food traditions under commercialization and modernization, particularly the ways in which edible flower cultures simultaneously flourish and decline, as traditional knowledge is preserved, simplified, and increasingly homogenized.",
           "photo": "/images/people/qing.jpg",
           "focusPhoto": "/images/people/qing.jpg",
-          "email": "",
+          "email": "zhangqing@muc.edu.cn",
           "website": "",
           "twitter": "",
           "linkedin": "",
           "github": "",
-          "links": []
+          "links": [
+            "https://orcid.org/0000-0001-5369-4956",
+            "https://www.researchgate.net/profile/Qing-Zhang-185"
+          ]
         }
       ]
     },

@@ -4,10 +4,10 @@
   "videos": {
     "intro": "/images/videos/about/1080p_weavingloom.mp4",
     "narrative": [
-      "/images/videos/about/1080p_handseeds.mp4",
-      "/images/videos/about/1080p_europeangreenfinch.mp4",
-      "/images/videos/about/1080p_butterflyonhand.mp4",
-      "/images/videos/about/1080p_holdingplant.mp4"
+      "/images/videos/about/1080p_holdingplant.mp4",
+      "/images/videos/about/deforestation.mp4",
+      null,
+      "/images/videos/about/under_tree.mp4"
     ],
     "sections": "/images/videos/about/1080p_beereddahlia.mp4"
   },
@@ -18,21 +18,12 @@
     },
     "narrative": [
       {
-        "label": "Hand Stock Videos by Vecteezy",
-        "href": "https://www.vecteezy.com/free-videos/hand"
-      },
-      {
-        "label": "Nature Birds Stock Videos by Vecteezy",
-        "href": "https://www.vecteezy.com/free-videos/nature-birds"
-      },
-      {
-        "label": "Butterfly Stock Videos by Vecteezy",
-        "href": "https://www.vecteezy.com/free-videos/butterfly"
-      },
-      {
         "label": "Nature Stock Videos by Vecteezy",
         "href": "https://www.vecteezy.com/free-videos/nature"
-      }
+      },
+      null,
+      null,
+      null
     ],
     "sections": {
       "label": "Pollination Stock Videos by Vecteezy",
@@ -54,7 +45,7 @@
     },
     {
       "heading": "Why Biodiversity-People Research Matters",
-      "tag": "Why this matters",
+      "tag": "Our focus",
       "paragraphs": [
         "Ecosystems—from reefs and forests to wetlands and mangroves—are the foundation of our food, water, health, and economies. When biodiversity thrives, people thrive. When it falters, so do we.",
         "Studying the connections between nature and human well-being shows us the path forward. By protecting and restoring ecosystems, we can secure our resources, strengthen communities, and build a future where people and biodiversity flourish together."
@@ -71,7 +62,7 @@
     },
     {
       "heading": "Lab Values",
-      "tag": "Values",
+      "tag": "Our culture",
       "values": [
         {
           "title": "Beyond Boundaries",

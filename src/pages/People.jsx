@@ -271,7 +271,7 @@ function MemberModal({ person, onClose }) {
 
               <div className="h-px bg-white/8" />
 
-              <p className="text-sm leading-relaxed text-white/65">
+              <p className="text-sm leading-relaxed text-white/65 whitespace-pre-line">
                 {formatBlurbWithLinks(person.description) || "Lab member at BioLoom Labs."}
               </p>
             </div>
