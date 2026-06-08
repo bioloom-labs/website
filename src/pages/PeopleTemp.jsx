@@ -12,60 +12,19 @@ import { fetchJSONC } from "../utils/jsonc.js";
 const PLACEHOLDER = `/images/people/placeholder.svg`;
 const SHORT_BIO = 420;
 
-// Two "growth" background themes, switchable via the top navigator so they can
-// be compared live. Each stage maps to a phase of growth:
-//   MSc → early growth, PhD → mid growth, PI (hero) → full growth,
-//   Alumni → grown/spread out.
-const U = (id) => `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=1920&q=80`;
-
-const THEMES = {
-  plant: {
-    label: "Plant → tree",
-    hero: U("1612131972021-55811e6cd096"), // figures silhouetted by a tree at sunset
-    msc: [
-      U("1611843467160-25afb8df1074"),
-      U("1622383563227-04401ab4e5ea"),
-      U("1590682680695-43b964a3ae17"),
-    ], // hands planting seedlings
-    phd: [
-      U("1698692019280-1c17d47085cd"),
-      U("1643614334017-24df277a9725"),
-      U("1777150895644-2ca253ee1c93"),
-    ], // hands planting young saplings
-    alumni: [
-      U("1770633515101-b38cf4e24537"),
-      U("1676430902543-6d290b6b82e0"),
-      U("1605167230279-f41417da905b"),
-    ], // figure (back view) walking through forest
-  },
-  mountain: {
-    label: "Mountain → summit",
-    hero: U("1500282330145-93b0dac2da02"), // silhouette on a cliff / summit
-    msc: [
-      U("1545945774-73922eb27813"),
-      U("1630509008624-08b46c401e34"),
-      U("1765403256456-693c4e3ced37"),
-    ], // silhouettes in foothill meadows
-    phd: [
-      U("1759776037670-8290e9bf0524"),
-      U("1779136930161-f327b8406fef"),
-      U("1762342895045-60e91c722e3d"),
-    ], // silhouetted hikers ascending a ridge
-    alumni: [
-      U("1729201956176-bf5ec82a6217"),
-      U("1751647670934-66f2dde5e3f9"),
-      U("1760522066318-b104c7fc9357"),
-    ], // figure (back view) taking in a range vista
-  },
+// One static parallax background per section, matched to its title.
+const BG = {
+  pi: "/images/people/backgrounds/pi.jpg",
+  phd: "/images/people/backgrounds/phd.jpg",
+  msc: "/images/people/backgrounds/msc.jpg",
+  alumni: "/images/people/backgrounds/alumni.jpg",
 };
 
-const THEME_ORDER = ["plant", "mountain"];
-
-// Pick a theme's slideshow set from a section title (PhD / MSc).
-function sectionImages(theme, title = "") {
+// Pick a section's background image from its title (PhD / MSc).
+function sectionImage(title = "") {
   const t = title.toLowerCase();
-  if (t.includes("msc") || t.includes("master")) return theme.msc;
-  return theme.phd;
+  if (t.includes("msc") || t.includes("master")) return BG.msc;
+  return BG.phd;
 }
 
 // ─── helpers ────────────────────────────────────────────────────────────────
@@ -348,7 +307,7 @@ function PIHero({ person, bgImage }) {
   return (
     <div ref={ref} className="relative overflow-hidden border-b border-white/5">
       {/* Parallax bg */}
-      <motion.div style={{ y }} className="absolute inset-0 scale-[1.6] pointer-events-none">
+      <motion.div style={{ y }} className="absolute inset-0 scale-[1.3] pointer-events-none">
         <img
           src={bgImage}
           alt=""
@@ -507,86 +466,22 @@ function MemberCard({ person, index }) {
   );
 }
 
-// ─── slideshow background ─────────────────────────────────────────────────────
-
-// Auto-advancing slideshow index. The timer restarts whenever `index` changes
-// (auto or manual), so clicking the navigator gives a full interval before the
-// next auto-advance.
-function useSlideshow(length, interval = 6000) {
-  const [index, setIndex] = useState(0);
-
-  useEffect(() => {
-    if (length <= 1) return undefined;
-    const id = setTimeout(() => setIndex((i) => (i + 1) % length), interval);
-    return () => clearTimeout(id);
-  }, [length, interval, index]);
-
-  return [index, setIndex];
-}
-
-// Crossfades through a set of images (controlled by `index`). Mirrors the PI
-// hero parallax: a translateY-driven layer (`y`) inside a scaled wrapper that
-// gives the translate room to move without exposing the edges. Scale is kept
-// just past the ~1.24 minimum a ±12% shift needs, so the zoom stays much milder
-// than the hero's 1.6.
-function SlideshowBackground({ images, index, y }) {
-  const list = Array.isArray(images) ? images.filter(Boolean) : [];
-  if (!list.length) return null;
-
-  return (
-    <motion.div style={{ y }} className="absolute inset-0 scale-[1.3] pointer-events-none">
-      {list.map((src, i) => (
-        <img
-          key={src}
-          src={src}
-          alt=""
-          loading={i === 0 ? "eager" : "lazy"}
-          className="absolute inset-0 h-full w-full object-cover transition-opacity duration-1000 ease-in-out"
-          style={{ opacity: i === index ? 1 : 0 }}
-        />
-      ))}
-    </motion.div>
-  );
-}
-
-// Clickable dot navigator for the background slideshow.
-function SlideNav({ count, index, onSelect }) {
-  if (count <= 1) return null;
-
-  return (
-    <div className="mt-10 flex justify-center gap-2">
-      {Array.from({ length: count }).map((_, i) => (
-        <button
-          key={i}
-          type="button"
-          onClick={() => onSelect(i)}
-          aria-label={`Show background ${i + 1}`}
-          aria-current={i === index}
-          className={`h-2 rounded-full transition-all duration-300 ${
-            i === index
-              ? "w-6 bg-brand-300"
-              : "w-2 bg-white/30 hover:bg-white/60"
-          }`}
-        />
-      ))}
-    </div>
-  );
-}
-
 // ─── team section ─────────────────────────────────────────────────────────────
 
-function TeamSection({ section, sectionIndex, images }) {
+function TeamSection({ section, sectionIndex, imageUrl }) {
   const ref = useRef(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
   const y = useTransform(scrollYProgress, [0, 1], ["-12%", "12%"]);
   const num = String(sectionIndex + 1).padStart(2, "0");
-  const slides = Array.isArray(images) ? images.filter(Boolean) : [];
-  const [slide, setSlide] = useSlideshow(slides.length);
 
   return (
     <div ref={ref} className="relative overflow-hidden border-t border-white/5">
-      {/* Parallax slideshow bg */}
-      <SlideshowBackground images={slides} index={slide} y={y} />
+      {/* Parallax bg image */}
+      {imageUrl && (
+        <motion.div style={{ y }} className="absolute inset-0 scale-[1.3] pointer-events-none">
+          <img src={imageUrl} alt="" className="h-full w-full object-cover" loading="lazy" />
+        </motion.div>
+      )}
       {/* Dark overlay so content stays readable */}
       <div className="absolute inset-0 bg-black/55 pointer-events-none" />
 
@@ -607,8 +502,6 @@ function TeamSection({ section, sectionIndex, images }) {
             <MemberCard key={person.name} person={person} index={i} />
           ))}
         </div>
-
-        <SlideNav count={slides.length} index={slide} onSelect={setSlide} />
       </div>
     </div>
   );
@@ -616,16 +509,18 @@ function TeamSection({ section, sectionIndex, images }) {
 
 // ─── alumni ──────────────────────────────────────────────────────────────────
 
-function Alumni({ members, images }) {
+function Alumni({ members, imageUrl }) {
   const ref = useRef(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
   const y = useTransform(scrollYProgress, [0, 1], ["-12%", "12%"]);
-  const slides = Array.isArray(images) ? images.filter(Boolean) : [];
-  const [slide, setSlide] = useSlideshow(slides.length);
 
   return (
     <div ref={ref} className="relative overflow-hidden border-t border-white/5">
-      <SlideshowBackground images={slides} index={slide} y={y} />
+      {imageUrl && (
+        <motion.div style={{ y }} className="absolute inset-0 scale-[1.3] pointer-events-none">
+          <img src={imageUrl} alt="" className="h-full w-full object-cover" loading="lazy" />
+        </motion.div>
+      )}
       <div className="absolute inset-0 bg-black/55 pointer-events-none" />
 
       <div className="relative mx-auto max-w-7xl px-4 py-16">
@@ -640,39 +535,6 @@ function Alumni({ members, images }) {
             <MemberCard key={person.name} person={person} index={i} />
           ))}
         </div>
-
-        <SlideNav count={slides.length} index={slide} onSelect={setSlide} />
-      </div>
-    </div>
-  );
-}
-
-// ─── theme navigator ──────────────────────────────────────────────────────────
-
-// Single switcher pinned below the navbar that flips every background between
-// the growth themes so they can be compared side by side.
-function ThemeNav({ themeKey, onSelect }) {
-  return (
-    <div className="pointer-events-none sticky top-[60px] z-40 flex justify-center px-4 py-3">
-      <div className="pointer-events-auto inline-flex items-center gap-1 rounded-full border border-white/15 bg-brand-950/80 px-1.5 py-1.5 shadow-lg shadow-black/40 backdrop-blur">
-        <span className="px-3 text-[10px] font-semibold uppercase tracking-[0.18em] text-white/40">
-          Theme
-        </span>
-        {THEME_ORDER.map((key) => (
-          <button
-            key={key}
-            type="button"
-            onClick={() => onSelect(key)}
-            aria-pressed={key === themeKey}
-            className={`rounded-full px-4 py-1.5 text-xs font-semibold transition ${
-              key === themeKey
-                ? "bg-brand-400 text-brand-950"
-                : "text-white/60 hover:bg-white/10 hover:text-white"
-            }`}
-          >
-            {THEMES[key].label}
-          </button>
-        ))}
       </div>
     </div>
   );
@@ -684,8 +546,6 @@ export default function PeopleTemp() {
   const [data, setData] = useState({ sections: [], previous: [] });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [themeKey, setThemeKey] = useState("plant");
-  const theme = THEMES[themeKey];
 
   useEffect(() => {
     async function load() {
@@ -735,21 +595,19 @@ export default function PeopleTemp() {
 
   return (
     <div className="min-h-screen text-white">
-      <ThemeNav themeKey={themeKey} onSelect={setThemeKey} />
-
-      {pi && <PIHero person={pi} bgImage={theme.hero} />}
+      {pi && <PIHero person={pi} bgImage={BG.pi} />}
 
       {otherSections.map((section, i) => (
         <TeamSection
           key={section.title}
           section={section}
           sectionIndex={i}
-          images={sectionImages(theme, section.title)}
+          imageUrl={sectionImage(section.title)}
         />
       ))}
 
       {data.previous.length > 0 && (
-        <Alumni members={data.previous} images={theme.alumni} />
+        <Alumni members={data.previous} imageUrl={BG.alumni} />
       )}
     </div>
   );
