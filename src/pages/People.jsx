@@ -12,13 +12,20 @@ import { fetchJSONC } from "../utils/jsonc.js";
 const PLACEHOLDER = `/images/people/placeholder.svg`;
 const SHORT_BIO = 420;
 
-// Nature images for parallax banners (one per section divider)
-const PARALLAX_IMAGES = [
-  "https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1920&q=80",
-  "https://images.unsplash.com/photo-1465146344425-f00d5f5c8f07?auto=format&fit=crop&w=1920&q=80",
-  "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=1920&q=80",
-  "https://images.unsplash.com/photo-1426604966848-d7adac402bff?auto=format&fit=crop&w=1920&q=80",
-];
+// One static parallax background per section, matched to its title.
+const BG = {
+  pi: "/images/people/backgrounds/pi.jpg",
+  phd: "/images/people/backgrounds/phd.jpg",
+  msc: "/images/people/backgrounds/msc.jpg",
+  alumni: "/images/people/backgrounds/alumni.jpg",
+};
+
+// Pick a section's background image from its title (PhD / MSc).
+function sectionImage(title = "") {
+  const t = title.toLowerCase();
+  if (t.includes("msc") || t.includes("master")) return BG.msc;
+  return BG.phd;
+}
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
@@ -286,7 +293,7 @@ function MemberModal({ person, onClose }) {
 
 // ─── PI hero ─────────────────────────────────────────────────────────────────
 
-function PIHero({ person }) {
+function PIHero({ person, bgImage }) {
   const [imgErr, setImgErr] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
@@ -300,9 +307,9 @@ function PIHero({ person }) {
   return (
     <div ref={ref} className="relative overflow-hidden border-b border-white/5">
       {/* Parallax bg */}
-      <motion.div style={{ y }} className="absolute inset-0 scale-[1.6] pointer-events-none">
+      <motion.div style={{ y }} className="absolute inset-0 scale-[1.3] pointer-events-none">
         <img
-          src="https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=1920&q=80"
+          src={bgImage}
           alt=""
           className="h-full w-full object-cover"
           loading="eager"
@@ -471,7 +478,7 @@ function TeamSection({ section, sectionIndex, imageUrl }) {
     <div ref={ref} className="relative overflow-hidden border-t border-white/5">
       {/* Parallax bg image */}
       {imageUrl && (
-        <motion.div style={{ y }} className="absolute inset-0 scale-[1.6] pointer-events-none">
+        <motion.div style={{ y }} className="absolute inset-0 scale-[1.3] pointer-events-none">
           <img src={imageUrl} alt="" className="h-full w-full object-cover" loading="lazy" />
         </motion.div>
       )}
@@ -510,7 +517,7 @@ function Alumni({ members, imageUrl }) {
   return (
     <div ref={ref} className="relative overflow-hidden border-t border-white/5">
       {imageUrl && (
-        <motion.div style={{ y }} className="absolute inset-0 scale-[1.6] pointer-events-none">
+        <motion.div style={{ y }} className="absolute inset-0 scale-[1.3] pointer-events-none">
           <img src={imageUrl} alt="" className="h-full w-full object-cover" loading="lazy" />
         </motion.div>
       )}
@@ -588,22 +595,19 @@ export default function People() {
 
   return (
     <div className="min-h-screen text-white">
-      {pi && <PIHero person={pi} />}
+      {pi && <PIHero person={pi} bgImage={BG.pi} />}
 
       {otherSections.map((section, i) => (
         <TeamSection
           key={section.title}
           section={section}
           sectionIndex={i}
-          imageUrl={PARALLAX_IMAGES[i % PARALLAX_IMAGES.length]}
+          imageUrl={sectionImage(section.title)}
         />
       ))}
 
       {data.previous.length > 0 && (
-        <Alumni
-          members={data.previous}
-          imageUrl={PARALLAX_IMAGES[otherSections.length % PARALLAX_IMAGES.length]}
-        />
+        <Alumni members={data.previous} imageUrl={BG.alumni} />
       )}
     </div>
   );

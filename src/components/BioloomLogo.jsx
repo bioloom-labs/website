@@ -1,14 +1,16 @@
 import { useRef } from "react";
 
 /**
- * BioLoom wordmark + icon as an inline SVG, animated on hover.
+ * BioLoom wordmark + icon as an inline SVG, animated around hover.
  *
- * Hover replays the Stack-build sequence (animation 01 from the motion
- * exploration: fabric wipes in → plant grows → people pop → wordmark fades)
- * and finishes with the plant rocking once on its base — the "plant sway"
- * from animation 07 of the same exploration.
+ * Hover swaps the BIOLOOM wordmark for a "Home" label (the link's
+ * destination); the icon stays put. On mouse-leave the label exits to the
+ * right while the Stack-build sequence replays (animation 01 from the
+ * motion exploration: fabric wipes in → plant grows → people pop →
+ * wordmark fades), finishing with the plant rocking once on its base —
+ * the "plant sway" from animation 07 of the same exploration.
  *
- * Every mouse-enter (or keyboard focus) restarts the whole sequence. A
+ * Every mouse-leave (or keyboard blur) restarts the whole sequence. A
  * double requestAnimationFrame between class removal and re-application
  * guarantees the browser commits the "no animation" state before the
  * keyframes are re-armed, so the restart is reliable even on the third,
@@ -27,9 +29,22 @@ import { useRef } from "react";
 export default function BioloomLogo({ className = "" }) {
   const ref = useRef(null);
 
-  const replay = () => {
+  // Hover/focus: stop any running build animation and slide "Home" in
+  // over the wordmark.
+  const showHome = () => {
     const el = ref.current;
     if (!el) return;
+    el.classList.remove("play", "bye");
+    el.classList.add("home");
+  };
+
+  // Leave/blur: "Home" exits stage-right (.bye) while the build sequence
+  // re-arms and replays.
+  const hideHomeAndPlay = () => {
+    const el = ref.current;
+    if (!el) return;
+    el.classList.remove("home");
+    el.classList.add("bye");
     el.classList.remove("play");
     // Double RAF: the first frame lets the browser commit the class
     // removal (so animations are torn down), the second frame re-arms
@@ -42,11 +57,23 @@ export default function BioloomLogo({ className = "" }) {
     });
   };
 
+  // Once "Home" has finished exiting, drop .bye so its fill-mode doesn't
+  // pin the label at the right edge — the next hover should slide it in
+  // from the left again.
+  const clearBye = (e) => {
+    if (e.animationName === "bl-home-exit") {
+      ref.current?.classList.remove("bye");
+    }
+  };
+
   return (
     <svg
       ref={ref}
-      onMouseEnter={replay}
-      onFocus={replay}
+      onMouseEnter={showHome}
+      onMouseLeave={hideHomeAndPlay}
+      onFocus={showHome}
+      onBlur={hideHomeAndPlay}
+      onAnimationEnd={clearBye}
       role="img"
       aria-label="BioLoom Labs"
       viewBox="0 0 800 239"
@@ -102,6 +129,23 @@ export default function BioloomLogo({ className = "" }) {
           <path d="M2755 1445 l-25 -24 0 -326 0 -325 75 0 75 0 0 329 0 330 -26 20 c-35 28 -69 26 -99 -4z" />
           <path d="M1588 593 c18 -2 45 -2 60 0 15 2 0 4 -33 4 -33 0 -45 -2 -27 -4z" />
         </g>
+      </g>
+
+      {/* "Home" label — swapped in over the wordmark while hovered */}
+      <g className="g-home" aria-hidden="true">
+        <text
+          x="192"
+          y="178"
+          fill="#a7f3d0"
+          style={{
+            fontFamily: "'Quicksand', 'Trebuchet MS', sans-serif",
+            fontWeight: 700,
+            fontSize: "155px",
+            letterSpacing: "0.04em",
+          }}
+        >
+          HOME
+        </text>
       </g>
     </svg>
   );

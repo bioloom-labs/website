@@ -53,8 +53,18 @@ export default function Navbar() {
     { to: "/contact", label: "Contact" },
   ];
 
+  // On the News page the navbar floats transparently over the desk background.
+  const isNews = location.pathname === "/news";
+
   return (
-    <header className="sticky top-0 z-50 border-b border-white/10 bg-brand-950/70 backdrop-blur supports-[backdrop-filter]:bg-brand-950/40">
+    <header
+      className={[
+        "sticky top-0 z-50",
+        isNews
+          ? "bg-transparent"
+          : "border-b border-white/10 bg-brand-950/70 backdrop-blur supports-[backdrop-filter]:bg-brand-950/40",
+      ].join(" ")}
+    >
       <nav className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3">
         <Link to="/" className="flex items-center cursor-pointer" aria-label="BioLoom Labs — home">
           <BioloomLogo className="h-9 lg:h-10 w-auto block" />
