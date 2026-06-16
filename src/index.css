@@ -671,7 +671,8 @@ body {
 .bp-rule-thick  { border: 0; border-top: 0.22em solid var(--ink); }
 .bp-rule-double { border: 0; border-top: 0.28em double var(--ink); }
 
-.bp-dropcap::first-letter {
+.bp-dropcap::first-letter,
+.bp-dropcap-letter {
     float: left;
     font-family: 'Playfair Display', Georgia, serif;
     font-weight: 900;
@@ -798,6 +799,181 @@ body {
 .book-btn--rail {
     width: 100%;
     justify-content: center;
+    padding-left: 0.55rem;
+    padding-right: 0.55rem;
+    font-size: 0.64rem;
+    letter-spacing: 0.12em;
+}
+
+/* Thin divider between the page controls and the download/archive controls */
+.book-rail-sep {
+    width: 60%;
+    height: 1px;
+    background: rgba(231, 211, 161, 0.25);
+    margin: 0.15rem 0;
+}
+
+/* ── Archive overlay ── */
+.archive-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 60; /* above the navbar */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    background: rgba(8, 5, 2, 0.62);
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+    animation: archive-fade 0.25s ease both;
+}
+@keyframes archive-fade {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+.archive-panel {
+    position: relative;
+    width: min(94vw, 640px);
+    max-height: min(86vh, 760px);
+    display: flex;
+    flex-direction: column;
+    padding: 1.8rem 1.9rem 1.4rem;
+    border-radius: 0.6rem;
+    background:
+        radial-gradient(120% 80% at 50% -10%, rgba(255, 253, 245, 0.6), transparent 60%),
+        #f2ead6;
+    color: #211f17;
+    box-shadow: 0 30px 80px -20px rgba(0, 0, 0, 0.7);
+    border: 1px solid rgba(120, 96, 50, 0.25);
+}
+.archive-close {
+    position: absolute;
+    top: 0.7rem;
+    right: 0.9rem;
+    font-family: 'Newsreader', Georgia, serif;
+    font-size: 1.7rem;
+    line-height: 1;
+    color: #6f6b5b;
+    transition: color 0.15s ease;
+}
+.archive-close:hover { color: #211f17; }
+.archive-kicker {
+    text-align: center;
+    font-family: 'Playfair Display', Georgia, serif;
+    text-transform: uppercase;
+    letter-spacing: 0.26em;
+    font-size: 0.6rem;
+    color: #1f5f43;
+}
+.archive-title {
+    text-align: center;
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-size: 2rem;
+    line-height: 1;
+    margin-top: 0.25rem;
+    color: #211f17;
+}
+.archive-sub {
+    text-align: center;
+    font-style: italic;
+    font-size: 0.82rem;
+    color: #6f6b5b;
+    margin-top: 0.35rem;
+}
+.archive-rule {
+    border-top: 3px double #211f17;
+    margin: 0.9rem 0 0.4rem;
+}
+.archive-scroll {
+    overflow-y: auto;
+    padding: 0.4rem 0.2rem 0.2rem;
+}
+.archive-year {
+    margin-top: 0.9rem;
+}
+.archive-year-label {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-weight: 700;
+    font-size: 0.95rem;
+    letter-spacing: 0.05em;
+    color: #4b483c;
+    border-bottom: 1px solid rgba(33, 31, 23, 0.18);
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.6rem;
+}
+.archive-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 0.5rem;
+}
+@media (max-width: 560px) {
+    .archive-grid { grid-template-columns: repeat(4, 1fr); }
+}
+.archive-month {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.3rem;
+    padding: 0.45rem 0.55rem;
+    border: 1px solid rgba(33, 31, 23, 0.2);
+    border-radius: 0.4rem;
+    background: rgba(255, 255, 255, 0.25);
+    font-family: 'Playfair Display', Georgia, serif;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-size: 0.72rem;
+    color: #4b483c;
+    transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+.archive-month:hover:not(:disabled) {
+    background: rgba(31, 95, 67, 0.1);
+    border-color: rgba(31, 95, 67, 0.5);
+    color: #1f5f43;
+}
+.archive-month:disabled { opacity: 0.45; cursor: default; }
+.archive-month .archive-dl {
+    width: 0.78rem;
+    height: 0.78rem;
+    display: inline-flex;
+    opacity: 0.55;
+}
+.archive-month:hover:not(:disabled) .archive-dl { opacity: 1; }
+/* Months that actually carry dispatches get the ink-green accent */
+.archive-month.has-items {
+    color: #1f5f43;
+    border-color: rgba(31, 95, 67, 0.4);
+    background: rgba(31, 95, 67, 0.07);
+}
+.archive-month.has-items .archive-dl { opacity: 0.9; }
+/* The current edition gets a heavier ink-green frame */
+.archive-month.is-current {
+    border-color: rgba(31, 95, 67, 0.75);
+    box-shadow: inset 0 0 0 1px rgba(31, 95, 67, 0.4);
+    color: #1f5f43;
+}
+
+/* ── Flattened book pages, rendered off-screen for the PDF export.
+   Width/height/--print-fs are set inline to match the live book page so the
+   type sets identically. ── */
+.pdf-page {
+    position: relative;
+}
+.pdf-page > .book-page {
+    width: 100%;
+    height: 100%;
+}
+/* Pin the font size (rather than cqw) so it survives foreignObject rendering */
+.pdf-page .bp-inner {
+    font-size: var(--print-fs, 3.35cqw);
+}
+/* Interaction-only decoration shouldn't appear in print */
+.pdf-page .book-corner-hint,
+.pdf-page .book-dogear {
+    display: none;
+}
+/* The multiply-blended grain doesn't rasterise cleanly — omit it from print */
+.pdf-page .bp-inner::after {
+    display: none;
 }
 .book-rail .book-indicator {
     font-size: 0.66rem;

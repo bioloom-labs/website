@@ -494,7 +494,7 @@ export default function PersonCard({
       } else if (item.icon === "orcid") {
         iconNode = (
           <img
-            src="/images/socials/orcid.png"
+            src="/images/socials/orcid.webp"
             alt="ORCID icon"
             className="h-4 w-4 object-contain"
           />
@@ -502,7 +502,7 @@ export default function PersonCard({
       } else if (item.icon === "google-scholar") {
         iconNode = (
           <img
-            src="/images/socials/googlescholar.png"
+            src="/images/socials/googlescholar.webp"
             alt="Google Scholar icon"
             className="h-4 w-4 object-contain"
           />
@@ -510,7 +510,7 @@ export default function PersonCard({
       } else if (item.icon === "researchgate") {
         iconNode = (
           <img
-            src="/images/socials/researchgate.png"
+            src="/images/socials/researchgate.webp"
             alt="ResearchGate icon"
             className="h-4 w-4 object-contain"
           />
@@ -661,11 +661,11 @@ export default function PersonCard({
                   } else if (item.icon === "github") {
                     iconNode = <Github className="h-3.5 w-3.5" />;
                   } else if (item.icon === "orcid") {
-                    iconNode = <img src="/images/socials/orcid.png" alt="" className="h-3.5 w-3.5 object-contain" />;
+                    iconNode = <img src="/images/socials/orcid.webp" alt="" className="h-3.5 w-3.5 object-contain" />;
                   } else if (item.icon === "google-scholar") {
-                    iconNode = <img src="/images/socials/googlescholar.png" alt="" className="h-3.5 w-3.5 object-contain" />;
+                    iconNode = <img src="/images/socials/googlescholar.webp" alt="" className="h-3.5 w-3.5 object-contain" />;
                   } else if (item.icon === "researchgate") {
-                    iconNode = <img src="/images/socials/researchgate.png" alt="" className="h-3.5 w-3.5 object-contain" />;
+                    iconNode = <img src="/images/socials/researchgate.webp" alt="" className="h-3.5 w-3.5 object-contain" />;
                   } else if (item.icon === "mail") {
                     iconNode = <Mail className="h-3.5 w-3.5" />;
                   } else {

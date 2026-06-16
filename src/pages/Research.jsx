@@ -778,7 +778,7 @@ export default function Research() {
         {/* Photo background */}
         <div className="absolute inset-0">
           <img
-            src="/images/research/DarioEndara_L.jpg"
+            src="/images/research/DarioEndara_L.webp"
             alt=""
             aria-hidden="true"
             className="w-full h-full object-cover object-center"

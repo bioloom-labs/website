@@ -79,6 +79,81 @@ function fitBook(availW, availH) {
   return { width: Math.floor(portW), portrait: true };
 }
 
+/* ─── Monthly editions / archive ─────────────────────────────────────────── */
+const MONTH_NAMES = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December",
+];
+const MONTH_ABBR = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const LAUNCH_YEAR = 2024;
+const LAUNCH_MONTH = 0; // January 2024 — "Established 2024"
+
+function enrichItems(raw) {
+  const todayMid = new Date();
+  todayMid.setHours(0, 0, 0, 0);
+  return (raw || []).map((it, idx) => {
+    const dateObj = parseDate(it.date);
+    return {
+      ...it,
+      dateObj,
+      upcoming: dateObj ? dateObj >= todayMid : false,
+      id: it.id || `${it.title || "news"}-${idx}`,
+    };
+  });
+}
+
+function pad2(n) {
+  return String(n).padStart(2, "0");
+}
+
+// An edition for a specific calendar month (the items dated within it).
+function editionForMonth(raw, y, m) {
+  const monthItems = enrichItems(raw)
+    .filter((e) => e.dateObj && e.dateObj.getFullYear() === y && e.dateObj.getMonth() === m)
+    .sort((a, b) => a.dateObj - b.dateObj);
+  const [lead, ...rest] = monthItems;
+  return {
+    year: y,
+    month: m,
+    vol: toRoman(y),
+    issue: toRoman(m + 1),
+    dateLabel: `${MONTH_NAMES[m]} ${y}`.toUpperCase(),
+    lead: lead || null,
+    dispatches: rest,
+    empty: monthItems.length === 0,
+    fileName: `BioLoom-Chronicle-${y}-${pad2(m + 1)}.pdf`,
+  };
+}
+
+// Every month from the current one forward to the latest dated dispatch.
+function buildArchiveMonths(today, raw) {
+  const curY = today.getFullYear();
+  const curM = today.getMonth();
+  let lastY = curY;
+  let lastM = curM;
+  enrichItems(raw).forEach((e) => {
+    if (!e.dateObj) return;
+    const y = e.dateObj.getFullYear();
+    const m = e.dateObj.getMonth();
+    if (y > lastY || (y === lastY && m > lastM)) {
+      lastY = y;
+      lastM = m;
+    }
+  });
+  const out = [];
+  let y = curY;
+  let m = curM;
+  while (y < lastY || (y === lastY && m <= lastM)) {
+    out.push({ y, m });
+    m += 1;
+    if (m > 11) {
+      m = 0;
+      y += 1;
+    }
+  }
+  return out;
+}
+
 /* ─── A hand-drawn botanical engraving (woodcut style) ─── */
 
 function Leaf({ x, y, rotate, scale = 1, flip = 1 }) {
@@ -105,7 +180,7 @@ function Leaf({ x, y, rotate, scale = 1, flip = 1 }) {
   );
 }
 
-function BotanicalPlate({ className = "" }) {
+function BotanicalPlate({ className = "", style }) {
   const ground = Array.from({ length: 18 }).map((_, i) => {
     const gx = 34 + i * 12;
     return <line key={i} x1={gx} y1="338" x2={gx - 10} y2="350" strokeWidth="0.9" />;
@@ -131,7 +206,7 @@ function BotanicalPlate({ className = "" }) {
     return <circle key={i} cx={150 + Math.cos(a) * 5} cy={60 + Math.sin(a) * 5} r="1.4" fill="#211f17" stroke="none" />;
   });
   return (
-    <svg viewBox="0 0 300 360" className={className} role="img" aria-label="Botanical engraving">
+    <svg viewBox="0 0 300 360" className={className} style={style} role="img" aria-label="Botanical engraving">
       <g stroke="#211f17" fill="none" strokeLinecap="round" strokeLinejoin="round">
         {ground}
         <path d="M150 340 C 146 296, 156 262, 151 214 C 147 172, 156 120, 150 88" strokeWidth="2.6" />
@@ -192,11 +267,21 @@ function Folio({ page }) {
   );
 }
 
+/* Drop-cap paragraph as a real floated element (a CSS ::first-letter pseudo
+   doesn't survive the foreignObject rasterisation used for the PDF export). */
+function DropCapP({ className = "", children }) {
+  const text = typeof children === "string" ? children : String(children ?? "");
+  return (
+    <p className={`bp-body bp-justify ${className}`}>
+      <span className="bp-dropcap-letter">{text.charAt(0)}</span>
+      {text.slice(1)}
+    </p>
+  );
+}
+
 /* ─── Page content blocks ─── */
 
-function FrontCover({ today, lead }) {
-  const vol = toRoman(today.getFullYear());
-  const issue = toRoman(today.getMonth() + 1);
+function FrontCover({ vol, issue, dateLabel, lead }) {
   return (
     <Page cover>
       <div className="flex items-center justify-between bp-folio">
@@ -211,7 +296,7 @@ function FrontCover({ today, lead }) {
 
       <div className="bp-rule" />
       <p className="text-center bp-folio my-[0.45em]" style={{ fontSize: "0.56em" }}>
-        {fmtDateline(today)}
+        {dateLabel}
       </p>
       <p className="text-center bp-byline ink-soft mb-[0.5em]" style={{ fontSize: "0.82em" }}>
         “All the biodiversity that’s fit to print.”
@@ -234,9 +319,9 @@ function FrontCover({ today, lead }) {
             <img src="/images/news/bioloom-logo.svg" alt="BioLoom" className="h-[1.7em] w-auto" />
             <span className="bp-rule-soft flex-1" />
           </div>
-          <p className="bp-body bp-justify bp-dropcap bp-leadin">
+          <DropCapP>
             {lead.text || "Details to follow inside this edition of the Chronicle."}
-          </p>
+          </DropCapP>
         </div>
       ) : (
         <p className="mt-[1em] bp-body text-center ink-faint">No dispatches have gone to press yet.</p>
@@ -346,11 +431,11 @@ function EditorialPage() {
       </p>
       <div className="bp-rule mt-[0.5em] mb-[0.8em]" />
 
-      <p className="bp-body bp-justify bp-dropcap bp-leadin ink">
+      <DropCapP className="ink">
         Biodiversity and the people who lean on it are too often studied apart.
         The Chronicle exists to read them together — to follow a thread from a
         plant in the field to a meal, a medicine or a livelihood, and back again.
-      </p>
+      </DropCapP>
       <p className="bp-body bp-justify ink mt-[0.7em]" style={{ fontSize: "0.95em" }}>
         Our work weaves ecology, data science and human wellbeing into one
         picture: where nature is richest, how it is shifting under a changing
@@ -411,7 +496,7 @@ function NoticesPage() {
   );
 }
 
-function BackCover({ today }) {
+function BackCover({ year }) {
   return (
     <Page cover>
       <div className="flex-1 flex flex-col items-center justify-center text-center px-[0.4em]">
@@ -440,7 +525,7 @@ function BackCover({ today }) {
         <p className="bp-byline ink-soft" style={{ fontSize: "0.82em" }}>
           “All the biodiversity that’s fit to print.”
         </p>
-        <p className="bp-folio mt-[0.8em]">© {today.getFullYear()} BioLoom Labs</p>
+        <p className="bp-folio mt-[0.8em]">© {year} BioLoom Labs</p>
       </div>
     </Page>
   );
@@ -453,7 +538,7 @@ function BotanistDesk() {
       {/* Photographic desk; falls back to the drawn wood if the file is absent */}
       <img
         className="book-desk-photo"
-        src="/images/news/news-background-4k.jpg"
+        src="/images/news/news-background-4k.webp"
         alt=""
         onError={(e) => {
           e.currentTarget.style.display = "none";
@@ -464,6 +549,36 @@ function BotanistDesk() {
       <div className="book-desk-topshade" />
     </div>
   );
+}
+
+function DownloadIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M12 3v12M7 11l5 5 5-5M5 21h14" />
+    </svg>
+  );
+}
+
+function ArchiveIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <rect x="3" y="4" width="18" height="4" rx="1" />
+      <path d="M5 8v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8M10 12h4" />
+    </svg>
+  );
+}
+
+/* ─── Build the six book pages for any edition (used by the live flip-book
+   and the flattened multi-page PDF export alike) ─── */
+function editionBookPages(edition) {
+  return [
+    FrontCover({ vol: edition.vol, issue: edition.issue, dateLabel: edition.dateLabel, lead: edition.lead }),
+    DispatchesPage({ items: edition.dispatches }),
+    FieldPage({}),
+    EditorialPage({}),
+    NoticesPage({}),
+    BackCover({ year: edition.year }),
+  ];
 }
 
 /* ─── Page ─── */
@@ -482,6 +597,11 @@ export default function News() {
   const areaRef = useRef(null);
   const [frameH, setFrameH] = useState(null);
   const [avail, setAvail] = useState({ w: 0, h: 0 });
+  const [printEdition, setPrintEdition] = useState(null);
+  const [archivesOpen, setArchivesOpen] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [printSize, setPrintSize] = useState({ w: 460, h: 622, fs: 15.4 });
+  const printRef = useRef(null);
   const today = useMemo(() => new Date(), []);
 
   // Lock the view to the screen: the frame fills the viewport below the navbar.
@@ -563,6 +683,108 @@ export default function News() {
     });
     return { lead: leadItem, dispatches: [...restUpcoming, ...restPast] };
   }, [items]);
+
+  // The current edition (what the Download button saves) and the archive.
+  const currentEdition = useMemo(
+    () => ({
+      year: today.getFullYear(),
+      month: today.getMonth(),
+      vol: toRoman(today.getFullYear()),
+      issue: toRoman(today.getMonth() + 1),
+      dateLabel: fmtDateline(today),
+      lead,
+      dispatches,
+      empty: !lead && dispatches.length === 0,
+      fileName: `BioLoom-Chronicle-${today.getFullYear()}-${pad2(today.getMonth() + 1)}.pdf`,
+    }),
+    [today, lead, dispatches]
+  );
+
+  const archiveYears = useMemo(() => {
+    const map = new Map();
+    buildArchiveMonths(today, items).forEach(({ y, m }) => {
+      if (!map.has(y)) map.set(y, []);
+      map.get(y).push(m);
+    });
+    return Array.from(map.entries()).map(([year, months]) => ({ year, months }));
+  }, [today, items]);
+
+  const monthsWithItems = useMemo(() => {
+    const set = new Set();
+    enrichItems(items).forEach((e) => {
+      if (e.dateObj) set.add(`${e.dateObj.getFullYear()}-${e.dateObj.getMonth()}`);
+    });
+    return set;
+  }, [items]);
+
+  const downloadEdition = useCallback(
+    (edition) => {
+      if (busy) return;
+      // Match the live book's page size so the type sets identically — no reflow.
+      const r = bookRef.current?.pageFlip?.()?.getBoundsRect?.();
+      const w = Math.round(r?.pageWidth || 460);
+      const h = Math.round(r?.height || w * PAGE_RATIO);
+      setPrintSize({ w, h, fs: +(w * 0.0335).toFixed(2) });
+      setBusy(true);
+      setPrintEdition(edition);
+    },
+    [busy]
+  );
+
+  // Render the queued edition off-screen, then rasterise it into a one-page PDF.
+  useEffect(() => {
+    if (!printEdition) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        if (document.fonts?.ready) await document.fonts.ready;
+        await new Promise((r) => setTimeout(r, 180)); // let layout & SVGs settle
+        if (cancelled || !printRef.current) return;
+        const [htmlToImage, jspdf] = await Promise.all([
+          import("html-to-image"),
+          import("jspdf"),
+        ]);
+        const JsPDF = jspdf.jsPDF || jspdf.default;
+        // Flatten each book page to its own PDF page. html-to-image renders
+        // through the browser's own engine (SVG foreignObject), so justified
+        // text, small-caps and hyphenation come out exactly as in the book —
+        // unlike a re-typesetting rasteriser.
+        const leaves = printRef.current.querySelectorAll(".pdf-page");
+        // Embed the web fonts once and reuse across pages (much faster).
+        const fontEmbedCSS = await htmlToImage
+          .getFontEmbedCSS(printRef.current)
+          .catch(() => undefined);
+        let pdf = null;
+        for (const el of leaves) {
+          const canvas = await htmlToImage.toCanvas(el, {
+            pixelRatio: 2,
+            backgroundColor: "#f2ead6",
+            fontEmbedCSS,
+          });
+          if (cancelled) return;
+          const w = canvas.width / 2;
+          const h = canvas.height / 2;
+          if (!pdf) {
+            pdf = new JsPDF({ orientation: "p", unit: "px", format: [w, h], hotfixes: ["px_scaling"] });
+          } else {
+            pdf.addPage([w, h], "p");
+          }
+          pdf.addImage(canvas.toDataURL("image/jpeg", 0.92), "JPEG", 0, 0, w, h);
+        }
+        if (pdf) pdf.save(printEdition.fileName);
+      } catch (e) {
+        console.error("Chronicle PDF export failed:", e);
+      } finally {
+        if (!cancelled) {
+          setBusy(false);
+          setPrintEdition(null);
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [printEdition]);
 
   const onFlip = useCallback((e) => setPage(e.data), []);
 
@@ -650,17 +872,7 @@ export default function News() {
   // Memoise the pages so the children prop stays referentially stable.
   // react-pageflip resets its internal child-ref list on every children
   // change; an unstable array races with — and aborts — initialisation.
-  const pages = useMemo(
-    () => [
-      FrontCover({ today, lead }),
-      DispatchesPage({ items: dispatches }),
-      FieldPage({}),
-      EditorialPage({}),
-      NoticesPage({}),
-      BackCover({ today }),
-    ],
-    [today, lead, dispatches]
-  );
+  const pages = useMemo(() => editionBookPages(currentEdition), [currentEdition]);
 
   const total = pageCount || 6;
   const indicator =
@@ -764,7 +976,84 @@ export default function News() {
               <ArrowGlyph />
             </span>
           </button>
+
+          <span className="book-rail-sep" aria-hidden="true" />
+
+          <button type="button" className="book-btn book-btn--rail" onClick={() => downloadEdition(currentEdition)} disabled={busy} aria-label="Download this edition as a PDF">
+            <span style={{ width: "0.8rem", height: "0.8rem", display: "inline-flex" }}>
+              <DownloadIcon />
+            </span>
+            {busy ? "…" : "PDF"}
+          </button>
+          <button type="button" className="book-btn book-btn--rail" onClick={() => setArchivesOpen(true)} aria-label="Open the archive of past editions">
+            <span style={{ width: "0.8rem", height: "0.8rem", display: "inline-flex" }}>
+              <ArchiveIcon />
+            </span>
+            Archive
+          </button>
         </aside>
+      )}
+
+      {/* Off-screen flat copies of the book pages, rendered only while
+          exporting — each becomes one flattened page in the PDF */}
+      <div
+        ref={printRef}
+        aria-hidden="true"
+        style={{ position: "fixed", left: "-10000px", top: 0, pointerEvents: "none", zIndex: -1 }}
+      >
+        {printEdition &&
+          editionBookPages(printEdition).map((pg, i) => (
+            <div
+              className="pdf-page newspaper"
+              key={i}
+              style={{ width: `${printSize.w}px`, height: `${printSize.h}px`, "--print-fs": `${printSize.fs}px` }}
+            >
+              {pg}
+            </div>
+          ))}
+      </div>
+
+      {/* Archive — every edition since launch, one-click PDFs */}
+      {archivesOpen && (
+        <div className="archive-overlay" role="dialog" aria-modal="true" onClick={() => setArchivesOpen(false)}>
+          <div className="archive-panel newspaper" onClick={(e) => e.stopPropagation()}>
+            <button className="archive-close" onClick={() => setArchivesOpen(false)} aria-label="Close archive">
+              ×
+            </button>
+            <p className="archive-kicker">The BioLoom Chronicle</p>
+            <h2 className="archive-title">The Archive</h2>
+            <p className="archive-sub">This month onward · one-click PDF{busy ? " · setting the type…" : ""}</p>
+            <div className="archive-rule" />
+            <div className="archive-scroll">
+              {archiveYears.map((yr) => (
+                <div key={yr.year} className="archive-year">
+                  <h3 className="archive-year-label">{yr.year}</h3>
+                  <div className="archive-grid">
+                    {yr.months.map((m) => {
+                      const isCurrent = yr.year === today.getFullYear() && m === today.getMonth();
+                      const has = isCurrent ? !currentEdition.empty : monthsWithItems.has(`${yr.year}-${m}`);
+                      return (
+                        <button
+                          key={m}
+                          type="button"
+                          className={`archive-month${has ? " has-items" : ""}${isCurrent ? " is-current" : ""}`}
+                          disabled={busy}
+                          onClick={() => downloadEdition(isCurrent ? currentEdition : editionForMonth(items, yr.year, m))}
+                          title={`${MONTH_NAMES[m]} ${yr.year}${isCurrent ? " — current edition" : has ? " — has dispatches" : ""}`}
+                        >
+                          <span>{MONTH_ABBR[m]}</span>
+                          <span className="archive-dl">
+                            <DownloadIcon />
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
       )}
     </>
   );

@@ -29,7 +29,7 @@ export default function Footer() {
               title="Queen Mary University of London"
             >
               <img
-                src="/images/logos/qmul.png"
+                src="/images/logos/qmul.webp"
                 alt="Queen Mary University of London"
                 className="h-8 w-auto opacity-80 transition group-hover:opacity-100"
                 style={{ filter: "brightness(0) invert(1)" }}
@@ -46,7 +46,7 @@ export default function Footer() {
               title="Royal Botanic Gardens, Kew"
             >
               <img
-                src="/images/logos/kew.png"
+                src="/images/logos/kew.webp"
                 alt="Royal Botanic Gardens, Kew"
                 className="h-8 w-auto opacity-80 transition group-hover:opacity-100"
                 style={{ filter: "brightness(0) invert(1)" }}

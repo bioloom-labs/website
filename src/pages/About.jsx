@@ -234,22 +234,22 @@ function CollaboratorsScene() {
   const partners = [
     {
       name: "Queen Mary University of London",
-      logo: "/images/logos/qmul.png",
+      logo: "/images/logos/qmul.webp",
       href: "https://www.qmul.ac.uk/",
     },
     {
       name: "Royal Botanic Gardens, Kew",
-      logo: "/images/logos/kew.png",
+      logo: "/images/logos/kew.webp",
       href: "https://www.kew.org/",
     },
     {
       name: "UKRI BBSRC",
-      logo: "/images/logos/bbsrc.png",
+      logo: "/images/logos/bbsrc.webp",
       href: "https://www.ukri.org/councils/bbsrc/",
     },
     {
       name: "The Calleva Foundation",
-      logo: "/images/logos/calleva.png",
+      logo: "/images/logos/calleva.webp",
       href: null,
     },
   ];

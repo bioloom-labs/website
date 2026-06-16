@@ -14,10 +14,10 @@ const SHORT_BIO = 420;
 
 // One static parallax background per section, matched to its title.
 const BG = {
-  pi: "/images/people/backgrounds/pi.jpg",
-  phd: "/images/people/backgrounds/phd.jpg",
-  msc: "/images/people/backgrounds/msc.jpg",
-  alumni: "/images/people/backgrounds/alumni.jpg",
+  pi: "/images/people/backgrounds/pi.webp",
+  phd: "/images/people/backgrounds/phd.webp",
+  msc: "/images/people/backgrounds/msc.webp",
+  alumni: "/images/people/backgrounds/alumni.webp",
 };
 
 // Pick a section's background image from its title (PhD / MSc).
@@ -86,9 +86,9 @@ function LinkIcon({ type, size = "3.5" }) {
   if (type === "email") return <Mail className={`h-${size} w-${size}`} />;
   if (type === "linkedin") return <Linkedin className={`h-${size} w-${size}`} />;
   if (type === "github") return <Github className={`h-${size} w-${size}`} />;
-  if (type === "orcid") return <img src="/images/socials/orcid.png" className={cls} alt="ORCID" />;
-  if (type === "scholar") return <img src="/images/socials/googlescholar.png" className={cls} alt="Scholar" />;
-  if (type === "researchgate") return <img src="/images/socials/researchgate.png" className={cls} alt="ResearchGate" />;
+  if (type === "orcid") return <img src="/images/socials/orcid.webp" className={cls} alt="ORCID" />;
+  if (type === "scholar") return <img src="/images/socials/googlescholar.webp" className={cls} alt="Scholar" />;
+  if (type === "researchgate") return <img src="/images/socials/researchgate.webp" className={cls} alt="ResearchGate" />;
   return <Globe className={`h-${size} w-${size}`} />;
 }
 
