@@ -54,7 +54,13 @@ function toRoman(num) {
    width AND height — the whole spread is visible with no scrolling. */
 const PAGE_RATIO = 602 / 445; // one page: height / width
 const MAX_PAGE_W = 700;
-const MIN_PAGE_W = 300;
+// Below this per-page width we drop the spread for a single portrait page.
+// This MUST equal the flip-book's `minWidth` prop: StPageFlip switches to
+// portrait when its container is narrower than `minWidth * 2`, so if our
+// threshold and its threshold disagree the wrapper ends up sized for one mode
+// while the book renders the other — which is what made it overflow.
+const MIN_PAGE_W = 180;
+const FIT_MARGIN = 16; // breathing room so the book never touches the edges
 
 // With showCover the pages group into spreads whose *first* page indices are
 // not sequential: front [0], then [1,2], [3,4], …, back [n-1] → starts 0,1,3,5…
@@ -69,14 +75,18 @@ function spreadStarts(n) {
 
 function fitBook(availW, availH) {
   if (!availW || !availH) return null;
-  const w = Math.max(0, availW - 12);
-  const h = Math.max(0, availH - 12);
-  // Landscape spread: bookW = 2·pageW, bookH = pageW·RATIO = bookW·RATIO/2
-  const landW = Math.min(w, MAX_PAGE_W * 2, h * (2 / PAGE_RATIO));
-  if (landW >= MIN_PAGE_W * 2) return { width: Math.floor(landW), portrait: false };
-  // Portrait single page
-  const portW = Math.min(w, MAX_PAGE_W, h / PAGE_RATIO);
-  return { width: Math.floor(portW), portrait: true };
+  const w = Math.max(0, availW - FIT_MARGIN);
+  const h = Math.max(0, availH - FIT_MARGIN);
+  // Landscape spread. Each page is capped by HALF the width, the max page width,
+  // and — crucially — the FULL available height (page height = pageW · RATIO, so
+  // pageW ≤ h / RATIO keeps the spread within the viewport on both axes).
+  const landPageW = Math.min(w / 2, MAX_PAGE_W, h / PAGE_RATIO);
+  if (landPageW >= MIN_PAGE_W) {
+    return { width: Math.floor(landPageW) * 2, portrait: false };
+  }
+  // Portrait single page: capped the same way against the full width.
+  const portPageW = Math.min(w, MAX_PAGE_W, h / PAGE_RATIO);
+  return { width: Math.floor(portPageW), portrait: true };
 }
 
 /* ─── Monthly editions / archive ─────────────────────────────────────────── */
@@ -590,6 +600,7 @@ export default function News() {
   const [pageCount, setPageCount] = useState(0);
   const bookRef = useRef(null);
   const bookClampRef = useRef(null);
+  const lastPageRef = useRef(0); // remembers the page across a mode remount
   const rafRef = useRef(null);
   const shiftRef = useRef(0);
   const totalRef = useRef(6);
@@ -632,6 +643,25 @@ export default function News() {
   }, [loading]);
 
   const fit = useMemo(() => fitBook(avail.w, avail.h), [avail]);
+
+  // StPageFlip grows/shrinks its container on a live resize but doesn't reliably
+  // re-flow the page contents — they stay at the old size, anchored left, and
+  // the centring shift pushes them off-screen with no way to recover. Asking it
+  // to re-lay-out (update()) once the resize settles fixes it in place without
+  // losing the reader's page. The timer resets on each size change, so a drag
+  // only triggers one re-layout when it stops. Same-size re-renders don't refire
+  // this (fit is referentially stable).
+  useEffect(() => {
+    if (!fit) return undefined;
+    const id = setTimeout(() => {
+      try {
+        bookRef.current?.pageFlip?.()?.update?.();
+      } catch {
+        /* ignore — the reset effect below still re-centres */
+      }
+    }, 160);
+    return () => clearTimeout(id);
+  }, [fit]);
 
   useEffect(() => {
     let mounted = true;
@@ -786,7 +816,10 @@ export default function News() {
     };
   }, [printEdition]);
 
-  const onFlip = useCallback((e) => setPage(e.data), []);
+  const onFlip = useCallback((e) => {
+    lastPageRef.current = e.data;
+    setPage(e.data);
+  }, []);
 
   // Horizontal centre offset for a page index: front cover sits left of the
   // spine, back cover right of it, spreads dead-centre.
@@ -847,8 +880,15 @@ export default function News() {
     const pf = bookRef.current?.pageFlip?.();
     if (!pf) return;
     try {
-      setPageCount(pf.getPageCount());
-      setPage(pf.getCurrentPageIndex?.() ?? 0);
+      const count = pf.getPageCount();
+      setPageCount(count);
+      // After a portrait↔landscape remount, jump straight back to the page the
+      // reader was on (no animation) so the switch is seamless.
+      const want = lastPageRef.current || 0;
+      if (want > 0 && count > 0 && typeof pf.turnToPage === "function") {
+        pf.turnToPage(Math.min(want, count - 1));
+      }
+      setPage(pf.getCurrentPageIndex?.() ?? want);
       // Front & back stay HARD (the showCover default) so they swing like rigid
       // 3D hardback covers; the inner sheets keep their soft newspaper fold.
     } catch {
@@ -876,7 +916,13 @@ export default function News() {
 
   const total = pageCount || 6;
   const indicator =
-    page <= 0 ? "Front Page" : page >= total - 1 ? "Back Page" : `Pages ${page}–${page + 1}`;
+    page <= 0
+      ? "Front Page"
+      : page >= total - 1
+      ? "Back Page"
+      : fit?.portrait
+      ? `Page ${page + 1}`
+      : `Pages ${page}–${page + 1}`;
 
   // Feed the rAF with current layout values, and settle the book onto the
   // current page whenever nothing is flipping (initial load, resize, page set).
@@ -910,7 +956,7 @@ export default function News() {
         {!loading && !error && <div className="book-side" aria-hidden="true" />}
 
       {/* Book area — fills the screen between the navbar and the side rail */}
-      <div ref={areaRef} className="relative z-10 flex-1 min-h-0 flex items-center justify-center px-2 sm:px-4">
+      <div ref={areaRef} className="book-area relative z-10 flex-1 min-h-0 flex items-center justify-center px-2 sm:px-4">
         {error ? (
           <p className="font-headline italic text-center text-[#fca5a5]">
             The presses jammed — unable to load the news ({error}).
@@ -922,13 +968,18 @@ export default function News() {
         ) : fit ? (
           <div className="book-clamp" ref={bookClampRef} style={{ width: fit.width }}>
             <HTMLFlipBook
+              // Remount on the portrait↔landscape switch so StPageFlip rebuilds
+              // its geometry from scratch instead of mutating stale bounds (the
+              // page is restored in onInit). Same-mode resizes re-lay-out in
+              // place via update() — see the effect above.
+              key={fit.portrait ? "portrait" : "landscape"}
               ref={bookRef}
               width={445}
               height={602}
               size="stretch"
               minWidth={MIN_PAGE_W}
               maxWidth={MAX_PAGE_W}
-              minHeight={406}
+              minHeight={Math.round(MIN_PAGE_W * PAGE_RATIO)}
               maxHeight={1000}
               autoSize
               drawShadow

@@ -583,8 +583,10 @@ body {
     flex: 0 0 8.5rem;
     width: 8.5rem;
 }
-@media (max-width: 640px) {
-    .book-side { flex-basis: 6rem; width: 6rem; }
+@media (max-width: 720px) {
+    /* The control rail drops to a bottom bar at this width, so the balancing
+       side spacers collapse and the book gets the full screen width. */
+    .book-side { display: none; }
 }
 
 /* The page surface */
@@ -981,22 +983,39 @@ body {
     color: rgba(238, 222, 184, 0.9);
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
 }
-@media (max-width: 640px) {
+@media (max-width: 720px) {
+    /* On phones and narrow windows the rail becomes a horizontal bottom bar so
+       the book can use the full width instead of being squeezed into overflow. */
     .book-rail {
-        width: 5.4rem;
+        top: auto;
+        left: 0.5rem;
         right: 0.5rem;
-        padding: 1rem 0.35rem;
-        gap: 0.8rem;
-        border-radius: 1.1rem;
+        bottom: 0.55rem;
+        width: auto;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        justify-content: center;
+        gap: 0.55rem;
+        padding: 0.5rem 0.7rem;
+        border-radius: 1rem;
+        overflow-x: auto;
     }
+    /* The masthead label and divider don't belong on a one-line bar. */
+    .book-rail-label,
+    .book-rail-sep { display: none; }
     .book-btn--rail {
+        width: auto;
+        flex: 0 0 auto;
+        white-space: nowrap;
         font-size: 0.58rem;
-        padding: 0.4rem 0.4rem;
+        padding: 0.42rem 0.6rem;
         letter-spacing: 0.1em;
     }
-    .book-rail-label {
-        font-size: 0.9rem;
-    }
+    .book-rail .book-indicator { font-size: 0.62rem; }
+    /* Reserve room above the bottom bar so the book never sits under it. The
+       ResizeObserver reads the content box, so this padding shrinks the
+       available height that fitBook() sizes the book against. */
+    .book-area { padding-bottom: 4.5rem; }
 }
 
 /* ── StPageFlip required base styles (the lib ships these but react-pageflip
