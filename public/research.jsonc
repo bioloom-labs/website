@@ -56,13 +56,13 @@
     "tag": "People · Health",
     "teaser": "From traditional remedies to modern drug discovery, biodiversity has long been a source of medicine. We study where those contributions come from.",
     "image": "/images/research/health.webp",
-    "alt": "Bunches of fresh medicinal herbs — rosemary, sage and thyme — laid out side by side",
-    "credit": { "name": "Patrycja Jadach", "url": "https://unsplash.com/@patrycjajadach" },
+    "focus": "/images/research/health-focus.webp",
+    "alt": "Three-panel montage: a medicinal aloe plant, plant cultures in lab flasks, and assorted pills spilling from a bottle",
     "body": [
       "A large share of medicines trace, directly or indirectly, to natural products — and many communities still rely on plants and other organisms for primary healthcare.",
       "We investigate how biodiversity contributes to human health: the species used in traditional medicine, the chemistry behind their effects, and the potential they may hold for discovery.",
       "By linking species-use data with chemical and ecological information, we look at which organisms are used medicinally, where, and what this could imply for both health and conservation.",
-      "The thread connects ethnobotanical knowledge with the search for compounds of interest, bridging the lab's people-facing and chemistry-facing work."
+      "The thread works at the meeting point of ecology, health and chemistry, tracing how the environments where species grow and the health needs they may serve connect to the chemistry that could underlie their effects."
     ],
     "papers": [],
     "search": "medicinal"

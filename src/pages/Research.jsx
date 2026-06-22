@@ -191,7 +191,7 @@ function ResearchModal({ item, index = 0, onClose }) {
             {/* image side */}
             <div className="relative h-52 md:h-auto md:min-h-[460px]">
               <img
-                src={item.image}
+                src={item.focus || item.image}
                 alt={item.alt || ""}
                 className="absolute inset-0 h-full w-full object-cover"
               />
