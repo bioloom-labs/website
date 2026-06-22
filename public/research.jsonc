@@ -1,72 +1,121 @@
+/* Research threads for the Research page.
+   Each entry renders as a card (title + teaser + image). Clicking a card opens
+   a window with the image, the `body` paragraphs, and any `papers` listed.
+
+   Fields:
+     id      – stable key; also selects the card's accent hue (see THREADS in Research.jsx)
+     title   – heading on the card and in the window
+     tag     – short chip label
+     teaser  – 1–2 sentences shown on the card
+     image   – thumbnail / window image (under /images/research)
+     alt     – alt text for the image
+     credit  – photo attribution { name, url }
+     body    – array of short paragraphs (~150 words total) shown in the window
+     papers  – specific publications to link at the bottom of the window.
+               Leave [] for now; add { title, authors, year, url } entries as they publish.
+     search  – fallback: "Browse related publications" links to /publications?search=<search>
+*/
 [
   {
-    "id": "macro-ecology",
-    "title": "Macro Ecology and Biodiversity",
-    "image": "/images/research/hotspots.jpg",
-    "text": "What are the global and regional patterns in biodiversity? How are they changing in a changing world?",
-    "search": "Macro Ecology and Biodiversity"
-  },
-  {
-    "id": "climate-biodiversity",
-    "title": "Links between Climate Change and Biodiversity",
-    "image": "/images/research/global-plant.png",
-    "text": "How are ecosystems responding to being disrupted by anthropogenic climate change? How can we foster refugia and adaptation to maintain their upholding of people?",
-    "search": "Climate Change and Biodiversity"
-  },
-  {
-    "id": "ncps",
-    "title": "Nature's Contributions to People (NCPs)",
-    "image": "/images/research/phyto-human.png",
-    "text": "How does biodiversity and its ecological interactions support lifestyles, economy and culture? How is biodiversity loss causing changes to ecosystem services and disservices?",
-    "search": "Nature's Contributions to People"
+    "id": "macroecology",
+    "title": "Macroecology",
+    "tag": "Ecology",
+    "teaser": "Where does biodiversity concentrate, and how are those patterns shifting as the world changes?",
+    "image": "/images/research/macroecology.webp",
+    "alt": "Aerial view of forested hills stretching to distant mountains",
+    "credit": { "name": "Zoshua Colah", "url": "https://unsplash.com/@zoshuacolah" },
+    "body": [
+      "Biodiversity is distributed unevenly across the planet. Some regions hold a remarkable concentration of species, while others are comparatively sparse — and these patterns are not static.",
+      "We work at large spatial and taxonomic scales to describe where species occur, why diversity peaks where it does, and how assemblages may be reshaped by climate and land-use change.",
+      "Drawing on global occurrence records, trait data and modelling, we look for the processes that could underlie these patterns, from historical biogeography to contemporary pressures.",
+      "The aim is a clearer, data-grounded picture of how the living world is organised — a foundation the lab's other threads build on when asking what biodiversity means for people."
+    ],
+    "papers": [],
+    "search": "macroecology"
   },
   {
     "id": "food",
-    "title": "Nature's Contribution to Food",
-    "image": "/images/research/hotspots.jpg",
-    "text": "How does biodiversity contribute to food security, equity, and nutritional diversity?",
-    "search": "Nature's Contribution to Food"
+    "title": "Nature's Contributions to Food",
+    "tag": "People · Food",
+    "teaser": "How does the diversity of species underpin what we eat — and the security and nutrition of the people who depend on it?",
+    "image": "/images/research/food.webp",
+    "alt": "Market baskets filled with colourful peppers, tomatoes and other vegetables",
+    "credit": { "name": "João Rodrigues", "url": "https://unsplash.com/@joaohfrodrigues" },
+    "body": [
+      "Food systems rest on biodiversity — wild and cultivated species, their relatives, pollinators, and the ecosystems that support them.",
+      "We examine how this diversity may contribute to food security, dietary quality and resilience, and how it is distributed across regions and communities.",
+      "Bringing together species-use records, nutritional information and spatial data, we ask which species matter for food, where they are relied upon, and how changes in biodiversity could affect what reaches people's plates.",
+      "This thread draws on work across the lab on crops, neglected and underutilised species, and the nutritional value that varied diets can provide."
+    ],
+    "papers": [],
+    "search": "food"
   },
   {
     "id": "health",
-    "title": "Nature's Contribution to Health",
-    "image": "/images/research/phyto-human.png",
-    "text": "How does biodiversity contribute to medicine, traditional treatments, and drug discovery?",
-    "search": "Nature's Contribution to Health"
+    "title": "Nature's Contributions to Health",
+    "tag": "People · Health",
+    "teaser": "From traditional remedies to modern drug discovery, biodiversity has long been a source of medicine. We study where those contributions come from.",
+    "image": "/images/research/health.webp",
+    "alt": "Bunches of fresh medicinal herbs — rosemary, sage and thyme — laid out side by side",
+    "credit": { "name": "Patrycja Jadach", "url": "https://unsplash.com/@patrycjajadach" },
+    "body": [
+      "A large share of medicines trace, directly or indirectly, to natural products — and many communities still rely on plants and other organisms for primary healthcare.",
+      "We investigate how biodiversity contributes to human health: the species used in traditional medicine, the chemistry behind their effects, and the potential they may hold for discovery.",
+      "By linking species-use data with chemical and ecological information, we look at which organisms are used medicinally, where, and what this could imply for both health and conservation.",
+      "The thread connects ethnobotanical knowledge with the search for compounds of interest, bridging the lab's people-facing and chemistry-facing work."
+    ],
+    "papers": [],
+    "search": "medicinal"
   },
   {
-    "id": "next-gen-methods",
-    "title": "Next Generation Methods in Biodiversity and NCPs",
-    "image": "/images/research/ai.jpg",
-    "text": "How can machine learning, advanced modelling, and AI contribute to biodiversity and NCP knowledge?",
-    "search": "Next Generation Methods"
+    "id": "people-biodiversity",
+    "title": "People–Biodiversity Interactions",
+    "tag": "People · Systems",
+    "teaser": "Biodiversity underpins the contributions people depend on. We study how providing and supporting services are linked across landscapes.",
+    "image": "/images/research/people-biodiversity.webp",
+    "alt": "A person harvesting by hand in terraced rice fields",
+    "credit": { "name": "Shayan Ghiasvand", "url": "https://unsplash.com/@shayangh96" },
+    "body": [
+      "People and biodiversity are bound together: the species and ecosystems that provide food, materials and medicine depend in turn on a wider web of supporting and regulating processes.",
+      "This thread looks at how those layers connect — how the contributions people draw from nature arise from, and feed back on, the biodiversity that sustains them.",
+      "We focus on species rather than nature in the abstract, asking where providing contributions are underpinned by supporting ones, and where that link may be most exposed to change.",
+      "The work aims to make these interactions explicit, so the consequences of biodiversity loss for people can be traced more clearly."
+    ],
+    "papers": [],
+    "search": "ecosystem services"
   },
   {
-    "id": "agriculture-biodiversity",
-    "title": "Links between Agriculture and Biodiversity",
-    "image": "/images/research/global-plant.png",
-    "text": "How are ecosystems impacted by land use change and living alongside food systems? How can biodiversity be improved in agricultural landscapes, to benefit both people and nature?",
-    "search": "Agriculture and Biodiversity"
+    "id": "species-use-data",
+    "title": "Species Use Data",
+    "tag": "Open Data",
+    "teaser": "Cataloguing how people use species at scale — the records, databases and infrastructure that make the question answerable.",
+    "image": "/images/research/species-use-data.webp",
+    "alt": "Botanical specimen plate showing pressed ferns and leaves on aged paper",
+    "credit": { "name": "Nisa Çokokumuş", "url": "https://unsplash.com/@nisacokokumus" },
+    "body": [
+      "Understanding how biodiversity contributes to people requires knowing which species are used, for what, and where — information that is scattered across literature, archives and local knowledge.",
+      "This thread builds and curates the data behind that question, assembling species-use records into structured, openly available resources.",
+      "It draws together efforts such as the World Checklist of Useful Plants (WCUP), Plants for Health, and a Species Use Database, alongside the methods needed to keep them consistent and comparable.",
+      "By making species-use data more complete and accessible, the thread supports research, policy and conservation across the lab and beyond."
+    ],
+    "papers": [],
+    "search": "useful plants"
   },
   {
-    "id": "genetics-biodiversity",
-    "title": "Links between Genetics and Biodiversity",
-    "image": "/images/research/global-plant.png",
-    "text": "How can we use genetic techniques to study biodiversity and its contribution to people? How do genetic traits link to patterns in biodiversity and species use?",
-    "search": "Genetics and Biodiversity"
-  },
-  {
-    "id": "opinions",
-    "title": "Opinions, Articles and Declarations",
-    "image": "/images/research/ai.jpg",
-    "text": "Declarations on scientific conduct, responses, and opinion pieces of the lab group.",
-    "search": "Opinions and Declarations"
-  },
-  {
-    "id": "open-data",
-    "title": "Open Access Databases",
-    "image": "/images/research/hotspots.jpg",
-    "text": "Biodiversity, species use, and spatially explicit repositories for furthering research.",
-    "search": "Open Access Databases"
+    "id": "species-used",
+    "title": "Which, Where & How Species Are Used",
+    "tag": "People · Species",
+    "teaser": "Of all the species people rely on — which ones, in which places, in what ways, and what does that mean for their conservation?",
+    "image": "/images/research/species-used.webp",
+    "alt": "A pair of hands picking blackcurrants from a leafy bush",
+    "credit": { "name": "Sergey Kotenev", "url": "https://unsplash.com/@sergeykotenev" },
+    "body": [
+      "Only a fraction of biodiversity is documented as useful to people, yet that fraction carries much of nature's direct contribution to livelihoods and culture.",
+      "This thread maps which species are used, where, and how — from food and medicine to materials and beyond — and how that use overlaps with where species are threatened.",
+      "Combining species-use records with distribution and conservation data, we look for patterns in utilised biodiversity: which useful species are well protected, and which may be at risk.",
+      "The aim is to connect the value people place on species with the conservation attention those species receive."
+    ],
+    "papers": [],
+    "search": "useful plants"
   }
 ]

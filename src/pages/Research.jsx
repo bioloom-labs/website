@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { fetchJSONC } from "../utils/jsonc.js";
 
 /* ── Icons ──────────────────────────────────────────────────────────────── */
@@ -45,253 +45,23 @@ function rgba(hex, a) {
   return `rgba(${r},${g},${b},${a})`;
 }
 
-/* ── Per-thread identity ────────────────────────────────────────────────────
-   The previous page tinted every card the same green, which read as a flat
-   "sea of green" once you scrolled past the hero. Here each thread gets its
-   own hue, kicker tag and generative line-art motif. The human-facing threads
-   (NCPs, food, health) carry warm tones so a warm band breaks the cool field
-   roughly halfway down the page. Unknown ids fall back by index, so the page
-   never breaks if the data changes. */
-const COOL_FALLBACK = ["#6ee7b7", "#7dd3fc", "#2dd4bf", "#67e8f9", "#a3e635"];
-const MOTIF_FALLBACK = ["rings", "contour", "web", "circuit", "bars"];
-
-const THREADS = {
-  "macro-ecology":          { hex: "#6ee7b7", tag: "Ecology",       motif: "rings"   },
-  "climate-biodiversity":   { hex: "#7dd3fc", tag: "Climate",       motif: "contour" },
-  "ncps":                   { hex: "#fbbf24", tag: "People",        motif: "web"     },
-  "food":                   { hex: "#fcd34d", tag: "People · Food", motif: "wheat"   },
-  "health":                 { hex: "#fca5a5", tag: "People · Health", motif: "leaf"  },
-  "next-gen-methods":       { hex: "#67e8f9", tag: "Methods",       motif: "circuit" },
-  "agriculture-biodiversity": { hex: "#a3e635", tag: "Land Use",    motif: "furrows" },
-  "genetics-biodiversity":  { hex: "#2dd4bf", tag: "Genetics",      motif: "helix"   },
-  "opinions":               { hex: "#e7d3a1", tag: "Voice",         motif: "quote"   },
-  "open-data":              { hex: "#5eead4", tag: "Open Data",     motif: "bars"    },
+/* ── Per-thread accent hue ──────────────────────────────────────────────────
+   Each thread carries its own colour so the page doesn't read as a flat
+   "sea of green". Human-facing threads (food, health) take warm tones; the
+   rest stay cool. Unknown ids fall back by index so the page never breaks if
+   the data changes. The thread's chip label lives in research.jsonc (tag). */
+const HUE = {
+  "macroecology":        "#6ee7b7",
+  "food":                "#fcd34d",
+  "health":              "#fca5a5",
+  "people-biodiversity": "#7dd3fc",
+  "species-use-data":    "#5eead4",
+  "species-used":        "#a3e635",
 };
+const HUE_FALLBACK = ["#6ee7b7", "#7dd3fc", "#fcd34d", "#fca5a5", "#a3e635", "#5eead4"];
 
-function threadMeta(item, index) {
-  const known = item?.id && THREADS[item.id];
-  const hex = known ? known.hex : COOL_FALLBACK[index % COOL_FALLBACK.length];
-  const motif = known ? known.motif : MOTIF_FALLBACK[index % MOTIF_FALLBACK.length];
-  const tag = known ? known.tag : "Thread";
-  return { hex, motif, tag };
-}
-
-/* ── Generative line-art motifs ─────────────────────────────────────────────
-   Each is deterministic (index-based maths, no randomness) so it never shifts
-   between renders. Drawn in a 200×200 box with currentColor; the parent sets
-   colour + opacity so the same component works as a faint watermark or a bold
-   feature graphic. */
-function ThreadMotif({ kind, className = "", style }) {
-  const s = {
-    fill: "none",
-    stroke: "currentColor",
-    strokeWidth: 1.6,
-    strokeLinecap: "round",
-    strokeLinejoin: "round",
-  };
-
-  let body = null;
-
-  if (kind === "rings") {
-    body = (
-      <g {...s}>
-        {[16, 32, 50, 70, 92].map((r, i) => (
-          <circle key={r} cx="100" cy="100" r={r} opacity={0.95 - i * 0.13} />
-        ))}
-        {Array.from({ length: 28 }).map((_, i) => {
-          const a = (i / 28) * Math.PI * 2;
-          return (
-            <line
-              key={i}
-              x1={100 + Math.cos(a) * 92}
-              y1={100 + Math.sin(a) * 92}
-              x2={100 + Math.cos(a) * 100}
-              y2={100 + Math.sin(a) * 100}
-              opacity="0.5"
-            />
-          );
-        })}
-        <circle cx="100" cy="100" r="3.5" fill="currentColor" stroke="none" />
-      </g>
-    );
-  } else if (kind === "contour") {
-    body = (
-      <g {...s}>
-        {Array.from({ length: 7 }).map((_, i) => {
-          const y = 26 + i * 25;
-          const k = i * 0.6;
-          const d = `M-6 ${y} C 40 ${y - 16 + k}, 74 ${y + 18 - k}, 110 ${y - 8} S 184 ${y + 14}, 212 ${y - 5}`;
-          return <path key={i} d={d} opacity={0.9 - i * 0.09} />;
-        })}
-      </g>
-    );
-  } else if (kind === "web") {
-    const nodes = [
-      [100, 100], [100, 30], [158, 64], [168, 132],
-      [122, 172], [58, 160], [34, 96], [60, 44],
-    ];
-    body = (
-      <g {...s}>
-        {nodes.slice(1).map((n, i) => (
-          <line key={"c" + i} x1="100" y1="100" x2={n[0]} y2={n[1]} opacity="0.4" />
-        ))}
-        {nodes.slice(1).map((n, i) => {
-          const m = nodes[((i + 1) % (nodes.length - 1)) + 1];
-          return <line key={"r" + i} x1={n[0]} y1={n[1]} x2={m[0]} y2={m[1]} opacity="0.28" />;
-        })}
-        {nodes.map((n, i) => (
-          <circle
-            key={"n" + i}
-            cx={n[0]}
-            cy={n[1]}
-            r={i === 0 ? 5 : 3.6}
-            fill="currentColor"
-            stroke="none"
-            opacity={i === 0 ? 1 : 0.85}
-          />
-        ))}
-      </g>
-    );
-  } else if (kind === "wheat") {
-    body = (
-      <g {...s}>
-        <path d="M100 186 L100 56" />
-        {Array.from({ length: 8 }).map((_, i) => {
-          const y = 64 + i * 15;
-          const len = 30 - i * 1.5;
-          return (
-            <g key={i} opacity={0.95 - i * 0.05}>
-              <path d={`M100 ${y} C ${100 - len * 0.5} ${y - 2}, ${100 - len} ${y - 12}, ${100 - len} ${y - 20}`} />
-              <path d={`M100 ${y} C ${100 + len * 0.5} ${y - 2}, ${100 + len} ${y - 12}, ${100 + len} ${y - 20}`} />
-            </g>
-          );
-        })}
-        <path d="M100 60 C 96 50, 96 42, 100 34 C 104 42, 104 50, 100 60 Z" />
-      </g>
-    );
-  } else if (kind === "leaf") {
-    body = (
-      <g {...s}>
-        <path d="M100 26 C 146 58, 154 124, 100 178 C 46 124, 54 58, 100 26 Z" />
-        <path d="M100 40 L100 168" />
-        {Array.from({ length: 5 }).map((_, i) => {
-          const y = 64 + i * 22;
-          const spread = 30 - i * 3;
-          return (
-            <g key={i} opacity={0.7}>
-              <path d={`M100 ${y} C ${100 - spread * 0.6} ${y + 4}, ${100 - spread} ${y + 6}, ${100 - spread - 4} ${y + 18}`} />
-              <path d={`M100 ${y} C ${100 + spread * 0.6} ${y + 4}, ${100 + spread} ${y + 6}, ${100 + spread + 4} ${y + 18}`} />
-            </g>
-          );
-        })}
-      </g>
-    );
-  } else if (kind === "circuit") {
-    const pts = [
-      [40, 50], [100, 40], [160, 56], [56, 110],
-      [120, 100], [168, 120], [44, 164], [104, 158], [156, 170],
-    ];
-    body = (
-      <g {...s}>
-        <path d="M40 50 H100 V100 H168" opacity="0.4" />
-        <path d="M160 56 V100" opacity="0.4" />
-        <path d="M56 110 V164 H104 V158" opacity="0.4" />
-        <path d="M120 100 V158" opacity="0.4" />
-        <path d="M104 158 H156 V170" opacity="0.4" />
-        {pts.map((p, i) => (
-          <rect
-            key={i}
-            x={p[0] - 4}
-            y={p[1] - 4}
-            width="8"
-            height="8"
-            rx="1.5"
-            fill={i % 3 === 0 ? "currentColor" : "none"}
-            opacity={i % 3 === 0 ? 0.9 : 1}
-          />
-        ))}
-      </g>
-    );
-  } else if (kind === "furrows") {
-    body = (
-      <g {...s}>
-        <line x1="-6" y1="78" x2="206" y2="78" opacity="0.5" />
-        {Array.from({ length: 11 }).map((_, i) => {
-          const x = -40 + i * 28;
-          return <line key={i} x1={x} y1="200" x2={100} y2="80" opacity={0.65 - Math.abs(i - 5) * 0.06} />;
-        })}
-        {[110, 140, 174].map((y, i) => (
-          <line key={"h" + y} x1={-6 + i * 4} y1={y} x2={206 - i * 4} y2={y} opacity={0.3 - i * 0.06} />
-        ))}
-      </g>
-    );
-  } else if (kind === "helix") {
-    const A = [];
-    const B = [];
-    const rungs = [];
-    const N = 26;
-    for (let i = 0; i <= N; i++) {
-      const t = i / N;
-      const y = 20 + t * 160;
-      const phase = t * Math.PI * 4;
-      const xa = 100 + Math.sin(phase) * 34;
-      const xb = 100 - Math.sin(phase) * 34;
-      A.push(`${i === 0 ? "M" : "L"}${xa.toFixed(1)} ${y.toFixed(1)}`);
-      B.push(`${i === 0 ? "M" : "L"}${xb.toFixed(1)} ${y.toFixed(1)}`);
-      if (i % 3 === 0) rungs.push([xa, xb, y]);
-    }
-    body = (
-      <g {...s}>
-        <path d={A.join(" ")} />
-        <path d={B.join(" ")} />
-        {rungs.map((r, i) => (
-          <line key={i} x1={r[0]} y1={r[2]} x2={r[1]} y2={r[2]} opacity="0.4" />
-        ))}
-      </g>
-    );
-  } else if (kind === "quote") {
-    body = (
-      <g>
-        <text
-          x="92"
-          y="158"
-          textAnchor="middle"
-          fill="currentColor"
-          stroke="none"
-          style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontSize: "210px" }}
-        >
-          &ldquo;
-        </text>
-      </g>
-    );
-  } else {
-    // "bars" — data series
-    const heights = Array.from({ length: 9 }).map((_, i) => 30 + (Math.sin(i * 1.1) * 0.5 + 0.5) * 110);
-    body = (
-      <g {...s}>
-        <line x1="20" y1="176" x2="186" y2="176" opacity="0.5" />
-        {heights.map((h, i) => {
-          const x = 26 + i * 18;
-          return <line key={i} x1={x} y1="176" x2={x} y2={176 - h} strokeWidth="6" opacity={0.55} />;
-        })}
-        <path
-          d={heights
-            .map((h, i) => `${i === 0 ? "M" : "L"}${26 + i * 18} ${176 - h}`)
-            .join(" ")}
-          opacity="0.9"
-        />
-        {heights.map((h, i) => (
-          <circle key={"d" + i} cx={26 + i * 18} cy={176 - h} r="2.6" fill="currentColor" stroke="none" />
-        ))}
-      </g>
-    );
-  }
-
-  return (
-    <svg viewBox="0 0 200 200" className={className} style={style} aria-hidden="true">
-      {body}
-    </svg>
-  );
+function hueFor(item, index = 0) {
+  return (item?.id && HUE[item.id]) || HUE_FALLBACK[index % HUE_FALLBACK.length];
 }
 
 /* ── Animation variants ─────────────────────────────────────────────────── */
@@ -308,211 +78,248 @@ const fadeUp = {
   }),
 };
 
-/* ── Featured (flagship) thread — full width ────────────────────────────── */
-function FeaturedThread({ item, index }) {
-  const { hex, motif, tag } = threadMeta(item, index);
-  const link =
-    item.link ??
-    (item.search ? `/publications?search=${encodeURIComponent(item.search)}` : null);
-  const clickable = Boolean(link) && !item.comingSoon;
-  const Wrapper = clickable ? Link : "div";
-  const wrapperProps = clickable ? { to: link } : {};
+/* ── Thread card — image, title, teaser; opens the detail window ────────── */
+function ThreadCard({ item, index, onOpen }) {
+  const hex = hueFor(item, index);
 
   return (
-    <motion.div
-      variants={fadeUp}
-      initial="hidden"
-      whileInView="show"
-      viewport={{ once: true, margin: "-40px" }}
-      className="mb-3"
-    >
-      <Wrapper
-        {...wrapperProps}
-        className="group relative grid md:grid-cols-[1.18fr_0.82fr] rounded-[1.75rem] overflow-hidden border transition-colors duration-300"
-        style={{
-          cursor: clickable ? "pointer" : "default",
-          borderColor: rgba(hex, 0.16),
-          background: `linear-gradient(135deg, ${rgba(hex, 0.07)}, rgba(255,255,255,0.012) 55%)`,
-        }}
-      >
-        {/* hover sweep */}
-        <div
-          className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-          style={{ background: `radial-gradient(60% 120% at 0% 50%, ${rgba(hex, 0.1)}, transparent 60%)` }}
-        />
-
-        {/* text panel */}
-        <div className="relative p-8 md:p-11 flex flex-col">
-          <div className="flex items-center gap-3 mb-7">
-            <span
-              className="text-[10px] font-black tracking-[0.22em] uppercase px-2.5 py-1 rounded-full border"
-              style={{ color: hex, borderColor: rgba(hex, 0.28), background: rgba(hex, 0.08) }}
-            >
-              {tag}
-            </span>
-            <span className="text-[10px] font-black tracking-[0.24em] uppercase text-white/35">
-              Flagship thread
-            </span>
-          </div>
-
-          <div
-            className="font-black tabular-nums mb-3"
-            style={{
-              fontFamily: "'DM Serif Display', Georgia, serif",
-              fontSize: "clamp(2.4rem, 5vw, 3.6rem)",
-              lineHeight: 1,
-              color: hex,
-              opacity: 0.85,
-            }}
-          >
-            01
-          </div>
-
-          <h3
-            className="text-white leading-[1.08] mb-4"
-            style={{
-              fontFamily: "'DM Serif Display', Georgia, serif",
-              fontSize: "clamp(1.7rem, 3.2vw, 2.6rem)",
-            }}
-          >
-            {item.title}
-          </h3>
-
-          <p className="text-white/55 text-base md:text-lg leading-relaxed max-w-xl">
-            {item.text}
-          </p>
-
-          {clickable && (
-            <span
-              className="mt-7 inline-flex items-center gap-2 text-sm font-semibold transition-transform duration-200 group-hover:translate-x-1"
-              style={{ color: hex }}
-            >
-              View publications
-              <ArrowRight className="w-4 h-4" />
-            </span>
-          )}
-        </div>
-
-        {/* motif panel */}
-        <div
-          className="relative hidden md:flex items-center justify-center overflow-hidden"
-          style={{ background: rgba(hex, 0.04), borderLeft: `1px solid ${rgba(hex, 0.1)}` }}
-        >
-          <div
-            className="absolute w-72 h-72 rounded-full blur-2xl opacity-50 transition-opacity duration-500 group-hover:opacity-80"
-            style={{ background: `radial-gradient(circle, ${rgba(hex, 0.22)}, transparent 65%)` }}
-          />
-          <ThreadMotif
-            kind={motif}
-            className="relative w-56 h-56 transition-transform duration-700 group-hover:scale-105"
-            style={{ color: hex, opacity: 0.85 }}
-          />
-        </div>
-      </Wrapper>
-    </motion.div>
-  );
-}
-
-/* ── Standard thread card ───────────────────────────────────────────────── */
-function ThreadCard({ item, index }) {
-  const { hex, motif, tag } = threadMeta(item, index);
-  const link =
-    item.link ??
-    (item.search ? `/publications?search=${encodeURIComponent(item.search)}` : null);
-  const clickable = Boolean(link) && !item.comingSoon;
-  const Wrapper = clickable ? Link : "div";
-  const wrapperProps = clickable ? { to: link } : {};
-
-  return (
-    <motion.div
+    <motion.button
+      type="button"
+      onClick={() => onOpen(index)}
       variants={fadeUp}
       initial="hidden"
       whileInView="show"
       custom={Math.min(index, 4)}
       viewport={{ once: true, margin: "-30px" }}
-      className="h-full"
+      className="group relative flex h-full flex-col overflow-hidden rounded-2xl border text-left transition-all duration-300"
+      style={{
+        borderColor: "rgba(255,255,255,0.07)",
+        background: "linear-gradient(155deg, rgba(255,255,255,0.04), rgba(255,255,255,0.008))",
+      }}
+      onMouseEnter={(e) => (e.currentTarget.style.borderColor = rgba(hex, 0.32))}
+      onMouseLeave={(e) => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.07)")}
     >
-      <Wrapper
-        {...wrapperProps}
-        className="group relative flex h-full min-h-[208px] flex-col rounded-2xl border overflow-hidden transition-all duration-300"
-        style={{
-          cursor: clickable ? "pointer" : "default",
-          borderColor: "rgba(255,255,255,0.06)",
-          background: "linear-gradient(155deg, rgba(255,255,255,0.038), rgba(255,255,255,0.008))",
-        }}
-        onMouseEnter={(e) => (e.currentTarget.style.borderColor = rgba(hex, 0.3))}
-        onMouseLeave={(e) => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.06)")}
-      >
-        {/* accent corner wash */}
+      {/* image */}
+      <div className="relative aspect-[16/10] overflow-hidden">
+        <img
+          src={item.image}
+          alt={item.alt || ""}
+          loading="lazy"
+          className="h-full w-full object-cover transition-transform duration-[1200ms] ease-out group-hover:scale-[1.06]"
+        />
+        {/* legibility + blend gradient into the card body */}
         <div
-          className="absolute inset-0 pointer-events-none"
-          style={{ background: `radial-gradient(115% 80% at 100% 0%, ${rgba(hex, 0.09)}, transparent 58%)` }}
+          className="absolute inset-0"
+          style={{
+            background:
+              "linear-gradient(to top, rgba(2,17,13,0.95), rgba(2,17,13,0.15) 48%, transparent 72%)",
+          }}
         />
-        {/* motif watermark */}
-        <ThreadMotif
-          kind={motif}
-          className="absolute -right-7 -bottom-9 w-44 h-44 pointer-events-none transition-transform duration-700 group-hover:scale-110 group-hover:-rotate-3"
-          style={{ color: hex, opacity: 0.16 }}
-        />
-        {/* hover glow */}
-        <div
-          className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-          style={{ background: `radial-gradient(85% 120% at 0% 0%, ${rgba(hex, 0.1)}, transparent 55%)` }}
-        />
+        {/* tag chip */}
+        <span
+          className="absolute left-3 top-3 rounded-full border px-2.5 py-1 text-[9.5px] font-black uppercase tracking-[0.2em] backdrop-blur-sm"
+          style={{ color: hex, borderColor: rgba(hex, 0.32), background: "rgba(0,0,0,0.38)" }}
+        >
+          {item.tag}
+        </span>
+      </div>
+
+      {/* text */}
+      <div className="relative flex flex-1 flex-col p-5 md:p-6">
         {/* top hairline on hover */}
         <div
-          className="absolute left-0 right-0 top-0 h-px opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+          className="absolute left-0 right-0 top-0 h-px opacity-0 transition-opacity duration-300 group-hover:opacity-100"
           style={{ background: `linear-gradient(90deg, ${hex}, transparent 70%)` }}
         />
+        <h3
+          className="mb-2 leading-snug text-white/90"
+          style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontSize: "1.2rem" }}
+        >
+          {item.title}
+        </h3>
+        <p className="text-sm leading-relaxed text-white/45">{item.teaser}</p>
+        <span
+          className="mt-auto inline-flex items-center gap-1.5 pt-5 text-xs font-semibold opacity-70 transition-all duration-200 group-hover:gap-2.5 group-hover:opacity-100"
+          style={{ color: hex }}
+        >
+          Read more
+          <ArrowRight className="h-3.5 w-3.5" />
+        </span>
+      </div>
+    </motion.button>
+  );
+}
 
-        <div className="relative flex flex-col h-full p-6">
-          <div className="flex items-center justify-between gap-3 mb-4">
-            <span
-              className="text-[9.5px] font-black tracking-[0.2em] uppercase px-2.5 py-1 rounded-full border"
-              style={{ color: hex, borderColor: rgba(hex, 0.26), background: rgba(hex, 0.07) }}
+/* ── Research detail window ─────────────────────────────────────────────── */
+function ResearchModal({ item, index = 0, onClose }) {
+  const hex = item ? hueFor(item, index) : "#6ee7b7";
+  const papers = item?.papers ?? [];
+  const search = item?.search;
+
+  return (
+    <AnimatePresence>
+      {item && (
+        <motion.div
+          className="fixed inset-0 z-[60] flex items-center justify-center p-4 md:p-8"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.25 }}
+        >
+          {/* backdrop */}
+          <div
+            className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+            onClick={onClose}
+            aria-hidden="true"
+          />
+
+          <motion.div
+            role="dialog"
+            aria-modal="true"
+            aria-label={item.title}
+            className="relative z-10 grid w-full max-w-5xl overflow-hidden rounded-3xl border md:grid-cols-2"
+            style={{
+              maxHeight: "88vh",
+              borderColor: rgba(hex, 0.22),
+              background: "linear-gradient(160deg, #0a1f18, #061410)",
+            }}
+            initial={{ opacity: 0, y: 24, scale: 0.97 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 16, scale: 0.98 }}
+            transition={{ duration: 0.3, ease: [0.215, 0.61, 0.355, 1] }}
+          >
+            {/* image side */}
+            <div className="relative h-52 md:h-auto md:min-h-[460px]">
+              <img
+                src={item.image}
+                alt={item.alt || ""}
+                className="absolute inset-0 h-full w-full object-cover"
+              />
+              {/* fade the bottom (mobile) and the right edge (desktop) into the panel */}
+              <div
+                className="absolute inset-0 md:hidden"
+                style={{ background: "linear-gradient(to top, #0a1f18, transparent 55%)" }}
+              />
+              <div
+                className="absolute inset-0 hidden md:block"
+                style={{ background: "linear-gradient(to right, transparent 58%, #0a1f18)" }}
+              />
+              {item.credit?.name && (
+                <a
+                  href={item.credit.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                  className="absolute bottom-2.5 left-3 text-[10px] text-white/55 transition-colors hover:text-white/85"
+                >
+                  Photo · {item.credit.name} / Unsplash
+                </a>
+              )}
+            </div>
+
+            {/* content side */}
+            <div
+              className="relative flex flex-col overflow-y-auto p-7 md:p-9"
+              style={{ maxHeight: "88vh" }}
             >
-              {tag}
-            </span>
-            <span
-              className="font-black tabular-nums leading-none"
-              style={{
-                fontFamily: "'DM Serif Display', Georgia, serif",
-                fontSize: "1.75rem",
-                color: hex,
-                opacity: 0.34,
-              }}
-            >
-              {String(index + 1).padStart(2, "0")}
-            </span>
-          </div>
-
-          <h3 className="font-semibold text-white/90 text-[1.05rem] leading-snug mb-2 pr-8">
-            {item.title}
-            {item.comingSoon && (
-              <span className="ml-2 align-middle text-[8.5px] font-black tracking-[0.16em] uppercase text-amber-300/70 bg-amber-400/[0.09] px-2 py-0.5 rounded-full border border-amber-400/15">
-                Soon
-              </span>
-            )}
-          </h3>
-
-          <p className="text-sm text-white/45 leading-relaxed pr-4">{item.text}</p>
-
-          <div className="mt-auto pt-5">
-            {clickable ? (
-              <span
-                className="inline-flex items-center gap-1.5 text-xs font-semibold opacity-60 group-hover:opacity-100 transition-all duration-200 group-hover:gap-2.5"
-                style={{ color: hex }}
+              {/* close */}
+              <button
+                type="button"
+                onClick={onClose}
+                aria-label="Close"
+                className="absolute right-4 top-4 z-10 flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/60 transition-colors hover:bg-white/10 hover:text-white"
               >
-                Explore thread
-                <ArrowUpRight className="w-3.5 h-3.5" />
+                <svg
+                  viewBox="0 0 16 16"
+                  className="h-4 w-4"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                >
+                  <path d="M4 4l8 8M12 4l-8 8" />
+                </svg>
+              </button>
+
+              <span
+                className="mb-4 inline-flex w-fit items-center rounded-full border px-2.5 py-1 text-[9.5px] font-black uppercase tracking-[0.2em]"
+                style={{ color: hex, borderColor: rgba(hex, 0.3), background: rgba(hex, 0.08) }}
+              >
+                {item.tag}
               </span>
-            ) : (
-              <span className="text-xs font-medium text-white/25">In preparation</span>
-            )}
-          </div>
-        </div>
-      </Wrapper>
-    </motion.div>
+
+              <h2
+                className="mb-5 pr-8 leading-[1.1] text-white"
+                style={{
+                  fontFamily: "'DM Serif Display', Georgia, serif",
+                  fontSize: "clamp(1.6rem, 3vw, 2.1rem)",
+                }}
+              >
+                {item.title}
+              </h2>
+
+              <div className="space-y-3.5">
+                {(item.body ?? []).map((para, i) => (
+                  <p key={i} className="text-[0.95rem] leading-relaxed text-white/65">
+                    {para}
+                  </p>
+                ))}
+              </div>
+
+              {/* papers / related publications */}
+              <div className="mt-7 border-t border-white/10 pt-6">
+                <p
+                  className="mb-3 text-[10px] font-black uppercase tracking-[0.22em]"
+                  style={{ color: hex }}
+                >
+                  Selected publications
+                </p>
+
+                {papers.length > 0 ? (
+                  <ul className="space-y-3">
+                    {papers.map((p, i) => (
+                      <li key={i}>
+                        <a
+                          href={p.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          className="group/p block"
+                        >
+                          <span className="text-sm text-white/85 transition-colors group-hover/p:text-white">
+                            {p.title}
+                          </span>
+                          {(p.authors || p.year) && (
+                            <span className="mt-0.5 block text-xs text-white/40">
+                              {[p.authors, p.year].filter(Boolean).join(" · ")}
+                            </span>
+                          )}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-sm italic text-white/35">
+                    Selected papers will be added here as they are published.
+                  </p>
+                )}
+
+                {search && (
+                  <Link
+                    to={`/publications?search=${encodeURIComponent(search)}`}
+                    className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold transition-all duration-200 hover:gap-2.5"
+                    style={{ color: hex }}
+                  >
+                    Browse related publications
+                    <ArrowUpRight className="h-3.5 w-3.5" />
+                  </Link>
+                )}
+              </div>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }
 
@@ -758,6 +565,7 @@ function FabricOfLifeVideo() {
 export default function Research() {
   const [items, setItems] = useState([]);
   const [error, setError] = useState(null);
+  const [activeIndex, setActiveIndex] = useState(null);
 
   useEffect(() => {
     fetchJSONC("/research.jsonc")
@@ -765,11 +573,29 @@ export default function Research() {
       .catch((e) => setError(e?.message ?? "Failed to load research topics"));
   }, []);
 
-  const [featured, ...rest] = items;
-  // Split the remaining threads around the editorial interlude.
-  const SPLIT = 4;
-  const firstHalf = rest.slice(0, SPLIT);
-  const secondHalf = rest.slice(SPLIT);
+  const openThread = useCallback((i) => setActiveIndex(i), []);
+  const closeThread = useCallback(() => setActiveIndex(null), []);
+
+  // While the detail window is open, lock background scroll and close on Escape.
+  useEffect(() => {
+    if (activeIndex == null) return;
+    const onKey = (e) => {
+      if (e.key === "Escape") setActiveIndex(null);
+    };
+    document.addEventListener("keydown", onKey);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [activeIndex]);
+
+  // Split the threads around the editorial interlude.
+  const SPLIT = 3;
+  const firstHalf = items.slice(0, SPLIT);
+  const secondHalf = items.slice(SPLIT);
+  const active = activeIndex != null ? items[activeIndex] : null;
 
   return (
     <div className="min-h-screen">
@@ -801,16 +627,6 @@ export default function Research() {
         </div>
 
         <div className="relative max-w-7xl mx-auto px-6 md:px-10">
-          {/* Eyebrow */}
-          <motion.p
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, ease: "easeOut" }}
-            className="text-[10px] font-black tracking-[0.32em] uppercase text-emerald-400/55 mb-7"
-          >
-            Research · BioLoom Labs
-          </motion.p>
-
           {/* Display heading */}
           <motion.h1
             initial={{ opacity: 0, y: 26 }}
@@ -885,9 +701,9 @@ export default function Research() {
               )}
             </div>
             <p className="mt-3 text-white/45 max-w-2xl leading-relaxed">
-              Ten interlocking lines of enquiry — from global biodiversity
-              patterns to the food, health and culture that nature sustains.
-              Follow any strand through to its publications.
+              Six interlocking lines of enquiry — from global biodiversity
+              patterns to the food, health and species that nature sustains.
+              Open any thread to read more.
             </p>
             <div
               className="mt-5 h-px max-w-xs"
@@ -897,26 +713,28 @@ export default function Research() {
 
           {error && <p className="mb-8 text-sm text-red-300/80">Error: {error}</p>}
 
-          {/* Featured flagship thread */}
-          {featured && <FeaturedThread item={featured} index={0} />}
-
           {/* First batch */}
           {firstHalf.length > 0 && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {firstHalf.map((item, i) => (
-                <ThreadCard key={item.id ?? i + 1} item={item} index={i + 1} />
+                <ThreadCard key={item.id ?? i} item={item} index={i} onOpen={openThread} />
               ))}
             </div>
           )}
 
-          {/* Editorial interlude */}
-          {rest.length > SPLIT && <Interlude />}
+          {/* Editorial interlude — the quote */}
+          {items.length > SPLIT && <Interlude />}
 
           {/* Second batch */}
           {secondHalf.length > 0 && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {secondHalf.map((item, i) => (
-                <ThreadCard key={item.id ?? i + 1 + SPLIT} item={item} index={i + 1 + SPLIT} />
+                <ThreadCard
+                  key={item.id ?? i + SPLIT}
+                  item={item}
+                  index={i + SPLIT}
+                  onOpen={openThread}
+                />
               ))}
             </div>
           )}
@@ -975,6 +793,8 @@ export default function Research() {
           </motion.div>
         </main>
       </section>
+
+      <ResearchModal item={active} index={activeIndex ?? 0} onClose={closeThread} />
     </div>
   );
 }

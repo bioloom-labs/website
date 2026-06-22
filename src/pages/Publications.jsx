@@ -10,6 +10,11 @@ import { useLocation } from "react-router-dom";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { ExternalLink } from "lucide-react";
 import { fetchJSONC } from "../utils/jsonc.js";
+import {
+  normalizeTitle,
+  semanticScores,
+  warmSemanticSearch,
+} from "../utils/semanticSearch.js";
 
 // Path data from bioloom.svg, potrace coordinate transform
 const _PT = "translate(0,239) scale(0.1,-0.1)";
@@ -375,6 +380,12 @@ export default function Publications() {
   const [authorFilter, setAuthorFilter] = useState("");
   const [yearFrom, setYearFrom] = useState("");
   const [yearTo, setYearTo] = useState("");
+
+  // Semantic search (in-browser embeddings); falls back to keyword matching.
+  const [semScores, setSemScores] = useState(null); // Map<normTitle, score> | null
+  const [semStatus, setSemStatus] = useState("idle"); // idle | loading | ready | error
+  const semReqRef = useRef(0);
+
   const lastLocationSearchRef = useRef(location.search);
 
   // Sync ?search= query param from other pages
@@ -383,6 +394,34 @@ export default function Publications() {
     lastLocationSearchRef.current = location.search;
     setSearch(new URLSearchParams(location.search).get("search") || "");
   }, [location.search]);
+
+  // Score publications semantically when the query changes (debounced). The
+  // model + embeddings load lazily on first use; until then this stays "loading"
+  // and the page shows keyword matches only.
+  useEffect(() => {
+    const q = search.trim();
+    if (q.length < 3) {
+      setSemScores(null);
+      setSemStatus("idle");
+      return;
+    }
+    const token = ++semReqRef.current;
+    setSemStatus("loading");
+    const t = setTimeout(() => {
+      semanticScores(q)
+        .then((scores) => {
+          if (token !== semReqRef.current) return; // a newer query superseded this
+          setSemScores(scores);
+          setSemStatus("ready");
+        })
+        .catch(() => {
+          if (token !== semReqRef.current) return;
+          setSemScores(null);
+          setSemStatus("error");
+        });
+    }, 300);
+    return () => clearTimeout(t);
+  }, [search]);
 
   // ---------- LOAD scholar-publications.json ----------
 
@@ -500,26 +539,34 @@ export default function Publications() {
 
   // ---------- FILTERING ----------
 
+  const SEM_THRESHOLD = 0.3; // cosine cutoff for "semantically related"
   const filteredPubs = useMemo(() => {
     const s = search.trim().toLowerCase();
     const yf = yearFrom ? Number(yearFrom) : null;
     const yt = yearTo ? Number(yearTo) : null;
 
     return pubs.filter((p) => {
-      if (s) {
-        const haystack = [p.title, p.abstractText, p.journal, p.authorsText]
-          .join(" ")
-          .toLowerCase();
-        if (!haystack.includes(s)) return false;
-      }
       if (authorFilter) {
         if (!(p.labAuthorNames || []).includes(authorFilter)) return false;
       }
       if (yf !== null && (!p.year || p.year < yf)) return false;
       if (yt !== null && (!p.year || p.year > yt)) return false;
+
+      if (s) {
+        const haystack = [p.title, p.abstractText, p.journal, p.authorsText]
+          .join(" ")
+          .toLowerCase();
+        const lexical = haystack.includes(s);
+        // When semantic scores are ready, also admit papers the model finds
+        // related, so a natural-language query matches papers that don't contain
+        // the exact words. Exact keyword hits always pass.
+        const sem = semScores ? semScores.get(normalizeTitle(p.title)) : undefined;
+        const semantic = sem != null && sem >= SEM_THRESHOLD;
+        if (!lexical && !semantic) return false;
+      }
       return true;
     });
-  }, [pubs, search, authorFilter, yearFrom, yearTo]);
+  }, [pubs, search, authorFilter, yearFrom, yearTo, semScores]);
 
   const orderIndexById = useMemo(() => {
     const map = new Map();
@@ -561,9 +608,18 @@ export default function Publications() {
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Title, author, journal…"
+            onFocus={() => warmSemanticSearch()}
+            placeholder="Search by topic, title, author…"
             className="input-glass"
           />
+          {search.trim().length >= 3 && (
+            <p className="mt-1 text-xs text-white/40">
+              {semStatus === "loading" &&
+                "Loading smart search… (first use downloads a small model)"}
+              {semStatus === "ready" && "Smart search: keyword + related results"}
+              {semStatus === "error" && "Smart search unavailable — keyword results only"}
+            </p>
+          )}
         </div>
 
         {authorOptions.length > 0 && (
