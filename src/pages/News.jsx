@@ -2,6 +2,7 @@ import { forwardRef, useCallback, useEffect, useLayoutEffect, useMemo, useRef, u
 import { Link } from "react-router-dom";
 import HTMLFlipBook from "react-pageflip";
 import { fetchJSONC } from "../utils/jsonc.js";
+import useSeo from "../utils/useSeo.js";
 
 /* ════════════════════════════════════════════════════════════════════════
    The BioLoom Chronicle — the News page as a real, drag-to-turn newspaper.
@@ -593,6 +594,11 @@ function editionBookPages(edition) {
 
 /* ─── Page ─── */
 export default function News() {
+  useSeo({
+    title: "News",
+    description:
+      "News and updates from BIOLOOM, a biodiversity and people research group led by Dr. Samuel Pironon.",
+  });
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);

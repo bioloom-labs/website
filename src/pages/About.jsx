@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 import { fetchJSONC } from "../utils/jsonc.js";
+import useSeo from "../utils/useSeo.js";
 
 const sceneCardClass =
   "rounded-[2.5rem] border border-white/20 bg-white/10 px-8 py-10 backdrop-blur-[5px] shadow-[inset_0_1px_0_rgba(255,255,255,0.25),inset_0_-1px_0_rgba(255,255,255,0.05),0_20px_60px_rgba(0,0,0,0.35)]";
@@ -507,6 +508,11 @@ function VideoAttributionOverlay({ activeSceneId, scenes }) {
 /* -------------------- Main About page -------------------- */
 
 export default function About() {
+  useSeo({
+    title: "About",
+    description:
+      "The story, vision, and values behind BIOLOOM — an interdisciplinary biodiversity research group studying how people and nature are woven together.",
+  });
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);

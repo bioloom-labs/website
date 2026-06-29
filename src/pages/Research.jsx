@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { fetchJSONC } from "../utils/jsonc.js";
+import useSeo from "../utils/useSeo.js";
 
 /* ── Icons ──────────────────────────────────────────────────────────────── */
 function ArrowUpRight({ className = "" }) {
@@ -563,6 +564,11 @@ function FabricOfLifeVideo() {
 
 /* ── Main page ──────────────────────────────────────────────────────────── */
 export default function Research() {
+  useSeo({
+    title: "Research",
+    description:
+      "Explore BIOLOOM's research on biodiversity and its contributions to people — mapping and predicting the past, present, and future of nature.",
+  });
   const [items, setItems] = useState([]);
   const [error, setError] = useState(null);
   const [activeIndex, setActiveIndex] = useState(null);

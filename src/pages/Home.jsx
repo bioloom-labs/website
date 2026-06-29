@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { fetchJSONC } from "../utils/jsonc.js";
+import useSeo from "../utils/useSeo.js";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
@@ -18,6 +19,10 @@ const fadeUp = {
 };
 
 export default function Home() {
+  useSeo({
+    description:
+      "BIOLOOM is a biodiversity research group led by Dr. Samuel Pironon, using large-scale data and macroecology to explore how people and nature are connected.",
+  });
   const [data, setData] = useState(null);
   const [active, setActive] = useState(0);
   // Slide being previewed while the pointer hovers an indicator dot.

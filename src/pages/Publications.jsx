@@ -10,6 +10,7 @@ import { useLocation } from "react-router-dom";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { ExternalLink } from "lucide-react";
 import { fetchJSONC } from "../utils/jsonc.js";
+import useSeo from "../utils/useSeo.js";
 import {
   normalizeTitle,
   semanticScores,
@@ -366,6 +367,11 @@ function PubItem({
 // ---------- MAIN PAGE ----------
 
 export default function Publications() {
+  useSeo({
+    title: "Publications",
+    description:
+      "Browse publications from the BIOLOOM biodiversity research group, with in-browser semantic search across the group's work.",
+  });
   const location = useLocation();
   const [pubs, setPubs] = useState([]);
   const [labAuthorNames, setLabAuthorNames] = useState([]);

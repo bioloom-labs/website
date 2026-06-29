@@ -8,6 +8,7 @@ import {
 } from "framer-motion";
 import { createPortal } from "react-dom";
 import { fetchJSONC } from "../utils/jsonc.js";
+import useSeo from "../utils/useSeo.js";
 
 const PLACEHOLDER = `/images/people/placeholder.svg`;
 const SHORT_BIO = 420;
@@ -543,6 +544,11 @@ function Alumni({ members, imageUrl }) {
 // ─── page ─────────────────────────────────────────────────────────────────────
 
 export default function People() {
+  useSeo({
+    title: "People",
+    description:
+      "Meet the BIOLOOM team — the researchers and students studying how biodiversity and people are connected, led by Dr. Samuel Pironon.",
+  });
   const [data, setData] = useState({ sections: [], previous: [] });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);

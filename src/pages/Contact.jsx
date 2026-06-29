@@ -1,7 +1,13 @@
 "use client";
 import { useState } from "react";
+import useSeo from "../utils/useSeo.js";
 
 export default function Contact() {
+    useSeo({
+        title: "Contact",
+        description:
+            "Get in touch with BIOLOOM — a biodiversity and people research group led by Dr. Samuel Pironon.",
+    });
     const [name, setName] = useState("");
     const [fromEmail, setFromEmail] = useState("");
     const [message, setMessage] = useState("");
