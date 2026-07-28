@@ -35,24 +35,23 @@
   },
   {
     "id": "food",
-    "title": "Nature's Contributions to Food",
+    "title": "Agrobiodiversity",
     "tag": "People · Food",
-    "teaser": "How does the diversity of species underpin what we eat — and the security and nutrition of the people who depend on it?",
+    "teaser": "Food systems depend on far more species than today's major crops. Which ones, where, and what could they offer more resilient agriculture?",
     "image": "/images/research/food.webp",
     "alt": "Market baskets filled with colourful peppers, tomatoes and other vegetables",
     "credit": { "name": "João Rodrigues", "url": "https://unsplash.com/@joaohfrodrigues" },
     "body": [
-      "Food systems rest on biodiversity — wild and cultivated species, their relatives, pollinators, and the ecosystems that support them.",
-      "We examine how this diversity may contribute to food security, dietary quality and resilience, and how it is distributed across regions and communities.",
-      "Bringing together species-use records, nutritional information and spatial data, we ask which species matter for food, where they are relied upon, and how changes in biodiversity could affect what reaches people's plates.",
-      "This thread draws on work across the lab on crops, neglected and underutilised species, and the nutritional value that varied diets can provide."
+      "Food systems depend on far more species than those found in today's major crops. Understanding and documenting this diversity is key to designing food systems that are more nutritious, resilient and sustainable.",
+      "This theme combines species-use data, biodiversity information and predictive modelling to identify opportunities for food diversification. We develop the evidence needed to support the use of neglected and underutilised species, wild food species and crop wild relatives, informing breeding, neo-domestication and other strategies to build climate-resilient agriculture.",
+      "Alongside this, we investigate how agrobiodiversity is distributed and threatened across the globe. By developing new datasets and analytical frameworks, we help identify priorities for conserving the diversity that underpins future food systems."
     ],
     "papers": [],
     "search": "food"
   },
   {
     "id": "health",
-    "title": "Nature's Contributions to Health",
+    "title": "Biodiversity and Health",
     "tag": "People · Health",
     "teaser": "From traditional remedies to modern drug discovery, biodiversity has long been a source of medicine. We study where those contributions come from.",
     "image": "/images/research/health.webp",
@@ -62,7 +61,7 @@
       "A large share of medicines trace, directly or indirectly, to natural products — and many communities still rely on plants and other organisms for primary healthcare.",
       "We investigate how biodiversity contributes to human health: the species used in traditional medicine, the chemistry behind their effects, and the potential they may hold for discovery.",
       "By linking species-use data with chemical and ecological information, we look at which organisms are used medicinally, where, and what this could imply for both health and conservation.",
-      "The thread works at the meeting point of ecology, health and chemistry, tracing how the environments where species grow and the health needs they may serve connect to the chemistry that could underlie their effects."
+      "The thread sits at the intersection of ecology, chemistry and health, exploring how the environments in which species grow may shape the chemistry that underlies their medicinal properties and uses."
     ],
     "papers": [],
     "search": "medicinal"
@@ -76,10 +75,9 @@
     "alt": "A person harvesting by hand in terraced rice fields",
     "credit": { "name": "Shayan Ghiasvand", "url": "https://unsplash.com/@shayangh96" },
     "body": [
-      "People and biodiversity are bound together: the species and ecosystems that provide food, materials and medicine depend in turn on a wider web of supporting and regulating processes.",
-      "This thread looks at how those layers connect — how the contributions people draw from nature arise from, and feed back on, the biodiversity that sustains them.",
-      "We focus on species rather than nature in the abstract, asking where providing contributions are underpinned by supporting ones, and where that link may be most exposed to change.",
-      "The work aims to make these interactions explicit, so the consequences of biodiversity loss for people can be traced more clearly."
+      "Human lives exist within the larger, cradling ecosystem which provides the constant reproduction of clean water, soils, food, timber, health, and wellbeing that we need to live. But how will our ecological cradle fare under so much pressure?",
+      "We combine ecological and species-use data from across the globe to investigate how Nature's Contributions to People arise from biodiversity and flow to society, by cascading through multiple species and interactions. As well as how this flow will be interrupted by biodiversity loss, and what interventions might be warranted to maintain it.",
+      "The thread zooms out to connect food, medicine, materials, and more — along with the biodiversity that provides them — into one whole. Weaving across disciplines, and across the perceived human-nature divide, in order to research our 'socio-ecological system' as a single fabric of life."
     ],
     "papers": [],
     "search": "ecosystem services"
@@ -88,15 +86,15 @@
     "id": "species-use-data",
     "title": "Species Use Data",
     "tag": "Open Data",
-    "teaser": "Cataloguing how people use species at scale — the records, databases and infrastructure that make the question answerable.",
+    "teaser": "Every use of biodiversity leaves a trace of knowledge — much of it scattered, inaccessible or at risk of being lost. We build the infrastructure to connect and preserve it.",
     "image": "/images/research/species-use-data.webp",
     "alt": "Botanical specimen plate showing pressed ferns and leaves on aged paper",
     "credit": { "name": "Nisa Çokokumuş", "url": "https://unsplash.com/@nisacokokumus" },
     "body": [
-      "Understanding how biodiversity contributes to people requires knowing which species are used, for what, and where — information that is scattered across literature, archives and local knowledge.",
-      "This thread builds and curates the data behind that question, assembling species-use records into structured, openly available resources.",
-      "It draws together efforts such as the World Checklist of Useful Plants (WCUP), Plants for Health, and a Species Use Database, alongside the methods needed to keep them consistent and comparable.",
-      "By making species-use data more complete and accessible, the thread supports research, policy and conservation across the lab and beyond."
+      "Every use of biodiversity leaves a trace of knowledge, yet much of that knowledge remains scattered, inaccessible or at risk of being lost.",
+      "Building the evidence base for sustainable use begins with documenting how people use species across cultures, places and time, while recognising and respecting traditional knowledge holders.",
+      "This theme develops the data infrastructure needed to connect, standardise and preserve species use information.",
+      "Our work includes the World Checklist of Useful Plants, co-developed with Royal Botanic Gardens, Kew, and the IUCN Species Use Database, helping provide the evidence needed to advance biodiversity research, conservation and more sustainable use."
     ],
     "papers": [],
     "search": "useful plants"
