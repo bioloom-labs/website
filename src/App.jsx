@@ -90,6 +90,8 @@ export default function App() {
         <Route path="/about" element={<About />} />
         <Route path="/research" element={<Research />} />
         <Route path="/people" element={<People />} />
+        {/* Each member also has a URL of their own, which opens their bio. */}
+        <Route path="/people/:slug" element={<People />} />
         <Route path="/publications" element={<Publications />} />
         <Route path="/news" element={<News />} />
         <Route path="/contact" element={<Contact />} />

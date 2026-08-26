@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { Mail, Globe, Linkedin, Github, X as CloseIcon, Copy, Check, ExternalLink } from "lucide-react";
 import {
   motion,
@@ -9,6 +10,7 @@ import {
 import { createPortal } from "react-dom";
 import { fetchJSONC } from "../utils/jsonc.js";
 import useSeo from "../utils/useSeo.js";
+import { ROUTES, personDescription, slugify } from "../utils/seoMeta.js";
 
 const PLACEHOLDER = `/images/people/placeholder.svg`;
 const SHORT_BIO = 420;
@@ -294,10 +296,32 @@ function MemberModal({ person, onClose }) {
 
 // ─── PI hero ─────────────────────────────────────────────────────────────────
 
+/* A person's own URL — /people/samuel-pironon — opens their bio window on
+   arrival, which is what gives each member a page of their own for search
+   engines to index. Clicking a card inside the page is untouched: it sets local
+   state and leaves the URL alone, so nothing about the browsing changes. */
+function useDeepLinkedModal(person) {
+  const { slug } = useParams();
+  const navigate = useNavigate();
+  const deepLinked = slug != null && slug === slugify(person.name);
+  const [open, setOpen] = useState(deepLinked);
+
+  return [
+    open,
+    () => setOpen(true),
+    () => {
+      setOpen(false);
+      // Drop the name from the URL without adding a history entry, so Back
+      // still leaves the page instead of reopening the window behind you.
+      if (deepLinked) navigate("/people", { replace: true });
+    },
+  ];
+}
+
 function PIHero({ person, bgImage }) {
   const [imgErr, setImgErr] = useState(false);
   const [expanded, setExpanded] = useState(false);
-  const [modalOpen, setModalOpen] = useState(false);
+  const [modalOpen, openModal, closeModal] = useDeepLinkedModal(person);
   const ref = useRef(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
   const y = useTransform(scrollYProgress, [0, 1], ["-12%", "12%"]);
@@ -335,7 +359,7 @@ function PIHero({ person, bgImage }) {
             transition={{ duration: 0.6, delay: 0.1 }}
             className="flex shrink-0 flex-col items-center gap-5 md:items-start"
           >
-            <div className="relative cursor-pointer" onClick={() => setModalOpen(true)}>
+            <div className="relative cursor-pointer" onClick={openModal}>
               <div className="absolute inset-0 scale-110 rounded-3xl bg-gradient-to-br from-brand-300/20 to-brand-600/10 blur-2xl" />
               <img
                 src={imgErr || !person.photo ? PLACEHOLDER : person.photo}
@@ -385,7 +409,7 @@ function PIHero({ person, bgImage }) {
         </div>
       </div>
 
-      {modalOpen && <MemberModal person={person} onClose={() => setModalOpen(false)} />}
+      {modalOpen && <MemberModal person={person} onClose={closeModal} />}
     </div>
   );
 }
@@ -395,7 +419,7 @@ function PIHero({ person, bgImage }) {
 function MemberCard({ person, index }) {
   const [imgErr, setImgErr] = useState(false);
   const [hovered, setHovered] = useState(false);
-  const [modalOpen, setModalOpen] = useState(false);
+  const [modalOpen, openModal, closeModal] = useDeepLinkedModal(person);
   const links = buildLinks(person);
   const shortRole = person.role?.split(/ at | from /)[0] ?? person.role ?? "";
 
@@ -409,7 +433,7 @@ function MemberCard({ person, index }) {
         style={{ aspectRatio: "3/4", width: "clamp(160px, 20vw, 220px)" }}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
-        onClick={() => setModalOpen(true)}
+        onClick={openModal}
       >
         {/* Photo */}
         <img
@@ -462,7 +486,7 @@ function MemberCard({ person, index }) {
         </div>
       </motion.div>
 
-      {modalOpen && <MemberModal person={person} onClose={() => setModalOpen(false)} />}
+      {modalOpen && <MemberModal person={person} onClose={closeModal} />}
     </>
   );
 }
@@ -544,11 +568,7 @@ function Alumni({ members, imageUrl }) {
 // ─── page ─────────────────────────────────────────────────────────────────────
 
 export default function People() {
-  useSeo({
-    title: "People",
-    description:
-      "Meet the BIOLOOM team — the researchers and students studying how biodiversity and people are connected, led by Dr. Samuel Pironon.",
-  });
+  const { slug } = useParams();
   const [data, setData] = useState({ sections: [], previous: [] });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -574,6 +594,18 @@ export default function People() {
     }
     load();
   }, []);
+
+  // On a person's own URL the title and search description are theirs; /people
+  // keeps the team-wide pair. Both wait on the fetch, so this settles once the
+  // data lands rather than on first paint.
+  const person = slug
+    ? [...data.sections.flatMap((s) => s.members), ...data.previous].find(
+        (m) => slugify(m.name) === slug
+      )
+    : null;
+  useSeo(
+    person ? { title: person.name, description: personDescription(person) } : ROUTES["/people"]
+  );
 
   if (loading) {
     return (

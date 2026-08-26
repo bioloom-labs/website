@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
+import { SITE_NAME, ORIGIN, DEFAULT_TITLE } from "./seoMeta.js";
 
 // Per-route document title + meta tags, with no extra dependency.
 //
@@ -7,10 +8,6 @@ import { useLocation } from "react-router-dom";
 // Twitter card) so non-JS social scrapers always get something useful. This
 // hook updates those same tags on each route so Google — which renders JS —
 // indexes a page-specific title and description instead of the shared one.
-
-const SITE_NAME = "BioLoom Labs";
-const ORIGIN = "https://bioloom-labs.com";
-const DEFAULT_TITLE = `${SITE_NAME} — Biodiversity & People Research Group`;
 
 function upsertMeta(attr, key, content) {
   if (!content) return;

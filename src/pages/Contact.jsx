@@ -1,13 +1,10 @@
 "use client";
 import { useState } from "react";
 import useSeo from "../utils/useSeo.js";
+import { ROUTES } from "../utils/seoMeta.js";
 
 export default function Contact() {
-    useSeo({
-        title: "Contact",
-        description:
-            "Get in touch with BIOLOOM — a biodiversity and people research group led by Dr. Samuel Pironon.",
-    });
+    useSeo(ROUTES["/contact"]);
     const [name, setName] = useState("");
     const [fromEmail, setFromEmail] = useState("");
     const [message, setMessage] = useState("");
@@ -32,7 +29,7 @@ export default function Contact() {
 
     return (
         <section className="section">
-            <h2 className="h2-grad">Contact</h2>
+            <h1 className="h2-grad">Contact</h1>
 
             <p className="mt-4 max-w-2xl text-white/70 leading-relaxed">
                 We are a small and new lab group constantly developing new ideas and looking for new perspectives. We will answer your email, we value collaboration, and we love hosting guest speakers and lunches where outside-the-box ideas are never too outside-the-box.

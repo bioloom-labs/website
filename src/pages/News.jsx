@@ -3,6 +3,7 @@ import { AnimatePresence, motion, useMotionValue, useScroll } from "framer-motio
 import { ArrowUpRight, ChevronRight, X } from "lucide-react";
 import { fetchJSONC } from "../utils/jsonc.js";
 import useSeo from "../utils/useSeo.js";
+import { ROUTES } from "../utils/seoMeta.js";
 
 /* ════════════════════════════════════════════════════════════════════════
    News — a timeline strung on a single thread, latest first.
@@ -928,11 +929,7 @@ function NewsBackdrop() {
 
 /* ── Page ───────────────────────────────────────────────────────────────── */
 export default function News() {
-  useSeo({
-    title: "News",
-    description:
-      "Papers, datasets, talks and fieldwork from BIOLOOM Labs — what the lab has been working on, as it happens.",
-  });
+  useSeo(ROUTES["/news"]);
 
   const [raw, setRaw] = useState([]);
   const [error, setError] = useState(null);

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { fetchJSONC } from "../utils/jsonc.js";
 import useSeo from "../utils/useSeo.js";
+import { ROUTES } from "../utils/seoMeta.js";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
@@ -19,10 +20,7 @@ const fadeUp = {
 };
 
 export default function Home() {
-  useSeo({
-    description:
-      "BIOLOOM is a biodiversity research group led by Dr. Samuel Pironon, using large-scale data and macroecology to explore how people and nature are connected.",
-  });
+  useSeo(ROUTES["/"]);
   const [data, setData] = useState(null);
   const [active, setActive] = useState(0);
   // Slide being previewed while the pointer hovers an indicator dot.
@@ -309,10 +307,10 @@ export default function Home() {
               viewport={{ once: true, margin: "-80px" }}
               transition={{ duration: 0.8, ease: [0.25, 0.1, 0.25, 1] }}
             >
-              <h2 className="font-display text-3xl leading-[1.15] text-white/95 md:text-4xl lg:text-5xl">
+              <h1 className="font-display text-3xl leading-[1.15] text-white/95 md:text-4xl lg:text-5xl">
                 Reconnecting <em className="text-brand-300">people</em> and{" "}
                 <em className="text-brand-300">nature</em> through research
-              </h2>
+              </h1>
             </motion.div>
 
             <motion.div

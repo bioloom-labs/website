@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { fetchJSONC } from "../utils/jsonc.js";
 import useSeo from "../utils/useSeo.js";
+import { ROUTES } from "../utils/seoMeta.js";
 
 /* ── Icons ──────────────────────────────────────────────────────────────── */
 function ArrowUpRight({ className = "" }) {
@@ -564,11 +565,7 @@ function FabricOfLifeVideo() {
 
 /* ── Main page ──────────────────────────────────────────────────────────── */
 export default function Research() {
-  useSeo({
-    title: "Research",
-    description:
-      "Explore BIOLOOM's research on biodiversity and its contributions to people — mapping and predicting the past, present, and future of nature.",
-  });
+  useSeo(ROUTES["/research"]);
   const [items, setItems] = useState([]);
   const [error, setError] = useState(null);
   const [activeIndex, setActiveIndex] = useState(null);
@@ -694,12 +691,12 @@ export default function Research() {
             className="mb-10 pt-4"
           >
             <div className="flex items-baseline gap-4 flex-wrap">
-              <h2
+              <h1
                 className="text-3xl md:text-4xl font-normal text-white"
                 style={{ fontFamily: "'DM Serif Display', Georgia, serif" }}
               >
                 Active Research Threads
-              </h2>
+              </h1>
               {items.length > 0 && (
                 <span className="text-sm font-mono text-white/30">
                   {String(items.length).padStart(2, "0")} areas

@@ -11,6 +11,7 @@ import { motion, useScroll, useTransform } from "framer-motion";
 import { ExternalLink } from "lucide-react";
 import { fetchJSONC } from "../utils/jsonc.js";
 import useSeo from "../utils/useSeo.js";
+import { ROUTES } from "../utils/seoMeta.js";
 import {
   normalizeTitle,
   semanticScores,
@@ -367,11 +368,7 @@ function PubItem({
 // ---------- MAIN PAGE ----------
 
 export default function Publications() {
-  useSeo({
-    title: "Publications",
-    description:
-      "Browse publications from the BIOLOOM biodiversity research group, with in-browser semantic search across the group's work.",
-  });
+  useSeo(ROUTES["/publications"]);
   const location = useLocation();
   const [pubs, setPubs] = useState([]);
   const [labAuthorNames, setLabAuthorNames] = useState([]);
@@ -604,7 +601,7 @@ export default function Publications() {
 
   return (
     <section className="section">
-      <h2 className="h2-grad">Publications</h2>
+      <h1 className="h2-grad">Publications</h1>
 
       {/* Filters */}
       <div className="mt-6 glass rounded-2xl p-4 flex flex-col gap-4 md:flex-row md:flex-wrap md:items-end">
