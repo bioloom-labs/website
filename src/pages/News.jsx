@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion, useMotionValue, useScroll } from "framer-motion";
-import { ArrowUpRight, ChevronLeft, ChevronRight, X } from "lucide-react";
+import { ArrowUpRight, ChevronRight, X } from "lucide-react";
 import { fetchJSONC } from "../utils/jsonc.js";
 import useSeo from "../utils/useSeo.js";
 
@@ -581,19 +581,13 @@ const NewsRow = ({ item, index, onOpen, innerRef }) => {
 /* ── Detail window: the full picture set plus the write-up ──────────────── */
 function NewsModal({ item, index = 0, startAt = 0, onClose }) {
   const hex = item ? accentFor(item, index) : "#6ee7b7";
-  const [shot, setShot] = useState(startAt);
   const count = item?.images.length ?? 0;
-
-  useEffect(() => setShot(startAt), [item?.id, startAt]);
-
-  const step = useCallback((delta) => setShot((s) => (count ? (s + delta + count) % count : 0)), [count]);
+  const tileRefs = useRef([]);
 
   useEffect(() => {
     if (!item) return undefined;
     const onKey = (e) => {
       if (e.key === "Escape") onClose();
-      if (e.key === "ArrowRight") step(1);
-      if (e.key === "ArrowLeft") step(-1);
     };
     document.addEventListener("keydown", onKey);
     const prev = document.body.style.overflow;
@@ -602,9 +596,14 @@ function NewsModal({ item, index = 0, startAt = 0, onClose }) {
       document.removeEventListener("keydown", onKey);
       document.body.style.overflow = prev;
     };
-  }, [item, onClose, step]);
+  }, [item, onClose]);
 
-  const current = item?.images[shot];
+  /* Opening from one of the row's tiles brings that picture into view in the
+     wall, so the click lands where the eye already was. */
+  useEffect(() => {
+    if (!item || !startAt) return;
+    tileRefs.current[startAt]?.scrollIntoView({ block: "nearest" });
+  }, [item?.id, startAt]);
 
   return (
     <AnimatePresence>
@@ -622,7 +621,7 @@ function NewsModal({ item, index = 0, startAt = 0, onClose }) {
             role="dialog"
             aria-modal="true"
             aria-label={item.title}
-            className="relative z-10 grid w-full max-w-5xl overflow-hidden rounded-3xl border md:grid-cols-2"
+            className="relative z-10 grid w-full max-w-5xl grid-rows-[auto_minmax(0,1fr)] overflow-hidden rounded-3xl border md:grid-cols-2 md:grid-rows-1"
             style={{
               maxHeight: "88vh",
               borderColor: rgba(hex, 0.22),
@@ -633,92 +632,42 @@ function NewsModal({ item, index = 0, startAt = 0, onClose }) {
             exit={{ opacity: 0, y: 16, scale: 0.98 }}
             transition={{ duration: 0.3, ease: [0.215, 0.61, 0.355, 1] }}
           >
-            <div className="relative flex h-56 flex-col bg-black/25 md:h-auto md:min-h-[460px]">
+            {/* The picture side and the write-up each carry their own scroll, so
+                working through the pictures leaves the text where it was. */}
+            <div className="relative flex max-h-[40vh] min-h-[14rem] flex-col bg-black/25 md:max-h-[88vh] md:min-h-[460px]">
               {count > 0 ? (
-                <>
-                  <div className="relative min-h-0 flex-1">
-                    <AnimatePresence mode="wait">
-                      <motion.img
-                        key={shot}
-                        src={current.src}
-                        alt={current.alt || item.title}
-                        className="absolute inset-0 h-full w-full object-cover"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.22 }}
-                      />
-                    </AnimatePresence>
-                    <div
-                      className="pointer-events-none absolute inset-0 md:hidden"
-                      style={{ background: "linear-gradient(to top, #0a1f18, transparent 55%)" }}
-                    />
-
-                    {count > 1 && (
-                      <>
-                        <button
-                          type="button"
-                          onClick={() => step(-1)}
-                          aria-label="Previous image"
-                          className="absolute left-2 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-white/10 bg-black/45 text-white/75 backdrop-blur transition hover:bg-black/70 hover:text-white"
-                        >
-                          <ChevronLeft className="h-4 w-4" />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => step(1)}
-                          aria-label="Next image"
-                          className="absolute right-2 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-white/10 bg-black/45 text-white/75 backdrop-blur transition hover:bg-black/70 hover:text-white"
-                        >
-                          <ChevronRight className="h-4 w-4" />
-                        </button>
-                        <span className="absolute bottom-2 right-3 rounded-full bg-black/55 px-2 py-0.5 text-[10px] font-semibold tracking-wide text-white/70 backdrop-blur">
-                          {shot + 1} / {count}
-                        </span>
-                      </>
-                    )}
-                  </div>
-
-                  {(current.caption || current.credit?.name) && (
-                    <div className="hidden px-4 py-2 text-[11px] leading-snug text-white/45 md:block">
-                      {current.caption}
-                      {current.caption && current.credit?.name ? " · " : ""}
-                      {current.credit?.name &&
-                        (current.credit.url ? (
-                          <a
-                            href={current.credit.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="transition-colors hover:text-white/80"
+                /* Every picture at once. Two columns fed alternately, each tile
+                   keeping its own shape, so portraits and landscapes pack
+                   against one another instead of being cropped to a common
+                   frame. Column heights stay close because the orientations
+                   interleave. */
+                <div className="flex min-h-0 flex-1 gap-2 overflow-y-auto p-3">
+                  {[0, 1].map((col) => (
+                    <div key={col} className="flex w-1/2 shrink-0 flex-col gap-2 self-start">
+                      {item.images
+                        .map((img, i) => ({ img, i }))
+                        .filter(({ i }) => i % 2 === col)
+                        .map(({ img, i }) => (
+                          <figure
+                            key={i}
+                            ref={(el) => (tileRefs.current[i] = el)}
+                            className="shrink-0 overflow-hidden rounded-lg border"
+                            style={{
+                              borderColor:
+                                i === startAt && startAt > 0 ? rgba(hex, 0.7) : "rgba(255,255,255,0.08)",
+                            }}
                           >
-                            {current.credit.name}
-                          </a>
-                        ) : (
-                          current.credit.name
+                            <img
+                              src={img.src}
+                              alt={img.alt || (i === 0 ? item.title : "")}
+                              loading="lazy"
+                              className="block w-full"
+                            />
+                          </figure>
                         ))}
                     </div>
-                  )}
-
-                  {count > 1 && (
-                    <div className="hidden gap-2 overflow-x-auto px-4 pb-4 md:flex">
-                      {item.images.map((img, i) => (
-                        <button
-                          key={i}
-                          type="button"
-                          onClick={() => setShot(i)}
-                          aria-label={`Show image ${i + 1}`}
-                          className="h-12 w-16 shrink-0 overflow-hidden rounded-md border transition"
-                          style={{
-                            borderColor: i === shot ? rgba(hex, 0.75) : "rgba(255,255,255,0.1)",
-                            opacity: i === shot ? 1 : 0.5,
-                          }}
-                        >
-                          <img src={img.src} alt="" className="h-full w-full object-cover" />
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </>
+                  ))}
+                </div>
               ) : (
                 <div
                   className="flex h-full w-full flex-col items-center justify-center"
