@@ -26,8 +26,8 @@
     "credit": { "name": "Zoshua Colah", "url": "https://unsplash.com/@zoshuacolah" },
     "body": [
       "Biodiversity is distributed unevenly across the planet. Some regions hold a remarkable concentration of species, while others are comparatively sparse — and these patterns are not static.",
-      "We work at large spatial and taxonomic scales to describe where species occur, why diversity peaks where it does, and how assemblages may be reshaped by climate and land-use change.",
-      "Drawing on global occurrence records, trait data and modelling, we look for the processes that could underlie these patterns, from historical biogeography to contemporary pressures.",
+      "We work at large spatial and taxonomic scales to describe where species occur, how populations perform within their distributions, and how assemblages may be reshaped by climate and land-use change.",
+      "Drawing on global occurrence, trait and (phylo-)genetic data, remote sensing, and species distribution models, we investigate the patterns and processes shaping biodiversity, from historical biogeography to contemporary and future pressures.",
       "The aim is a clearer, data-grounded picture of how the living world is organised — a foundation the lab's other threads build on when asking what biodiversity means for people."
     ],
     "papers": [],
@@ -101,17 +101,17 @@
   },
   {
     "id": "species-used",
-    "title": "Which, Where & How Species Are Used",
+    "title": "Species Use and Conservation",
     "tag": "People · Species",
     "teaser": "Of all the species people rely on — which ones, in which places, in what ways, and what does that mean for their conservation?",
     "image": "/images/research/species-used.webp",
     "alt": "A pair of hands picking blackcurrants from a leafy bush",
     "credit": { "name": "Sergey Kotenev", "url": "https://unsplash.com/@sergeykotenev" },
     "body": [
-      "Only a fraction of biodiversity is documented as useful to people, yet that fraction carries much of nature's direct contribution to livelihoods and culture.",
-      "This thread maps which species are used, where, and how — from food and medicine to materials and beyond — and how that use overlaps with where species are threatened.",
-      "Combining species-use records with distribution and conservation data, we look for patterns in utilised biodiversity: which useful species are well protected, and which may be at risk.",
-      "The aim is to connect the value people place on species with the conservation attention those species receive."
+      "Only a fraction of biodiversity is documented to be used by people, yet these species underpin many of nature's direct and indirect contributions to livelihoods and culture.",
+      "This thread maps which species are used, where, and how — from food and medicine to materials and beyond — and explores when use threatens species, supports conservation, or offers solutions to global challenges.",
+      "Combining species-use records with distribution and conservation data, we develop tools to assess the sustainability of species use and understand how conserving species can help sustain the contributions they provide to people.",
+      "The aim is to connect the ways people use and value species with the conservation of both biodiversity and the contributions it provides."
     ],
     "papers": [],
     "search": "useful plants"
