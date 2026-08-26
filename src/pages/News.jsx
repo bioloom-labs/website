@@ -303,7 +303,9 @@ function ThreadRail({ width, height, nodes }) {
    than tiles the spare ones wait off the board and a flip turns one tile to a
    picture nobody is showing. When every picture is already on the board there
    is nothing new to turn to, so two tiles trade places instead — both turn,
-   and the board still moves. One timer per entry drives it; a timer per tile
+   and the board still moves. Boards of one or two pictures sit still: there is
+   nothing to reveal that isn't already on show. One timer per entry drives it;
+   a timer per tile
    would be a lot of clocks for one page, and each row starts its clock half a
    second after the one above so the page doesn't turn over in lockstep. */
 const FLIP_EVERY = 5000; // ms between one tile turning and the next
@@ -340,8 +342,9 @@ function ImageMosaic({ images, title, index = 0, onOpen }) {
   }, [cells, total]);
 
   useEffect(() => {
-    // A single picture has nowhere to turn to.
-    if (reduced || total < 2 || cells < 1) return undefined;
+    // A single picture has nowhere to turn to, and a pair would only trade the
+    // same two faces back and forth, so neither board turns.
+    if (reduced || total < 3 || cells < 1) return undefined;
 
     let timer = null;
     let last = -1;
@@ -578,11 +581,103 @@ const NewsRow = ({ item, index, onOpen, innerRef }) => {
   );
 };
 
+/* Fitting a handful of pictures to the window's picture side ───────────────
+   Up to five pictures are laid out to fill the side exactly, so none of them
+   needs scrolling to. They keep their order and are cut into consecutive rows;
+   within a row the widths follow the pictures' own proportions, and the row
+   heights are set so the side is filled.
+
+   Doing that pulls every tile away from its picture's true shape by the same
+   factor, whatever the cut — so the best arrangement is simply the one whose
+   factor is nearest 1, and there are at most sixteen cuts to try for five
+   pictures. Past six the window falls back to the scrolling wall. */
+const FIT_MAX = 5;
+// How far a tile may sit from its picture's shape before cropping bites. Past
+// this the pictures are shown whole instead, on the side behind them — the
+// only way a lone near-square picture can sit in a tall box without losing its
+// edges.
+const FIT_CROP_LIMIT = 1.5;
+
+function packRows(ratios, boxAspect) {
+  const n = ratios.length;
+  let best = null;
+
+  for (let mask = 0; mask < 1 << (n - 1); mask += 1) {
+    const rows = [];
+    let row = [0];
+    for (let i = 1; i < n; i += 1) {
+      if (mask & (1 << (i - 1))) {
+        rows.push(row);
+        row = [];
+      }
+      row.push(i);
+    }
+    rows.push(row);
+
+    const sums = rows.map((r) => r.reduce((s, i) => s + ratios[i], 0));
+    const stretch = boxAspect * sums.reduce((s, x) => s + 1 / x, 0);
+    const cost = Math.abs(Math.log(stretch));
+    if (!best || cost < best.cost) best = { cost, rows, sums, stretch };
+  }
+
+  return {
+    fit: Math.max(best.stretch, 1 / best.stretch) > FIT_CROP_LIMIT ? "contain" : "cover",
+    // Weights rather than percentages, so the seams come out of the tiles
+    // rather than pushing the last row off the bottom.
+    rows: best.rows.map((r, k) => ({
+      weight: boxAspect / best.sums[k] / best.stretch,
+      items: r.map((i) => ({ index: i, weight: ratios[i] / best.sums[k] })),
+    })),
+  };
+}
+
 /* ── Detail window: the full picture set plus the write-up ──────────────── */
 function NewsModal({ item, index = 0, startAt = 0, onClose }) {
   const hex = item ? accentFor(item, index) : "#6ee7b7";
   const count = item?.images.length ?? 0;
   const tileRefs = useRef([]);
+
+  // Neither the picture side's proportions nor the pictures' own are known
+  // until they are on the page, so the scrolling wall stands in until both
+  // have arrived.
+  const [boxEl, setBoxEl] = useState(null);
+  const [boxAspect, setBoxAspect] = useState(0);
+  const [ratios, setRatios] = useState([]);
+
+  useEffect(() => {
+    setRatios(new Array(count).fill(0));
+  }, [item?.id, count]);
+
+  useLayoutEffect(() => {
+    if (!boxEl) return undefined;
+    const measure = () => {
+      const r = boxEl.getBoundingClientRect();
+      setBoxAspect(r.height ? r.width / r.height : 0);
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(boxEl);
+    return () => ro.disconnect();
+  }, [boxEl]);
+
+  const noteRatio = (i, el) => {
+    if (!el || !el.naturalWidth || !el.naturalHeight) return;
+    const r = el.naturalWidth / el.naturalHeight;
+    setRatios((prev) => {
+      if (prev.length <= i || prev[i] === r) return prev;
+      const next = prev.slice();
+      next[i] = r;
+      return next;
+    });
+  };
+
+  const fitted = useMemo(
+    () =>
+      count > 0 && count <= FIT_MAX && boxAspect && ratios.length === count && ratios.every(Boolean)
+        ? packRows(ratios, boxAspect)
+        : null,
+    [count, boxAspect, ratios]
+  );
 
   useEffect(() => {
     if (!item) return undefined;
@@ -635,38 +730,83 @@ function NewsModal({ item, index = 0, startAt = 0, onClose }) {
             {/* The picture side and the write-up each carry their own scroll, so
                 working through the pictures leaves the text where it was. */}
             <div className="relative flex max-h-[40vh] min-h-[14rem] flex-col bg-black/25 md:max-h-[88vh] md:min-h-[460px]">
-              {count > 0 ? (
-                /* Every picture at once. Two columns fed alternately, each tile
-                   keeping its own shape, so portraits and landscapes pack
-                   against one another instead of being cropped to a common
-                   frame. Column heights stay close because the orientations
-                   interleave. */
-                <div className="flex min-h-0 flex-1 gap-2 overflow-y-auto p-3">
-                  {[0, 1].map((col) => (
-                    <div key={col} className="flex w-1/2 shrink-0 flex-col gap-2 self-start">
-                      {item.images
-                        .map((img, i) => ({ img, i }))
-                        .filter(({ i }) => i % 2 === col)
-                        .map(({ img, i }) => (
+              {count > 0 && fitted ? (
+                /* Few enough pictures to fit the side, so they are cut into
+                   rows sized to their own proportions and fill it exactly —
+                   nothing to scroll to. */
+                <div className="min-h-0 flex-1 p-3">
+                  <div ref={setBoxEl} className="flex h-full w-full flex-col gap-2">
+                    {fitted.rows.map((row, r) => (
+                      <div key={r} className="flex min-h-0 gap-2" style={{ flexGrow: row.weight, flexBasis: 0 }}>
+                        {row.items.map(({ index: i, weight }) => (
                           <figure
                             key={i}
                             ref={(el) => (tileRefs.current[i] = el)}
-                            className="shrink-0 overflow-hidden rounded-lg border"
+                            className="min-w-0 overflow-hidden rounded-lg border"
                             style={{
+                              flexGrow: weight,
+                              flexBasis: 0,
+                              // Shown whole, a frame around the picture would
+                              // only outline the space beside it.
                               borderColor:
-                                i === startAt && startAt > 0 ? rgba(hex, 0.7) : "rgba(255,255,255,0.08)",
+                                i === startAt && startAt > 0
+                                  ? rgba(hex, 0.7)
+                                  : fitted.fit === "contain"
+                                    ? "transparent"
+                                    : "rgba(255,255,255,0.08)",
                             }}
                           >
                             <img
-                              src={img.src}
-                              alt={img.alt || (i === 0 ? item.title : "")}
+                              src={item.images[i].src}
+                              alt={item.images[i].alt || (i === 0 ? item.title : "")}
                               loading="lazy"
-                              className="block w-full"
+                              ref={(el) => el && el.complete && noteRatio(i, el)}
+                              onLoad={(e) => noteRatio(i, e.currentTarget)}
+                              className={`h-full w-full ${fitted.fit === "contain" ? "object-contain" : "object-cover"}`}
                             />
                           </figure>
                         ))}
-                    </div>
-                  ))}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : count > 0 ? (
+                /* More pictures than the side can hold at a readable size, so
+                   they go on a scrolling wall: two columns fed alternately,
+                   each tile keeping its own shape, so portraits and landscapes
+                   pack against one another instead of being cropped to a common
+                   frame. Column heights stay close because the orientations
+                   interleave. */
+                <div className="min-h-0 flex-1 p-3">
+                  <div ref={setBoxEl} className="flex h-full gap-2 overflow-y-auto">
+                    {[0, 1].map((col) => (
+                      <div key={col} className="flex w-1/2 shrink-0 flex-col gap-2 self-start">
+                        {item.images
+                          .map((img, i) => ({ img, i }))
+                          .filter(({ i }) => i % 2 === col)
+                          .map(({ img, i }) => (
+                            <figure
+                              key={i}
+                              ref={(el) => (tileRefs.current[i] = el)}
+                              className="shrink-0 overflow-hidden rounded-lg border"
+                              style={{
+                                borderColor:
+                                  i === startAt && startAt > 0 ? rgba(hex, 0.7) : "rgba(255,255,255,0.08)",
+                              }}
+                            >
+                              <img
+                                src={img.src}
+                                alt={img.alt || (i === 0 ? item.title : "")}
+                                loading="lazy"
+                                ref={(el) => el && el.complete && noteRatio(i, el)}
+                                onLoad={(e) => noteRatio(i, e.currentTarget)}
+                                className="block w-full"
+                              />
+                            </figure>
+                          ))}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               ) : (
                 <div

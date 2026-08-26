@@ -20,7 +20,7 @@
                turning over and no two ever show the same picture: with more
                pictures than tiles a tile turns to one waiting off the board,
                and with exactly as many, two tiles trade places instead. One
-               picture means a still tile; five or six give the liveliest
+               or two pictures sit still; five or six give the liveliest
                board. The window shows them all in a gallery.
                Each: { src, alt, credit?: { name, url } }
                A bare string is accepted as shorthand for { src }.
@@ -36,6 +36,12 @@
     "text": "Ian Ondo, a former member of the group, came back from UNEP-WCMC to present his current work.",
     "body": [
       "Ian Ondo, a former member of the group and now a biodiversity modeller at UNEP-WCMC working on species distribution, conservation, use and traits, came back to present his current work, including four projects using AI to extract new biodiversity data and to build improved species distribution models."
+    ],
+    "images": [
+      {
+        "src": "/news/07-07-2026/ondo-1.webp",
+        "alt": "Ian Ondo photographed among glasshouse planting, wearing a wooden bow tie, with palm fronds behind him"
+      }
     ]
   },
   {
@@ -86,6 +92,24 @@
     "date": "2026-02-04",
     "title": "Marybel Soto Gomez",
     "tag": "Talk",
-    "text": "Marybel Soto Gomez joined the group for a talk."
+    "text": "Marybel Soto Gomez joined the group from the Royal Botanic Gardens, Kew, to share her experience in science and her latest work on conserving plant agrobiodiversity in Ethiopia.",
+    "body": [
+      "Marybel joined the group from Royal Botanic Gardens, Kew, to share her experience in science and her latest progress on a framework to identify priority areas for conserving plant agrobiodiversity in Ethiopia, developed in collaboration with Sam and Felix from the team — followed, of course, by a good meal on campus!",
+      "For more on Marybel and her work, check out her wonderful recent interview with New Phytologist."
+    ],
+    "link": {
+      "url": "https://nph.onlinelibrary.wiley.com/doi/10.1111/nph.70927",
+      "label": "Read the interview"
+    },
+    "images": [
+      {
+        "src": "/news/04-02-2026/marybel-1.webp",
+        "alt": "Marybel Soto Gomez smiling among broad tropical foliage, wearing a lanyard and reaching towards a plant"
+      },
+      {
+        "src": "/news/04-02-2026/marybel-2.webp",
+        "alt": "Misty highland hillside with a large spreading tree above smallholder plots of broad-leaved crops, thatched round houses among the planting"
+      }
+    ]
   }
 ]
