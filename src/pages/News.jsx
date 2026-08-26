@@ -1,1117 +1,938 @@
-import { forwardRef, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { Link } from "react-router-dom";
-import HTMLFlipBook from "react-pageflip";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { AnimatePresence, motion, useScroll } from "framer-motion";
+import { ArrowUpRight, ChevronLeft, ChevronRight, X } from "lucide-react";
 import { fetchJSONC } from "../utils/jsonc.js";
 import useSeo from "../utils/useSeo.js";
 
 /* ════════════════════════════════════════════════════════════════════════
-   The BioLoom Chronicle — the News page as a real, drag-to-turn newspaper.
-   Front & back are single covers; the inner leaves are double-page spreads.
+   News — a timeline strung on a single thread, latest first.
+   One entry per row. A thread winds down the left rail and curls into a
+   spiral at each entry; the date and tag sit on a split-flap board that
+   keeps flipping while it is on screen.
    ════════════════════════════════════════════════════════════════════════ */
 
-/* ─── Date & numeral helpers ─── */
-
+/* ── Dates ──────────────────────────────────────────────────────────────── */
 function parseDate(value) {
   if (!value) return null;
   const d = new Date(value);
   return Number.isNaN(d.getTime()) ? null : d;
 }
 
-function fmtDateline(d) {
-  return d
-    .toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric" })
-    .toUpperCase();
+function fmtLong(d) {
+  return d.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
 }
 
-function fmtStory(d) {
-  return d.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" }).toUpperCase();
-}
-
-function fmtKicker(d) {
+function fmtBoard(d) {
   return d
-    .toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })
+    .toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })
     .toUpperCase()
     .replace(".", "");
 }
 
-function toRoman(num) {
-  const map = [
-    [1000, "M"], [900, "CM"], [500, "D"], [400, "CD"], [100, "C"], [90, "XC"],
-    [50, "L"], [40, "XL"], [10, "X"], [9, "IX"], [5, "V"], [4, "IV"], [1, "I"],
-  ];
-  let out = "";
-  for (const [v, s] of map) {
-    while (num >= v) {
-      out += s;
-      num -= v;
-    }
-  }
-  return out || "—";
+/* ── Colour ─────────────────────────────────────────────────────────────── */
+function rgba(hex, a) {
+  const h = hex.replace("#", "");
+  return `rgba(${parseInt(h.slice(0, 2), 16)},${parseInt(h.slice(2, 4), 16)},${parseInt(h.slice(4, 6), 16)},${a})`;
 }
 
-/* ─── Fit the book to the available screen area ───
-   StPageFlip derives book height from width, so we choose a wrapper width
-   such that the resulting spread (or single page) fits both the available
-   width AND height — the whole spread is visible with no scrolling. */
-const PAGE_RATIO = 602 / 445; // one page: height / width
-const MAX_PAGE_W = 700;
-// Below this per-page width we drop the spread for a single portrait page.
-// This MUST equal the flip-book's `minWidth` prop: StPageFlip switches to
-// portrait when its container is narrower than `minWidth * 2`, so if our
-// threshold and its threshold disagree the wrapper ends up sized for one mode
-// while the book renders the other — which is what made it overflow.
-const MIN_PAGE_W = 180;
-const FIT_MARGIN = 16; // breathing room so the book never touches the edges
+/* Each kind of dispatch carries its own hue so the page doesn't read as a
+   flat sea of green. Tags not listed here fall back by position, so adding a
+   new tag to news.jsonc never breaks the page. */
+const ACCENT = {
+  "publication": "#7dd3fc",
+  "preprint": "#7dd3fc",
+  "open data": "#5eead4",
+  "dataset": "#5eead4",
+  "talk": "#fcd34d",
+  "event": "#fcd34d",
+  "award": "#a3e635",
+  "press": "#fca5a5",
+  "fieldwork": "#6ee7b7",
+  "people": "#c4b5fd",
+};
+const ACCENT_FALLBACK = ["#6ee7b7", "#7dd3fc", "#fcd34d", "#a3e635", "#5eead4", "#fca5a5"];
 
-// With showCover the pages group into spreads whose *first* page indices are
-// not sequential: front [0], then [1,2], [3,4], …, back [n-1] → starts 0,1,3,5…
-// We predict turns against this list so the centring slide targets the right
-// spread (esp. the back cover, which jumps two indices from the last spread).
-function spreadStarts(n) {
-  const arr = [0];
-  for (let i = 1; i < n - 1; i += 2) arr.push(i);
-  if (n > 1) arr.push(n - 1);
-  return arr;
+function accentFor(item, index = 0) {
+  const key = (item?.tag || "").trim().toLowerCase();
+  return ACCENT[key] || ACCENT_FALLBACK[index % ACCENT_FALLBACK.length];
 }
 
-function fitBook(availW, availH) {
-  if (!availW || !availH) return null;
-  const w = Math.max(0, availW - FIT_MARGIN);
-  const h = Math.max(0, availH - FIT_MARGIN);
-  // Landscape spread. Each page is capped by HALF the width, the max page width,
-  // and — crucially — the FULL available height (page height = pageW · RATIO, so
-  // pageW ≤ h / RATIO keeps the spread within the viewport on both axes).
-  const landPageW = Math.min(w / 2, MAX_PAGE_W, h / PAGE_RATIO);
-  if (landPageW >= MIN_PAGE_W) {
-    return { width: Math.floor(landPageW) * 2, portrait: false };
-  }
-  // Portrait single page: capped the same way against the full width.
-  const portPageW = Math.min(w, MAX_PAGE_W, h / PAGE_RATIO);
-  return { width: Math.floor(portPageW), portrait: true };
-}
+/* ── Data ───────────────────────────────────────────────────────────────────
+   news.jsonc is hand-edited, so accept the loose shapes it may arrive in:
+   `image` (one string) as well as `images`, `link` as a bare URL string as
+   well as { url, label }, and `text` standing in for a missing `body`. */
+function normalise(item, idx) {
+  const dateObj = parseDate(item.date);
+  const rawImages = item.images ?? (item.image ? [item.image] : []);
+  const images = (Array.isArray(rawImages) ? rawImages : [])
+    .map((img) => (typeof img === "string" ? { src: img } : img))
+    .filter((img) => img && img.src);
 
-/* ─── Monthly editions / archive ─────────────────────────────────────────── */
-const MONTH_NAMES = [
-  "January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December",
-];
-const MONTH_ABBR = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-const LAUNCH_YEAR = 2024;
-const LAUNCH_MONTH = 0; // January 2024 — "Established 2024"
+  const link =
+    typeof item.link === "string"
+      ? item.link && item.link !== "#"
+        ? { url: item.link, label: "Read more" }
+        : null
+      : item.link?.url
+        ? { label: "Read more", ...item.link }
+        : null;
 
-function enrichItems(raw) {
-  const todayMid = new Date();
-  todayMid.setHours(0, 0, 0, 0);
-  return (raw || []).map((it, idx) => {
-    const dateObj = parseDate(it.date);
-    return {
-      ...it,
-      dateObj,
-      upcoming: dateObj ? dateObj >= todayMid : false,
-      id: it.id || `${it.title || "news"}-${idx}`,
-    };
-  });
-}
+  const body = Array.isArray(item.body) && item.body.length ? item.body : item.text ? [item.text] : [];
 
-function pad2(n) {
-  return String(n).padStart(2, "0");
-}
-
-// An edition for a specific calendar month (the items dated within it).
-function editionForMonth(raw, y, m) {
-  const monthItems = enrichItems(raw)
-    .filter((e) => e.dateObj && e.dateObj.getFullYear() === y && e.dateObj.getMonth() === m)
-    .sort((a, b) => a.dateObj - b.dateObj);
-  const [lead, ...rest] = monthItems;
   return {
-    year: y,
-    month: m,
-    vol: toRoman(y),
-    issue: toRoman(m + 1),
-    dateLabel: `${MONTH_NAMES[m]} ${y}`.toUpperCase(),
-    lead: lead || null,
-    dispatches: rest,
-    empty: monthItems.length === 0,
-    fileName: `BioLoom-Chronicle-${y}-${pad2(m + 1)}.pdf`,
+    ...item,
+    id: item.id || `${item.title || "news"}-${idx}`,
+    dateObj,
+    images,
+    link,
+    body,
+    teaser: item.text || body[0] || "",
   };
 }
 
-// Every month from the current one forward to the latest dated dispatch.
-function buildArchiveMonths(today, raw) {
-  const curY = today.getFullYear();
-  const curM = today.getMonth();
-  let lastY = curY;
-  let lastM = curM;
-  enrichItems(raw).forEach((e) => {
-    if (!e.dateObj) return;
-    const y = e.dateObj.getFullYear();
-    const m = e.dateObj.getMonth();
-    if (y > lastY || (y === lastY && m > lastM)) {
-      lastY = y;
-      lastM = m;
-    }
+/* Strictly latest first. Anything dated ahead of today is still "latest", and
+   is flagged as upcoming rather than pulled out into its own group. */
+function orderItems(list) {
+  const todayMid = new Date();
+  todayMid.setHours(0, 0, 0, 0);
+  return list
+    .map(normalise)
+    .map((e) => ({ ...e, upcoming: e.dateObj ? e.dateObj >= todayMid : false }))
+    .sort((a, b) => {
+      if (!a.dateObj) return 1;
+      if (!b.dateObj) return -1;
+      return b.dateObj - a.dateObj;
+    });
+}
+
+/* ── Motion preference ──────────────────────────────────────────────────── */
+function useReducedMotion() {
+  const [reduced, setReduced] = useState(false);
+  useEffect(() => {
+    const mql = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const sync = () => setReduced(mql.matches);
+    sync();
+    mql.addEventListener("change", sync);
+    return () => mql.removeEventListener("change", sync);
+  }, []);
+  return reduced;
+}
+
+/* ── The thread ─────────────────────────────────────────────────────────────
+   A serpentine down the rail that curls into a spiral at each entry. Both the
+   path and the curls are generated from the measured row positions, so the
+   thread stays pinned to the entries at any width or entry count. */
+function serpentine(height, nodes, cx, amp) {
+  if (!height || !nodes.length) return "";
+  let d = `M ${cx} 0`;
+  let prev = 0;
+  nodes.forEach((y, i) => {
+    const dir = i % 2 === 0 ? 1 : -1;
+    const a = prev + (y - prev) * 0.34;
+    const b = prev + (y - prev) * 0.74;
+    d += ` C ${cx + amp * dir} ${a}, ${cx - amp * dir} ${b}, ${cx} ${y}`;
+    prev = y;
   });
-  const out = [];
-  let y = curY;
-  let m = curM;
-  while (y < lastY || (y === lastY && m <= lastM)) {
-    out.push({ y, m });
-    m += 1;
-    if (m > 11) {
-      m = 0;
-      y += 1;
-    }
+  // Run the thread off the bottom of the last entry rather than stopping dead.
+  d += ` C ${cx + amp} ${prev + (height - prev) * 0.4}, ${cx - amp} ${prev + (height - prev) * 0.75}, ${cx} ${height}`;
+  return d;
+}
+
+function spiral(cx, cy, r0, r1, turns, steps = 44) {
+  let d = "";
+  for (let i = 0; i <= steps; i += 1) {
+    const t = i / steps;
+    const angle = t * turns * Math.PI * 2 - Math.PI / 2;
+    const r = r0 + (r1 - r0) * t;
+    const x = (cx + Math.cos(angle) * r).toFixed(2);
+    const y = (cy + Math.sin(angle) * r).toFixed(2);
+    d += i === 0 ? `M ${x} ${y}` : ` L ${x} ${y}`;
   }
-  return out;
+  return d;
 }
 
-/* ─── A hand-drawn botanical engraving (woodcut style) ─── */
+function ThreadRail({ width, height, nodes, progress }) {
+  if (!width || !height) return null;
+  const cx = width * 0.38;
+  const amp = Math.max(10, width * 0.3);
+  const path = serpentine(height, nodes.map((n) => n.y), cx, amp);
+  const curlR = Math.min(17, width * 0.27);
 
-function Leaf({ x, y, rotate, scale = 1, flip = 1 }) {
-  const veins = [1, 2, 3, 4, 5].map((i) => {
-    const px = i * 15;
-    return (
-      <g key={i}>
-        <line x1={px} y1="0" x2={px + 11} y2={-9} />
-        <line x1={px} y1="0" x2={px + 11} y2={9} />
-      </g>
-    );
-  });
-  const hatch = [0, 1, 2, 3, 4, 5, 6].map((i) => {
-    const px = 12 + i * 10;
-    return <line key={`h${i}`} x1={px} y1={-2} x2={px + 6} y2={-11} strokeWidth="0.8" />;
-  });
   return (
-    <g transform={`translate(${x} ${y}) rotate(${rotate}) scale(${scale} ${scale * flip})`}>
-      <path d="M0 0 C 26 -19, 66 -19, 92 0 C 66 19, 26 19, 0 0 Z" strokeWidth="1.7" />
-      <line x1="2" y1="0" x2="90" y2="0" strokeWidth="1.2" />
-      {veins}
-      {hatch}
-    </g>
-  );
-}
+    <svg
+      className="pointer-events-none absolute left-0 top-0"
+      width={width}
+      height={height}
+      viewBox={`0 0 ${width} ${height}`}
+      fill="none"
+      aria-hidden="true"
+    >
+      <defs>
+        <linearGradient id="thread-grad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#6ee7b7" />
+          <stop offset="55%" stopColor="#22d3ee" />
+          <stop offset="100%" stopColor="#a3e635" />
+        </linearGradient>
+      </defs>
 
-function BotanicalPlate({ className = "", style }) {
-  const ground = Array.from({ length: 18 }).map((_, i) => {
-    const gx = 34 + i * 12;
-    return <line key={i} x1={gx} y1="338" x2={gx - 10} y2="350" strokeWidth="0.9" />;
-  });
-  const petals = Array.from({ length: 12 }).map((_, i) => {
-    const a = (i / 12) * Math.PI * 2;
-    const cx = 150 + Math.cos(a) * 4;
-    const cy = 60 + Math.sin(a) * 4;
-    const ex = 150 + Math.cos(a) * 30;
-    const ey = 60 + Math.sin(a) * 30;
-    const nx = Math.cos(a + Math.PI / 2) * 8;
-    const ny = Math.sin(a + Math.PI / 2) * 8;
-    return (
-      <path
-        key={i}
-        d={`M${cx} ${cy} C ${cx + nx} ${cy + ny}, ${ex + nx} ${ey + ny}, ${ex} ${ey} C ${ex - nx} ${ey - ny}, ${cx - nx} ${cy - ny}, ${cx} ${cy} Z`}
-        strokeWidth="1.2"
+      {/* the slack thread, always fully drawn */}
+      <path d={path} stroke="rgba(255,255,255,0.11)" strokeWidth="1.75" strokeLinecap="round" />
+      {/* and the lit thread, drawn in as the reader travels down the page */}
+      <motion.path
+        d={path}
+        stroke="url(#thread-grad)"
+        strokeWidth="2.25"
+        strokeLinecap="round"
+        style={{ pathLength: progress, opacity: 0.9 }}
       />
+
+      {nodes.map((n, i) => (
+        <g key={n.id}>
+          <path
+            d={spiral(cx, n.y, 1.5, curlR, 1.55)}
+            stroke={n.hex}
+            strokeWidth="1.6"
+            strokeLinecap="round"
+            opacity="0.85"
+          />
+          {/* the tie-off from the curl across to the entry */}
+          <path
+            d={`M ${cx + curlR} ${n.y} L ${width} ${n.y}`}
+            stroke={n.hex}
+            strokeWidth="1.2"
+            opacity="0.35"
+          />
+          <circle cx={cx} cy={n.y} r="3" fill={n.hex} />
+          <circle cx={cx} cy={n.y} r="7" fill={n.hex} opacity={i === 0 ? 0.22 : 0.1} />
+        </g>
+      ))}
+    </svg>
+  );
+}
+
+/* ── The flip board ────────────────────────────────────────────────────────
+   The pictures for one entry, on three or four unevenly sized tiles that never
+   rest. A tile turns over to a picture nobody else is showing, so the board
+   never doubles up, and the tile that turns is picked at random each time
+   (never the same one twice running) so the motion moves around the board.
+
+   The tile count follows the number of pictures. When there are more pictures
+   than tiles the spare ones wait off the board and a flip turns one tile to a
+   picture nobody is showing. When every picture is already on the board there
+   is nothing new to turn to, so two tiles trade places instead — both turn,
+   and the board still moves. One timer per entry drives it; a timer per tile
+   would be a lot of clocks for one page, and each row starts its clock half a
+   second after the one above so the page doesn't turn over in lockstep. */
+const FLIP_EVERY = 2000; // ms between one tile turning and the next
+// Rows enter the cycle a beat apart so the page doesn't turn over all at once.
+// Four phases divide the interval evenly; row five falls in step with row one.
+const FLIP_OFFSET = 500;
+
+function tileLayout(cells) {
+  if (cells <= 1) return { grid: "grid-cols-1 grid-rows-1", spans: [""] };
+  if (cells === 2) return { grid: "grid-cols-3 grid-rows-1", spans: ["col-span-2", ""] };
+  if (cells === 3) return { grid: "grid-cols-3 grid-rows-2", spans: ["col-span-2 row-span-2", "", ""] };
+  return { grid: "grid-cols-4 grid-rows-2", spans: ["col-span-2 row-span-2", "col-span-2", "", ""] };
+}
+
+function ImageMosaic({ images, title, index = 0, onOpen }) {
+  const total = images.length;
+  // Alternate four- and three-tile boards down the timeline so the page isn't
+  // one repeated shape. Every picture gets a tile up to that cap.
+  const cells = Math.max(1, Math.min(index % 2 === 0 ? 4 : 3, total));
+
+  const wrap = useRef(null);
+  const reduced = useReducedMotion();
+
+  // A tile carries both its faces: the one on show, and the one already
+  // loaded behind it so a picture is never seen arriving blank.
+  const [tiles, setTiles] = useState(() =>
+    Array.from({ length: cells }, (_, i) => ({ turn: 0, a: i % Math.max(total, 1), b: i % Math.max(total, 1) }))
+  );
+
+  useEffect(() => {
+    setTiles(Array.from({ length: cells }, (_, i) => ({ turn: 0, a: i % Math.max(total, 1), b: i % Math.max(total, 1) })));
+  }, [cells, total]);
+
+  useEffect(() => {
+    // A single picture has nowhere to turn to.
+    if (reduced || total < 2 || cells < 1) return undefined;
+
+    let timer = null;
+    let last = -1;
+
+    const tick = () =>
+      setTiles((prev) => {
+        const onShow = prev.map((t) => (t.turn % 2 === 0 ? t.a : t.b));
+        const out = prev.slice();
+        // Load the hidden face, then turn it to the front.
+        const turnTo = (idx, img) => {
+          const t = out[idx];
+          out[idx] = t.turn % 2 === 0 ? { turn: t.turn + 1, a: t.a, b: img } : { turn: t.turn + 1, a: img, b: t.b };
+        };
+
+        // Never the same tile twice running, so the motion moves around.
+        let k = Math.floor(Math.random() * prev.length);
+        if (prev.length > 1) {
+          let guard = 0;
+          while (k === last && guard < 8) {
+            k = Math.floor(Math.random() * prev.length);
+            guard += 1;
+          }
+        }
+        last = k;
+
+        if (total > prev.length) {
+          // Pictures to spare: walk on from this tile's own to the first one
+          // no tile is holding, so the board never doubles up.
+          const taken = new Set(onShow);
+          for (let stride = 1; stride <= total; stride += 1) {
+            const cand = (onShow[k] + stride) % total;
+            if (!taken.has(cand)) {
+              turnTo(k, cand);
+              break;
+            }
+          }
+        } else if (prev.length > 1) {
+          // Every picture is already on the board, so two tiles trade places.
+          const j = (k + 1 + Math.floor(Math.random() * (prev.length - 1))) % prev.length;
+          turnTo(k, onShow[j]);
+          turnTo(j, onShow[k]);
+        }
+        return out;
+      });
+
+    let kickoff = null;
+    const stop = () => {
+      clearTimeout(kickoff);
+      clearInterval(timer);
+      kickoff = timer = null;
+    };
+
+    // A board nobody can see should not be flipping.
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !timer && !kickoff) {
+          kickoff = setTimeout(() => {
+            kickoff = null;
+            timer = setInterval(tick, FLIP_EVERY);
+          }, (index % 4) * FLIP_OFFSET);
+        } else if (!entry.isIntersecting) {
+          stop();
+        }
+      },
+      { rootMargin: "160px" }
     );
-  });
-  const seeds = Array.from({ length: 9 }).map((_, i) => {
-    const a = (i / 9) * Math.PI * 2;
-    return <circle key={i} cx={150 + Math.cos(a) * 5} cy={60 + Math.sin(a) * 5} r="1.4" fill="#211f17" stroke="none" />;
-  });
+    if (wrap.current) io.observe(wrap.current);
+
+    return () => {
+      io.disconnect();
+      stop();
+    };
+  }, [reduced, total, cells, index]);
+
+  if (!total) return null;
+  const layout = tileLayout(cells);
+
   return (
-    <svg viewBox="0 0 300 360" className={className} style={style} role="img" aria-label="Botanical engraving">
-      <g stroke="#211f17" fill="none" strokeLinecap="round" strokeLinejoin="round">
-        {ground}
-        <path d="M150 340 C 146 296, 156 262, 151 214 C 147 172, 156 120, 150 88" strokeWidth="2.6" />
-        <Leaf x={151} y={300} rotate={172} scale={0.95} flip={1} />
-        <Leaf x={150} y={278} rotate={8} scale={0.95} flip={-1} />
-        <Leaf x={152} y={238} rotate={156} scale={1.1} flip={1} />
-        <Leaf x={149} y={214} rotate={24} scale={1.1} flip={-1} />
-        <Leaf x={151} y={170} rotate={150} scale={0.8} flip={1} />
-        <Leaf x={150} y={150} rotate={30} scale={0.8} flip={-1} />
-        <path d="M150 120 C 138 108, 128 96, 126 82" strokeWidth="1.4" />
-        <path d="M150 120 C 162 108, 172 96, 174 82" strokeWidth="1.4" />
-        <circle cx="124" cy="78" r="7" strokeWidth="1.3" />
-        <circle cx="176" cy="78" r="7" strokeWidth="1.3" />
-        {petals}
-        <circle cx="150" cy="60" r="11" strokeWidth="1.4" />
-        {seeds}
-      </g>
-    </svg>
-  );
-}
-
-function ArrowGlyph() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M4 12h14M12 5l7 7-7 7" />
-    </svg>
-  );
-}
-
-/* ─── A page shell (forwardRef is required by react-pageflip) ─── */
-const Page = forwardRef(function Page({ children, cover = false, className = "" }, ref) {
-  return (
-    <div className={`book-page ${cover ? "is-cover" : ""} ${className}`} ref={ref} data-density={cover ? "hard" : "soft"}>
-      <div className="bp-inner bp">{children}</div>
-    </div>
-  );
-});
-
-/* Running head used at the top of inner pages */
-function RunHead({ page }) {
-  return (
-    <>
-      <div className="flex items-center justify-between bp-folio">
-        <span>The BioLoom Chronicle</span>
-        <span>Page&nbsp;{page}</span>
-      </div>
-      <div className="bp-rule mt-[0.4em] mb-[0.7em]" />
-    </>
-  );
-}
-
-function Folio({ page }) {
-  return (
-    <div className="mt-auto pt-[0.8em]">
-      <div className="bp-rule-soft mb-[0.4em]" />
-      <p className="bp-folio text-center">· {page} ·</p>
-    </div>
-  );
-}
-
-/* Drop-cap paragraph as a real floated element (a CSS ::first-letter pseudo
-   doesn't survive the foreignObject rasterisation used for the PDF export). */
-function DropCapP({ className = "", children }) {
-  const text = typeof children === "string" ? children : String(children ?? "");
-  return (
-    <p className={`bp-body bp-justify ${className}`}>
-      <span className="bp-dropcap-letter">{text.charAt(0)}</span>
-      {text.slice(1)}
-    </p>
-  );
-}
-
-/* ─── Page content blocks ─── */
-
-function FrontCover({ vol, issue, dateLabel, lead }) {
-  return (
-    <Page cover>
-      <div className="flex items-center justify-between bp-folio">
-        <span>Vol.&nbsp;{vol} · No.&nbsp;{issue}</span>
-        <span>Price · Free</span>
-      </div>
-      <div className="bp-rule-double mt-[0.4em]" />
-
-      <h1 className="bp-mast text-center my-[0.5em]" style={{ fontSize: "2.7em" }}>
-        The BioLoom Chronicle
-      </h1>
-
-      <div className="bp-rule" />
-      <p className="text-center bp-folio my-[0.45em]" style={{ fontSize: "0.56em" }}>
-        {dateLabel}
-      </p>
-      <p className="text-center bp-byline ink-soft mb-[0.5em]" style={{ fontSize: "0.82em" }}>
-        “All the biodiversity that’s fit to print.”
-      </p>
-      <div className="bp-rule-thick" />
-
-      {lead ? (
-        <div className="mt-[0.9em] flex-1 flex flex-col">
-          <p className="bp-kicker text-center mb-[0.4em]">
-            {lead.upcoming ? "Forthcoming · From the Desk" : "Lead Dispatch"}
-          </p>
-          <h2 className="bp-headline text-center" style={{ fontSize: "2.05em" }}>
-            {lead.title}
-          </h2>
-          <p className="text-center bp-byline ink-faint mt-[0.5em]" style={{ fontSize: "0.72em" }}>
-            By the BioLoom Desk · {lead.dateObj ? fmtStory(lead.dateObj) : "Undated"}
-          </p>
-          <div className="flex items-center justify-center my-[0.7em] gap-[0.6em]">
-            <span className="bp-rule-soft flex-1" />
-            <img src="/images/news/bioloom-logo.svg" alt="BioLoom" className="h-[1.7em] w-auto" />
-            <span className="bp-rule-soft flex-1" />
-          </div>
-          <DropCapP>
-            {lead.text || "Details to follow inside this edition of the Chronicle."}
-          </DropCapP>
-        </div>
-      ) : (
-        <p className="mt-[1em] bp-body text-center ink-faint">No dispatches have gone to press yet.</p>
-      )}
-
-      <div className="book-corner-hint">
-        Drag to open
-        <ArrowGlyph />
-      </div>
-      <span className="book-dogear" />
-    </Page>
-  );
-}
-
-function DispatchesPage({ items }) {
-  return (
-    <Page>
-      <RunHead page="2" />
-      <p className="bp-section ink text-center" style={{ fontSize: "0.92em" }}>
-        Dispatches
-      </p>
-      <div className="bp-rule mt-[0.5em] mb-[0.8em]" />
-
-      <div className="flex-1 flex flex-col gap-[0.85em]">
-        {items.length === 0 && (
-          <p className="bp-body ink-faint italic text-center mt-[1em]">
-            The wire is quiet. Check back next edition.
-          </p>
-        )}
-        {items.map((item, i) => (
-          <article key={item.id}>
-            {i > 0 && <div className="bp-rule-soft mb-[0.85em]" />}
-            <div className="flex items-center gap-[0.5em] mb-[0.25em]">
-              <span className={`bp-kicker ${item.upcoming ? "ink-accent" : "ink-faint"}`} style={{ fontSize: "0.56em" }}>
-                {item.upcoming ? "Forthcoming" : "Dispatch"}
+    <div ref={wrap} className={`absolute inset-0 grid gap-[3px] ${layout.grid}`}>
+      {tiles.map((tile, i) => {
+        const shown = tile.turn % 2 === 0 ? tile.a : tile.b;
+        return (
+          <button
+            key={i}
+            type="button"
+            onClick={() => onOpen(shown)}
+            aria-label={`${title} — open image ${shown + 1} of ${total}`}
+            className={`flip-tile group/img relative overflow-hidden ${layout.spans[i]}`}
+          >
+            <span className="flip-tile-inner" style={{ transform: `rotateX(${tile.turn * 180}deg)` }}>
+              <span className="flip-tile-face">
+                <img
+                  src={images[tile.a].src}
+                  alt={images[tile.a].alt || (i === 0 ? title || "" : "")}
+                  loading="lazy"
+                  className="h-full w-full object-cover"
+                />
               </span>
-              <span className="bp-rule-soft flex-1" />
-              {item.dateObj && (
-                <span className="bp-folio" style={{ fontSize: "0.54em" }}>
-                  {fmtKicker(item.dateObj)}
-                </span>
-              )}
-            </div>
-            <h3 className="bp-sub ink" style={{ fontSize: "1.15em" }}>
-              {item.title}
-            </h3>
-            {item.text && <p className="bp-body bp-justify ink-soft mt-[0.2em]" style={{ fontSize: "0.9em" }}>{item.text}</p>}
-            {item.link && item.link !== "#" ? (
-              <a href={item.link} target="_blank" rel="noreferrer" className="bp-kicker ink-accent inline-block mt-[0.3em]" style={{ fontSize: "0.52em", borderBottom: "1px solid currentColor" }}>
-                Continued&nbsp;→
-              </a>
-            ) : (
-              <span className="bp-folio ink-faint inline-block mt-[0.3em]" style={{ fontSize: "0.52em" }}>
-                — In the archive —
+              <span className="flip-tile-face is-back">
+                <img src={images[tile.b].src} alt="" loading="lazy" className="h-full w-full object-cover" />
+              </span>
+            </span>
+            <span className="pointer-events-none absolute inset-0 bg-black/0 transition-colors duration-300 group-hover/img:bg-black/20" />
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+/* ── One entry ──────────────────────────────────────────────────────────── */
+const NewsRow = ({ item, index, onOpen, innerRef }) => {
+  const hex = accentFor(item, index);
+
+  return (
+    <motion.article
+      ref={innerRef}
+      initial={{ opacity: 0, y: 26 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-60px" }}
+      transition={{ duration: 0.6, ease: [0.215, 0.61, 0.355, 1] }}
+      className="news-row group relative overflow-hidden rounded-2xl border transition-colors duration-300"
+      style={{
+        borderColor: "rgba(255,255,255,0.07)",
+        background: "linear-gradient(150deg, rgba(255,255,255,0.04), rgba(255,255,255,0.008))",
+      }}
+      onMouseEnter={(e) => (e.currentTarget.style.borderColor = rgba(hex, 0.3))}
+      onMouseLeave={(e) => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.07)")}
+    >
+      {/* accent hairline picking up the thread's colour */}
+      <div
+        className="absolute inset-x-0 top-0 h-px"
+        style={{ background: `linear-gradient(90deg, ${rgba(hex, 0.55)}, transparent 60%)` }}
+      />
+
+      <div
+        className={
+          item.images.length
+            ? "grid gap-0 lg:grid-cols-[minmax(0,0.82fr)_minmax(0,1fr)]"
+            : "grid gap-0"
+        }
+      >
+        {/* text side */}
+        <div className="flex flex-col p-6 md:p-8">
+          <div className="mb-5 flex flex-wrap items-center gap-2.5">
+            {item.tag && (
+              <span
+                className="rounded-full border px-2.5 py-1 text-[9.5px] font-black uppercase tracking-[0.2em]"
+                style={{ color: hex, borderColor: rgba(hex, 0.32), background: rgba(hex, 0.08) }}
+              >
+                {item.tag}
               </span>
             )}
-          </article>
-        ))}
-      </div>
+            {item.dateObj && (
+              <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/50">
+                {fmtBoard(item.dateObj)}
+              </span>
+            )}
+            {item.upcoming && (
+              <span
+                className="rounded-full border px-2.5 py-1 text-[9.5px] font-black uppercase tracking-[0.2em]"
+                style={{ color: "#fcd34d", borderColor: "rgba(252,211,77,0.35)", background: "rgba(252,211,77,0.08)" }}
+              >
+                Upcoming
+              </span>
+            )}
+          </div>
 
-      <Folio page="2" />
-    </Page>
-  );
-}
+          <h2 className="leading-snug">
+            <button
+              type="button"
+              onClick={() => onOpen(0)}
+              className="text-left text-white/90 transition-colors hover:text-white"
+              style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontSize: "clamp(1.35rem, 2.4vw, 1.85rem)" }}
+            >
+              {item.title}
+            </button>
+          </h2>
 
-function FieldPage() {
-  return (
-    <Page>
-      <RunHead page="3" />
-      <p className="bp-section ink text-center" style={{ fontSize: "0.92em" }}>
-        From the Field
-      </p>
-      <div className="bp-rule mt-[0.5em] mb-[0.7em]" />
+          {item.teaser && <p className="mt-3 text-[0.92rem] leading-relaxed text-white/50">{item.teaser}</p>}
 
-      <figure className="px-[0.4em]">
-        <div className="border-y-[0.16em] border-[#211f17] py-[0.6em]">
-          <BotanicalPlate className="w-[64%] mx-auto" />
+          <div className="mt-auto flex flex-wrap items-center gap-4 pt-6">
+            <button
+              type="button"
+              onClick={() => onOpen(0)}
+              className="inline-flex items-center gap-1.5 text-xs font-semibold transition-all duration-200 hover:gap-2.5"
+              style={{ color: hex }}
+            >
+              {item.images.length > 1 ? `View ${item.images.length} images` : "Read more"}
+              <ChevronRight className="h-3.5 w-3.5" />
+            </button>
+            {item.link && (
+              <a
+                href={item.link.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 text-xs font-semibold text-white/45 transition-all duration-200 hover:gap-2.5 hover:text-white/80"
+              >
+                {item.link.label}
+                <ArrowUpRight className="h-3.5 w-3.5" />
+              </a>
+            )}
+          </div>
         </div>
-        <figcaption className="bp-caption text-center mt-[0.4em]">
-          Fig. 1 — A specimen from the BioLoom collection, engraved for these pages.
-        </figcaption>
-      </figure>
 
-      <div className="flex items-center justify-center my-[0.8em] gap-[0.6em]" aria-hidden="true">
-        <span className="bp-rule-soft flex-1" />
-        <span className="bp-pull ink-accent" style={{ fontSize: "1.1em" }}>❦</span>
-        <span className="bp-rule-soft flex-1" />
+        {/* pictures */}
+        {item.images.length > 0 && (
+          <div className="news-row-media relative overflow-hidden">
+            <ImageMosaic images={item.images} title={item.title} index={index} onOpen={onOpen} />
+            {/* blend the mosaic into the card on each layout's joining edge */}
+            <div
+              className="pointer-events-none absolute inset-0 lg:hidden"
+              style={{ background: "linear-gradient(to bottom, rgba(2,17,13,0.55), transparent 22%)" }}
+            />
+            <div
+              className="pointer-events-none absolute inset-y-0 left-0 hidden w-16 lg:block"
+              style={{ background: "linear-gradient(to right, rgba(6,20,16,0.75), transparent)" }}
+            />
+          </div>
+        )}
       </div>
-
-      <blockquote className="bp-pull ink text-center px-[0.5em]" style={{ fontSize: "1.12em" }}>
-        “We map where biodiversity thrives, how it is changing, and what it means
-        for people.”
-      </blockquote>
-      <p className="bp-folio text-center mt-[0.5em]">— The BioLoom mission</p>
-
-      <Folio page="3" />
-    </Page>
+    </motion.article>
   );
-}
+};
 
-function EditorialPage() {
+/* ── Detail window: the full picture set plus the write-up ──────────────── */
+function NewsModal({ item, index = 0, startAt = 0, onClose }) {
+  const hex = item ? accentFor(item, index) : "#6ee7b7";
+  const [shot, setShot] = useState(startAt);
+  const count = item?.images.length ?? 0;
+
+  useEffect(() => setShot(startAt), [item?.id, startAt]);
+
+  const step = useCallback((delta) => setShot((s) => (count ? (s + delta + count) % count : 0)), [count]);
+
+  useEffect(() => {
+    if (!item) return undefined;
+    const onKey = (e) => {
+      if (e.key === "Escape") onClose();
+      if (e.key === "ArrowRight") step(1);
+      if (e.key === "ArrowLeft") step(-1);
+    };
+    document.addEventListener("keydown", onKey);
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prev;
+    };
+  }, [item, onClose, step]);
+
+  const current = item?.images[shot];
+
   return (
-    <Page>
-      <RunHead page="4" />
-      <p className="bp-section ink text-center" style={{ fontSize: "0.92em" }}>
-        From the Desk · Editorial
-      </p>
-      <div className="bp-rule mt-[0.5em] mb-[0.8em]" />
+    <AnimatePresence>
+      {item && (
+        <motion.div
+          className="fixed inset-0 z-[60] flex items-center justify-center p-4 md:p-8"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.25 }}
+        >
+          <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} aria-hidden="true" />
 
-      <DropCapP className="ink">
-        Biodiversity and the people who lean on it are too often studied apart.
-        The Chronicle exists to read them together — to follow a thread from a
-        plant in the field to a meal, a medicine or a livelihood, and back again.
-      </DropCapP>
-      <p className="bp-body bp-justify ink mt-[0.7em]" style={{ fontSize: "0.95em" }}>
-        Our work weaves ecology, data science and human wellbeing into one
-        picture: where nature is richest, how it is shifting under a changing
-        climate, and what is owed to the communities who steward it. These pages
-        gather the lab’s latest releases, talks and notices as they go to press.
-      </p>
+          <motion.div
+            role="dialog"
+            aria-modal="true"
+            aria-label={item.title}
+            className="relative z-10 grid w-full max-w-5xl overflow-hidden rounded-3xl border md:grid-cols-2"
+            style={{
+              maxHeight: "88vh",
+              borderColor: rgba(hex, 0.22),
+              background: "linear-gradient(160deg, #0a1f18, #061410)",
+            }}
+            initial={{ opacity: 0, y: 24, scale: 0.97 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 16, scale: 0.98 }}
+            transition={{ duration: 0.3, ease: [0.215, 0.61, 0.355, 1] }}
+          >
+            <div className="relative flex h-56 flex-col bg-black/25 md:h-auto md:min-h-[460px]">
+              {count > 0 ? (
+                <>
+                  <div className="relative min-h-0 flex-1">
+                    <AnimatePresence mode="wait">
+                      <motion.img
+                        key={shot}
+                        src={current.src}
+                        alt={current.alt || item.title}
+                        className="absolute inset-0 h-full w-full object-cover"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.22 }}
+                      />
+                    </AnimatePresence>
+                    <div
+                      className="pointer-events-none absolute inset-0 md:hidden"
+                      style={{ background: "linear-gradient(to top, #0a1f18, transparent 55%)" }}
+                    />
 
-      <div className="flex items-center justify-center my-[0.8em] gap-[0.6em]" aria-hidden="true">
-        <span className="bp-rule-soft flex-1" />
-        <img src="/images/news/bioloom-logo.svg" alt="BioLoom" className="h-[1.7em] w-auto" />
-        <span className="bp-rule-soft flex-1" />
-      </div>
+                    {count > 1 && (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => step(-1)}
+                          aria-label="Previous image"
+                          className="absolute left-2 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-white/10 bg-black/45 text-white/75 backdrop-blur transition hover:bg-black/70 hover:text-white"
+                        >
+                          <ChevronLeft className="h-4 w-4" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => step(1)}
+                          aria-label="Next image"
+                          className="absolute right-2 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-white/10 bg-black/45 text-white/75 backdrop-blur transition hover:bg-black/70 hover:text-white"
+                        >
+                          <ChevronRight className="h-4 w-4" />
+                        </button>
+                        <span className="absolute bottom-2 right-3 rounded-full bg-black/55 px-2 py-0.5 text-[10px] font-semibold tracking-wide text-white/70 backdrop-blur">
+                          {shot + 1} / {count}
+                        </span>
+                      </>
+                    )}
+                  </div>
 
-      <p className="bp-byline ink-soft text-right pr-[0.4em]" style={{ fontSize: "0.86em" }}>
-        — The Editors, BioLoom Labs
-      </p>
+                  {(current.caption || current.credit?.name) && (
+                    <div className="hidden px-4 py-2 text-[11px] leading-snug text-white/45 md:block">
+                      {current.caption}
+                      {current.caption && current.credit?.name ? " · " : ""}
+                      {current.credit?.name &&
+                        (current.credit.url ? (
+                          <a
+                            href={current.credit.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="transition-colors hover:text-white/80"
+                          >
+                            {current.credit.name}
+                          </a>
+                        ) : (
+                          current.credit.name
+                        ))}
+                    </div>
+                  )}
 
-      <Folio page="4" />
-    </Page>
-  );
-}
-
-function NoticesPage() {
-  const rows = [
-    { to: "/research", label: "Research", note: "Ten threads, from macro-ecology to genetics.", pg: "p.2" },
-    { to: "/people", label: "The People", note: "Who tends the loom — leads, students, alumni.", pg: "p.4" },
-    { to: "/publications", label: "Publications", note: "Papers, data releases & opinion pieces.", pg: "p.7" },
-    { to: "/contact", label: "Correspondence", note: "Write to the desk; collaborations welcome.", pg: "p.8" },
-  ];
-  return (
-    <Page>
-      <RunHead page="5" />
-      <p className="bp-section ink text-center" style={{ fontSize: "0.92em" }}>
-        Notices &amp; Index
-      </p>
-      <div className="bp-rule mt-[0.5em] mb-[0.8em]" />
-
-      <ul className="flex-1 flex flex-col gap-[0.9em]">
-        {rows.map((row, i) => (
-          <li key={row.to}>
-            {i > 0 && <div className="bp-rule-soft mb-[0.9em]" />}
-            <div className="flex items-baseline gap-[0.5em]">
-              <Link to={row.to} className="bp-sub ink-accent" style={{ fontSize: "1.1em" }}>
-                {row.label}
-              </Link>
-              <span className="bp-leader" />
-              <span className="bp-folio">{row.pg}</span>
+                  {count > 1 && (
+                    <div className="hidden gap-2 overflow-x-auto px-4 pb-4 md:flex">
+                      {item.images.map((img, i) => (
+                        <button
+                          key={i}
+                          type="button"
+                          onClick={() => setShot(i)}
+                          aria-label={`Show image ${i + 1}`}
+                          className="h-12 w-16 shrink-0 overflow-hidden rounded-md border transition"
+                          style={{
+                            borderColor: i === shot ? rgba(hex, 0.75) : "rgba(255,255,255,0.1)",
+                            opacity: i === shot ? 1 : 0.5,
+                          }}
+                        >
+                          <img src={img.src} alt="" className="h-full w-full object-cover" />
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div
+                  className="flex h-full w-full flex-col items-center justify-center"
+                  style={{ background: `linear-gradient(150deg, ${rgba(hex, 0.16)}, rgba(255,255,255,0.02) 70%)` }}
+                >
+                  {item.dateObj && (
+                    <>
+                      <span
+                        className="leading-none text-white/85"
+                        style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontSize: "clamp(2.4rem, 6vw, 4rem)" }}
+                      >
+                        {item.dateObj.getDate()}
+                      </span>
+                      <span className="mt-1 text-[10px] font-black uppercase tracking-[0.28em]" style={{ color: hex }}>
+                        {item.dateObj.toLocaleDateString("en-GB", { month: "short", year: "numeric" })}
+                      </span>
+                    </>
+                  )}
+                </div>
+              )}
             </div>
-            <p className="bp-body ink-soft mt-[0.15em]" style={{ fontSize: "0.88em" }}>
-              {row.note}
-            </p>
-          </li>
-        ))}
-      </ul>
 
-      <Folio page="5" />
-    </Page>
+            <div className="relative flex flex-col overflow-y-auto p-7 md:p-9" style={{ maxHeight: "88vh" }}>
+              <button
+                type="button"
+                onClick={onClose}
+                aria-label="Close"
+                className="absolute right-4 top-4 z-10 flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/60 transition-colors hover:bg-white/10 hover:text-white"
+              >
+                <X className="h-4 w-4" />
+              </button>
+
+              <div className="mb-4 flex flex-wrap items-center gap-2 pr-10">
+                {item.tag && (
+                  <span
+                    className="rounded-full border px-2.5 py-1 text-[9.5px] font-black uppercase tracking-[0.2em]"
+                    style={{ color: hex, borderColor: rgba(hex, 0.3), background: rgba(hex, 0.08) }}
+                  >
+                    {item.tag}
+                  </span>
+                )}
+                {item.upcoming && (
+                  <span
+                    className="rounded-full border px-2.5 py-1 text-[9.5px] font-black uppercase tracking-[0.2em]"
+                    style={{ color: "#fcd34d", borderColor: "rgba(252,211,77,0.35)", background: "rgba(252,211,77,0.08)" }}
+                  >
+                    Upcoming
+                  </span>
+                )}
+              </div>
+
+              {item.dateObj && (
+                <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/45">
+                  {fmtLong(item.dateObj)}
+                </p>
+              )}
+
+              <h2
+                className="mb-5 leading-[1.1] text-white"
+                style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontSize: "clamp(1.6rem, 3vw, 2.1rem)" }}
+              >
+                {item.title}
+              </h2>
+
+              <div className="space-y-3.5">
+                {item.body.map((para, i) => (
+                  <p key={i} className="text-[0.95rem] leading-relaxed text-white/65">
+                    {para}
+                  </p>
+                ))}
+              </div>
+
+              {item.link && (
+                <a
+                  href={item.link.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-7 inline-flex w-fit items-center gap-1.5 text-sm font-semibold transition-all duration-200 hover:gap-2.5"
+                  style={{ color: hex }}
+                >
+                  {item.link.label}
+                  <ArrowUpRight className="h-3.5 w-3.5" />
+                </a>
+              )}
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }
 
-function BackCover({ year }) {
+/* ── Atmospheric backdrop, sibling to the Research page's ───────────────── */
+function NewsBackdrop() {
   return (
-    <Page cover>
-      <div className="flex-1 flex flex-col items-center justify-center text-center px-[0.4em]">
-        <p className="bp-kicker mb-[0.6em]">And finally</p>
-        <div className="bp-pull ink-accent mb-[0.5em]" style={{ fontSize: "1.4em" }} aria-hidden="true">⁂</div>
-
-        <h2 className="bp-mast ink mb-[0.5em]" style={{ fontSize: "1.7em" }}>
-          The BioLoom Chronicle
-        </h2>
-
-        <p className="bp-body ink-soft mb-[1em]" style={{ fontSize: "0.92em" }}>
-          Set in Playfair Display &amp; Newsreader. Printed in pixels and
-          peer-reviewed in practice.
-        </p>
-
-        <Link to="/contact" className="bp-kicker ink-accent" style={{ borderBottom: "0.12em solid currentColor", paddingBottom: "0.1em" }}>
-          Correspondence to the Contact desk →
-        </Link>
-
-        <div className="flex items-center justify-center my-[1em] gap-[0.6em] w-[70%]" aria-hidden="true">
-          <span className="bp-rule-soft flex-1" />
-          <img src="/images/news/bioloom-logo.svg" alt="BioLoom" className="h-[1.7em] w-auto" />
-          <span className="bp-rule-soft flex-1" />
-        </div>
-
-        <p className="bp-byline ink-soft" style={{ fontSize: "0.82em" }}>
-          “All the biodiversity that’s fit to print.”
-        </p>
-        <p className="bp-folio mt-[0.8em]">© {year} BioLoom Labs</p>
-      </div>
-    </Page>
-  );
-}
-
-/* ─── The botanist's desk the newspaper rests on (a photograph) ─── */
-function BotanistDesk() {
-  return (
-    <div className="book-desk" aria-hidden="true">
-      {/* Photographic desk; falls back to the drawn wood if the file is absent */}
-      <img
-        className="book-desk-photo"
-        src="/images/news/news-background-4k.webp"
-        alt=""
-        onError={(e) => {
-          e.currentTarget.style.display = "none";
-        }}
+    <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
+      <div
+        className="absolute -top-40 right-[-12rem] h-[40rem] w-[40rem] rounded-full blur-3xl"
+        style={{ background: "radial-gradient(circle, rgba(16,185,129,0.14), transparent 62%)" }}
       />
-      <div className="book-desk-vignette" />
-      {/* Subtle darken at the very top so the transparent navbar stays legible */}
-      <div className="book-desk-topshade" />
+      <div
+        className="absolute top-[38%] -left-48 h-[38rem] w-[38rem] rounded-full blur-3xl"
+        style={{ background: "radial-gradient(circle, rgba(125,211,252,0.09), transparent 62%)" }}
+      />
+      <div
+        className="absolute bottom-[-8%] right-[18%] h-[34rem] w-[34rem] rounded-full blur-3xl"
+        style={{ background: "radial-gradient(circle, rgba(251,191,36,0.08), transparent 62%)" }}
+      />
+      <svg className="absolute inset-0 h-full w-full opacity-[0.035] mix-blend-overlay">
+        <filter id="news-grain">
+          <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" stitchTiles="stitch" />
+        </filter>
+        <rect width="100%" height="100%" filter="url(#news-grain)" />
+      </svg>
     </div>
   );
 }
 
-function DownloadIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M12 3v12M7 11l5 5 5-5M5 21h14" />
-    </svg>
-  );
-}
-
-function ArchiveIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <rect x="3" y="4" width="18" height="4" rx="1" />
-      <path d="M5 8v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8M10 12h4" />
-    </svg>
-  );
-}
-
-/* ─── Build the six book pages for any edition (used by the live flip-book
-   and the flattened multi-page PDF export alike) ─── */
-function editionBookPages(edition) {
-  return [
-    FrontCover({ vol: edition.vol, issue: edition.issue, dateLabel: edition.dateLabel, lead: edition.lead }),
-    DispatchesPage({ items: edition.dispatches }),
-    FieldPage({}),
-    EditorialPage({}),
-    NoticesPage({}),
-    BackCover({ year: edition.year }),
-  ];
-}
-
-/* ─── Page ─── */
+/* ── Page ───────────────────────────────────────────────────────────────── */
 export default function News() {
   useSeo({
     title: "News",
     description:
-      "News and updates from BIOLOOM, a biodiversity and people research group led by Dr. Samuel Pironon.",
+      "Papers, datasets, talks and fieldwork from BIOLOOM Labs — what the lab has been working on, as it happens.",
   });
-  const [items, setItems] = useState([]);
-  const [loading, setLoading] = useState(true);
+
+  const [raw, setRaw] = useState([]);
   const [error, setError] = useState(null);
-  const [page, setPage] = useState(0);
-  const [pageCount, setPageCount] = useState(0);
-  const bookRef = useRef(null);
-  const bookClampRef = useRef(null);
-  const lastPageRef = useRef(0); // remembers the page across a mode remount
-  const rafRef = useRef(null);
-  const shiftRef = useRef(0);
-  const totalRef = useRef(6);
-  const frameRef = useRef(null);
-  const areaRef = useRef(null);
-  const [frameH, setFrameH] = useState(null);
-  const [avail, setAvail] = useState({ w: 0, h: 0 });
-  const [printEdition, setPrintEdition] = useState(null);
-  const [archivesOpen, setArchivesOpen] = useState(false);
-  const [busy, setBusy] = useState(false);
-  const [printSize, setPrintSize] = useState({ w: 460, h: 622, fs: 15.4 });
-  const printRef = useRef(null);
-  const today = useMemo(() => new Date(), []);
+  const [loading, setLoading] = useState(true);
+  const [tag, setTag] = useState("All");
+  const [open, setOpen] = useState(null); // { id, at }
 
-  // Lock the view to the screen: the frame fills the viewport below the navbar.
+  useEffect(() => {
+    let live = true;
+    fetchJSONC("/news.jsonc")
+      .then((data) => live && setRaw(Array.isArray(data) ? data : []))
+      .catch((e) => live && setError(e?.message ?? "Failed to load news"))
+      .finally(() => live && setLoading(false));
+    return () => {
+      live = false;
+    };
+  }, []);
+
+  const items = useMemo(() => orderItems(raw), [raw]);
+
+  const tags = useMemo(() => {
+    const seen = [];
+    items.forEach((it) => {
+      if (it.tag && !seen.includes(it.tag)) seen.push(it.tag);
+    });
+    return seen;
+  }, [items]);
+
+  const shown = useMemo(() => (tag === "All" ? items : items.filter((it) => it.tag === tag)), [items, tag]);
+
+  /* Measure the rail and where each entry meets it, so the thread's curls land
+     on the rows rather than on guessed offsets. */
+  const listRef = useRef(null);
+  const railRef = useRef(null);
+  const rowRefs = useRef([]);
+  const [rail, setRail] = useState({ width: 0, height: 0, nodes: [] });
+
   useLayoutEffect(() => {
-    function measure() {
-      if (!frameRef.current) return;
-      const top = frameRef.current.getBoundingClientRect().top;
-      setFrameH(Math.max(320, window.innerHeight - top));
-    }
+    const measure = () => {
+      const list = listRef.current;
+      const railEl = railRef.current;
+      if (!list || !railEl) return;
+      const top = list.getBoundingClientRect().top;
+      const nodes = shown
+        .map((item, i) => {
+          const el = rowRefs.current[i];
+          if (!el) return null;
+          const r = el.getBoundingClientRect();
+          // Meet each entry level with its split-flap board, not its middle.
+          return { id: item.id, hex: accentFor(item, i), y: r.top - top + Math.min(56, r.height / 2) };
+        })
+        .filter(Boolean);
+      setRail({ width: railEl.clientWidth, height: list.offsetHeight, nodes });
+    };
+
     measure();
+    const ro = new ResizeObserver(measure);
+    if (listRef.current) ro.observe(listRef.current);
+    rowRefs.current.forEach((el) => el && ro.observe(el));
     window.addEventListener("resize", measure);
-    window.addEventListener("orientationchange", measure);
     return () => {
+      ro.disconnect();
       window.removeEventListener("resize", measure);
-      window.removeEventListener("orientationchange", measure);
     };
-  }, [loading]);
+  }, [shown]);
 
-  // Measure the area left for the book (between navbar and controls).
-  useEffect(() => {
-    if (!areaRef.current || typeof ResizeObserver === "undefined") return;
-    const ro = new ResizeObserver((entries) => {
-      const cr = entries[0].contentRect;
-      setAvail({ w: cr.width, h: cr.height });
-    });
-    ro.observe(areaRef.current);
-    return () => ro.disconnect();
-  }, [loading]);
+  const { scrollYProgress } = useScroll({
+    target: listRef,
+    offset: ["start 0.85", "end 0.9"],
+  });
 
-  const fit = useMemo(() => fitBook(avail.w, avail.h), [avail]);
-
-  // StPageFlip grows/shrinks its container on a live resize but doesn't reliably
-  // re-flow the page contents — they stay at the old size, anchored left, and
-  // the centring shift pushes them off-screen with no way to recover. Asking it
-  // to re-lay-out (update()) once the resize settles fixes it in place without
-  // losing the reader's page. The timer resets on each size change, so a drag
-  // only triggers one re-layout when it stops. Same-size re-renders don't refire
-  // this (fit is referentially stable).
-  useEffect(() => {
-    if (!fit) return undefined;
-    const id = setTimeout(() => {
-      try {
-        bookRef.current?.pageFlip?.()?.update?.();
-      } catch {
-        /* ignore — the reset effect below still re-centres */
-      }
-    }, 160);
-    return () => clearTimeout(id);
-  }, [fit]);
-
-  useEffect(() => {
-    let mounted = true;
-    async function load() {
-      try {
-        setLoading(true);
-        const response = await fetchJSONC("/news.jsonc");
-        if (!mounted) return;
-        setItems(Array.isArray(response) ? response : []);
-      } catch (e) {
-        if (!mounted) return;
-        setError(e.message || "Failed to load news");
-        setItems([]);
-      } finally {
-        if (mounted) setLoading(false);
-      }
-    }
-    load();
-    return () => {
-      mounted = false;
-    };
-  }, []);
-
-  const { lead, dispatches } = useMemo(() => {
-    const todayMid = new Date();
-    todayMid.setHours(0, 0, 0, 0);
-    const enriched = (items || []).map((item, idx) => {
-      const dateObj = parseDate(item.date);
-      return {
-        ...item,
-        dateObj,
-        upcoming: dateObj ? dateObj >= todayMid : false,
-        id: item.id || `${item.title || "news"}-${idx}`,
-      };
-    });
-    const upcoming = enriched.filter((e) => e.upcoming).sort((a, b) => (a.dateObj && b.dateObj ? a.dateObj - b.dateObj : 0));
-    const past = enriched.filter((e) => !e.upcoming).sort((a, b) => {
-      if (!a.dateObj) return 1;
-      if (!b.dateObj) return -1;
-      return b.dateObj - a.dateObj;
-    });
-    const leadItem = upcoming[0] || past[0] || null;
-    const rest = enriched.filter((e) => e.id !== leadItem?.id);
-    const restUpcoming = rest.filter((e) => e.upcoming).sort((a, b) => (a.dateObj && b.dateObj ? a.dateObj - b.dateObj : 0));
-    const restPast = rest.filter((e) => !e.upcoming).sort((a, b) => {
-      if (!a.dateObj) return 1;
-      if (!b.dateObj) return -1;
-      return b.dateObj - a.dateObj;
-    });
-    return { lead: leadItem, dispatches: [...restUpcoming, ...restPast] };
-  }, [items]);
-
-  // The current edition (what the Download button saves) and the archive.
-  const currentEdition = useMemo(
-    () => ({
-      year: today.getFullYear(),
-      month: today.getMonth(),
-      vol: toRoman(today.getFullYear()),
-      issue: toRoman(today.getMonth() + 1),
-      dateLabel: fmtDateline(today),
-      lead,
-      dispatches,
-      empty: !lead && dispatches.length === 0,
-      fileName: `BioLoom-Chronicle-${today.getFullYear()}-${pad2(today.getMonth() + 1)}.pdf`,
-    }),
-    [today, lead, dispatches]
-  );
-
-  const archiveYears = useMemo(() => {
-    const map = new Map();
-    buildArchiveMonths(today, items).forEach(({ y, m }) => {
-      if (!map.has(y)) map.set(y, []);
-      map.get(y).push(m);
-    });
-    return Array.from(map.entries()).map(([year, months]) => ({ year, months }));
-  }, [today, items]);
-
-  const monthsWithItems = useMemo(() => {
-    const set = new Set();
-    enrichItems(items).forEach((e) => {
-      if (e.dateObj) set.add(`${e.dateObj.getFullYear()}-${e.dateObj.getMonth()}`);
-    });
-    return set;
-  }, [items]);
-
-  const downloadEdition = useCallback(
-    (edition) => {
-      if (busy) return;
-      // Match the live book's page size so the type sets identically — no reflow.
-      const r = bookRef.current?.pageFlip?.()?.getBoundsRect?.();
-      const w = Math.round(r?.pageWidth || 460);
-      const h = Math.round(r?.height || w * PAGE_RATIO);
-      setPrintSize({ w, h, fs: +(w * 0.0335).toFixed(2) });
-      setBusy(true);
-      setPrintEdition(edition);
-    },
-    [busy]
-  );
-
-  // Render the queued edition off-screen, then rasterise it into a one-page PDF.
-  useEffect(() => {
-    if (!printEdition) return;
-    let cancelled = false;
-    (async () => {
-      try {
-        if (document.fonts?.ready) await document.fonts.ready;
-        await new Promise((r) => setTimeout(r, 180)); // let layout & SVGs settle
-        if (cancelled || !printRef.current) return;
-        const [htmlToImage, jspdf] = await Promise.all([
-          import("html-to-image"),
-          import("jspdf"),
-        ]);
-        const JsPDF = jspdf.jsPDF || jspdf.default;
-        // Flatten each book page to its own PDF page. html-to-image renders
-        // through the browser's own engine (SVG foreignObject), so justified
-        // text, small-caps and hyphenation come out exactly as in the book —
-        // unlike a re-typesetting rasteriser.
-        const leaves = printRef.current.querySelectorAll(".pdf-page");
-        // Embed the web fonts once and reuse across pages (much faster).
-        const fontEmbedCSS = await htmlToImage
-          .getFontEmbedCSS(printRef.current)
-          .catch(() => undefined);
-        let pdf = null;
-        for (const el of leaves) {
-          const canvas = await htmlToImage.toCanvas(el, {
-            pixelRatio: 2,
-            backgroundColor: "#f2ead6",
-            fontEmbedCSS,
-          });
-          if (cancelled) return;
-          const w = canvas.width / 2;
-          const h = canvas.height / 2;
-          if (!pdf) {
-            pdf = new JsPDF({ orientation: "p", unit: "px", format: [w, h], hotfixes: ["px_scaling"] });
-          } else {
-            pdf.addPage([w, h], "p");
-          }
-          pdf.addImage(canvas.toDataURL("image/jpeg", 0.92), "JPEG", 0, 0, w, h);
-        }
-        if (pdf) pdf.save(printEdition.fileName);
-      } catch (e) {
-        console.error("Chronicle PDF export failed:", e);
-      } finally {
-        if (!cancelled) {
-          setBusy(false);
-          setPrintEdition(null);
-        }
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [printEdition]);
-
-  const onFlip = useCallback((e) => {
-    lastPageRef.current = e.data;
-    setPage(e.data);
-  }, []);
-
-  // Horizontal centre offset for a page index: front cover sits left of the
-  // spine, back cover right of it, spreads dead-centre.
-  const offsetForPage = useCallback((idx) => {
-    const s = shiftRef.current;
-    const n = totalRef.current;
-    if (!s) return 0;
-    if (idx <= 0) return -s;
-    if (idx >= n - 1) return s;
-    return 0;
-  }, []);
-
-  const setClampTx = useCallback((px) => {
-    const el = bookClampRef.current;
-    if (el) el.style.transform = `translateX(${px}px)`;
-  }, []);
-
-  // Drive the centring slide from the LIVE fold progress so it tracks the turn
-  // exactly — for drags of any speed, button flips and snap-backs alike. A
-  // fixed-duration CSS transition can't stay in sync because StPageFlip's
-  // release animation lasts in proportion to how far the page was dragged.
-  const animateTx = useCallback(() => {
-    const pf = bookRef.current?.pageFlip?.();
-    const calc = pf?.getFlipController?.()?.getCalculation?.();
-    if (!pf) {
-      rafRef.current = null;
-      return;
-    }
-    if (calc) {
-      const cur = pf.getCurrentPageIndex?.() ?? 0; // from-page (stable mid-flip)
-      const dir = calc.getDirection?.() === 1 ? -1 : 1; // FlipDirection.BACK === 1
-      const starts = spreadStarts(pf.getPageCount?.() ?? 6);
-      const idx = starts.indexOf(cur);
-      const to = idx >= 0 ? starts[Math.max(0, Math.min(starts.length - 1, idx + dir))] : cur;
-      const p = Math.max(0, Math.min(100, calc.getFlippingProgress?.() ?? 0)) / 100;
-      const from = offsetForPage(cur);
-      setClampTx(from + (offsetForPage(to) - from) * p);
-      rafRef.current = requestAnimationFrame(animateTx);
-    } else {
-      // Settled — snap exactly onto the current page's centre.
-      setClampTx(offsetForPage(pf.getCurrentPageIndex?.() ?? 0));
-      rafRef.current = null;
-    }
-  }, [offsetForPage, setClampTx]);
-
-  const onChangeState = useCallback(
-    (e) => {
-      if ((e.data === "user_fold" || e.data === "flipping") && rafRef.current == null) {
-        rafRef.current = requestAnimationFrame(animateTx);
-      }
-    },
-    [animateTx]
-  );
-
-  const onInit = useCallback(() => {
-    // NB: the init event's `data` is an object ({page, mode}), not a number —
-    // read the current index from the API instead.
-    const pf = bookRef.current?.pageFlip?.();
-    if (!pf) return;
-    try {
-      const count = pf.getPageCount();
-      setPageCount(count);
-      // After a portrait↔landscape remount, jump straight back to the page the
-      // reader was on (no animation) so the switch is seamless.
-      const want = lastPageRef.current || 0;
-      if (want > 0 && count > 0 && typeof pf.turnToPage === "function") {
-        pf.turnToPage(Math.min(want, count - 1));
-      }
-      setPage(pf.getCurrentPageIndex?.() ?? want);
-      // Front & back stay HARD (the showCover default) so they swing like rigid
-      // 3D hardback covers; the inner sheets keep their soft newspaper fold.
-    } catch {
-      /* ignore */
-    }
-  }, []);
-
-  const flipPrev = useCallback(() => bookRef.current?.pageFlip?.()?.flipPrev(), []);
-  const flipNext = useCallback(() => bookRef.current?.pageFlip?.()?.flipNext(), []);
-
-  // Arrow-key navigation
-  useEffect(() => {
-    const onKey = (e) => {
-      if (e.key === "ArrowLeft") flipPrev();
-      else if (e.key === "ArrowRight") flipNext();
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [flipPrev, flipNext]);
-
-  // Memoise the pages so the children prop stays referentially stable.
-  // react-pageflip resets its internal child-ref list on every children
-  // change; an unstable array races with — and aborts — initialisation.
-  const pages = useMemo(() => editionBookPages(currentEdition), [currentEdition]);
-
-  const total = pageCount || 6;
-  const indicator =
-    page <= 0
-      ? "Front Page"
-      : page >= total - 1
-      ? "Back Page"
-      : fit?.portrait
-      ? `Page ${page + 1}`
-      : `Pages ${page}–${page + 1}`;
-
-  // Feed the rAF with current layout values, and settle the book onto the
-  // current page whenever nothing is flipping (initial load, resize, page set).
-  const shift = fit && !fit.portrait ? fit.width / 4 : 0;
-  shiftRef.current = shift;
-  totalRef.current = total;
-
-  useEffect(() => {
-    if (rafRef.current != null) return; // a flip owns the transform right now
-    setClampTx(offsetForPage(page));
-  }, [shift, total, page, fit, setClampTx, offsetForPage]);
-
-  useEffect(
-    () => () => {
-      if (rafRef.current != null) cancelAnimationFrame(rafRef.current);
-    },
-    []
-  );
+  const activeIndex = open ? items.findIndex((it) => it.id === open.id) : -1;
+  const active = activeIndex >= 0 ? items[activeIndex] : null;
 
   return (
-    <>
-      {/* Fixed full-viewport desk — sits behind the transparent navbar too */}
-      <BotanistDesk />
+    <div className="min-h-screen">
+      {/* ══ Hero ═══════════════════════════════════════════════════════════ */}
+      <header className="relative overflow-hidden px-6 pb-14 pt-20 md:px-10 md:pb-20 md:pt-28">
+        <NewsBackdrop />
+        <div className="relative mx-auto max-w-7xl">
+          <motion.span
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="inline-flex items-center rounded-full border border-emerald-400/25 bg-emerald-400/[0.07] px-3 py-1 text-[10px] font-black uppercase tracking-[0.26em] text-emerald-300/80"
+          >
+            News
+          </motion.span>
 
-      <div
-        ref={frameRef}
-        className="relative flex flex-row overflow-hidden"
-        style={frameH ? { height: frameH } : { minHeight: "60vh" }}
-      >
-        {/* Left spacer balances the right rail so the book centres on-screen */}
-        {!loading && !error && <div className="book-side" aria-hidden="true" />}
+          <motion.h1
+            initial={{ opacity: 0, y: 26 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.75, delay: 0.08, ease: [0.215, 0.61, 0.355, 1] }}
+            className="mt-6 text-white"
+            style={{
+              fontFamily: "'DM Serif Display', Georgia, serif",
+              fontSize: "clamp(2.6rem, 7vw, 5.6rem)",
+              lineHeight: 0.94,
+              letterSpacing: "-0.015em",
+            }}
+          >
+            From the loom
+          </motion.h1>
 
-      {/* Book area — fills the screen between the navbar and the side rail */}
-      <div ref={areaRef} className="book-area relative z-10 flex-1 min-h-0 flex items-center justify-center px-2 sm:px-4">
-        {error ? (
-          <p className="font-headline italic text-center text-[#fca5a5]">
-            The presses jammed — unable to load the news ({error}).
-          </p>
-        ) : loading ? (
-          <p className="font-headline tracking-[0.22em] uppercase text-sm text-white/50">
-            Setting the type…
-          </p>
-        ) : fit ? (
-          <div className="book-clamp" ref={bookClampRef} style={{ width: fit.width }}>
-            <HTMLFlipBook
-              // Remount on the portrait↔landscape switch so StPageFlip rebuilds
-              // its geometry from scratch instead of mutating stale bounds (the
-              // page is restored in onInit). Same-mode resizes re-lay-out in
-              // place via update() — see the effect above.
-              key={fit.portrait ? "portrait" : "landscape"}
-              ref={bookRef}
-              width={445}
-              height={602}
-              size="stretch"
-              minWidth={MIN_PAGE_W}
-              maxWidth={MAX_PAGE_W}
-              minHeight={Math.round(MIN_PAGE_W * PAGE_RATIO)}
-              maxHeight={1000}
-              autoSize
-              drawShadow
-              maxShadowOpacity={0.5}
-              flippingTime={800}
-              showCover
-              showPageCorners={false}
-              usePortrait
-              mobileScrollSupport
-              clickEventForward
-              useMouseEvents
-              renderOnlyPageLengthChange
-              onFlip={onFlip}
-              onInit={onInit}
-              onChangeState={onChangeState}
-              className="chronicle-book"
-            >
-              {/* Pages are forwardRef <Page> elements in a memoised array so
-                  react-pageflip can inject refs and init reliably. */}
-              {pages}
-            </HTMLFlipBook>
-          </div>
-        ) : null}
+          <motion.p
+            initial={{ opacity: 0, y: 18 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.22, ease: "easeOut" }}
+            className="mt-6 max-w-xl text-lg leading-relaxed text-emerald-50/80 md:text-xl"
+          >
+            Papers and preprints, datasets and talks, fieldwork and the people
+            behind it — what the lab has been working on, as it happens.
+          </motion.p>
+
+          <motion.div
+            initial={{ opacity: 0, scaleX: 0 }}
+            animate={{ opacity: 1, scaleX: 1 }}
+            transition={{ duration: 0.9, delay: 0.38, ease: [0.215, 0.61, 0.355, 1] }}
+            className="mt-10 h-px max-w-2xl origin-left"
+            style={{ background: "linear-gradient(90deg, rgba(16,185,129,0.45), rgba(20,184,166,0.2), transparent)" }}
+          />
         </div>
+      </header>
 
-        {/* Right spacer reserves the fixed rail's width so the book stays centred */}
-        {!loading && !error && <div className="book-side" aria-hidden="true" />}
-      </div>
-
-      {/* Side rail — fixed full height so its panel runs continuously behind
-          the transparent navbar instead of being cut at the navbar line */}
-      {!loading && !error && (
-        <aside className="book-rail">
-          <span className="book-rail-label">The<br />Chronicle</span>
-          <button type="button" className="book-btn book-btn--rail" onClick={flipPrev} disabled={page <= 0} aria-label="Previous page">
-            <span style={{ width: "0.8rem", height: "0.8rem", display: "inline-flex", transform: "scaleX(-1)" }}>
-              <ArrowGlyph />
+      {/* ══ Timeline ═══════════════════════════════════════════════════════ */}
+      <main className="relative mx-auto max-w-7xl px-6 pb-28 md:px-10">
+        {tags.length > 1 && (
+          <div className="mb-10 flex flex-wrap items-center gap-2">
+            {["All", ...tags].map((t) => {
+              const on = t === tag;
+              return (
+                <button
+                  key={t}
+                  type="button"
+                  onClick={() => setTag(t)}
+                  className="rounded-full border px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-[0.16em] transition"
+                  style={{
+                    color: on ? "#022c22" : "rgba(255,255,255,0.55)",
+                    background: on ? "#6ee7b7" : "rgba(255,255,255,0.04)",
+                    borderColor: on ? "#6ee7b7" : "rgba(255,255,255,0.12)",
+                  }}
+                >
+                  {t}
+                </button>
+              );
+            })}
+            <span className="ml-1 text-[11px] text-white/30">
+              {shown.length} {shown.length === 1 ? "entry" : "entries"}
             </span>
-            Prev
-          </button>
-          <span className="book-indicator">{indicator}</span>
-          <button type="button" className="book-btn book-btn--rail" onClick={flipNext} disabled={page >= total - 1} aria-label="Next page">
-            Next
-            <span style={{ width: "0.8rem", height: "0.8rem", display: "inline-flex" }}>
-              <ArrowGlyph />
-            </span>
-          </button>
+          </div>
+        )}
 
-          <span className="book-rail-sep" aria-hidden="true" />
+        {loading && <p className="py-16 text-center text-sm text-white/40">Loading the latest…</p>}
+        {error && <p className="py-16 text-center text-sm text-red-300/70">Unable to load the news ({error}).</p>}
+        {!loading && !error && shown.length === 0 && (
+          <p className="py-16 text-center text-sm italic text-white/35">Nothing here yet — check back soon.</p>
+        )}
 
-          <button type="button" className="book-btn book-btn--rail" onClick={() => downloadEdition(currentEdition)} disabled={busy} aria-label="Download this edition as a PDF">
-            <span style={{ width: "0.8rem", height: "0.8rem", display: "inline-flex" }}>
-              <DownloadIcon />
-            </span>
-            {busy ? "…" : "PDF"}
-          </button>
-          <button type="button" className="book-btn book-btn--rail" onClick={() => setArchivesOpen(true)} aria-label="Open the archive of past editions">
-            <span style={{ width: "0.8rem", height: "0.8rem", display: "inline-flex" }}>
-              <ArchiveIcon />
-            </span>
-            Archive
-          </button>
-        </aside>
-      )}
-
-      {/* Off-screen flat copies of the book pages, rendered only while
-          exporting — each becomes one flattened page in the PDF */}
-      <div
-        ref={printRef}
-        aria-hidden="true"
-        style={{ position: "fixed", left: "-10000px", top: 0, pointerEvents: "none", zIndex: -1 }}
-      >
-        {printEdition &&
-          editionBookPages(printEdition).map((pg, i) => (
-            <div
-              className="pdf-page newspaper"
-              key={i}
-              style={{ width: `${printSize.w}px`, height: `${printSize.h}px`, "--print-fs": `${printSize.fs}px` }}
-            >
-              {pg}
+        {shown.length > 0 && (
+          <div ref={listRef} className="relative flex">
+            <div ref={railRef} className="relative w-14 shrink-0 md:w-28">
+              <ThreadRail width={rail.width} height={rail.height} nodes={rail.nodes} progress={scrollYProgress} />
             </div>
-          ))}
-      </div>
 
-      {/* Archive — every edition since launch, one-click PDFs */}
-      {archivesOpen && (
-        <div className="archive-overlay" role="dialog" aria-modal="true" onClick={() => setArchivesOpen(false)}>
-          <div className="archive-panel newspaper" onClick={(e) => e.stopPropagation()}>
-            <button className="archive-close" onClick={() => setArchivesOpen(false)} aria-label="Close archive">
-              ×
-            </button>
-            <p className="archive-kicker">The BioLoom Chronicle</p>
-            <h2 className="archive-title">The Archive</h2>
-            <p className="archive-sub">This month onward · one-click PDF{busy ? " · setting the type…" : ""}</p>
-            <div className="archive-rule" />
-            <div className="archive-scroll">
-              {archiveYears.map((yr) => (
-                <div key={yr.year} className="archive-year">
-                  <h3 className="archive-year-label">{yr.year}</h3>
-                  <div className="archive-grid">
-                    {yr.months.map((m) => {
-                      const isCurrent = yr.year === today.getFullYear() && m === today.getMonth();
-                      const has = isCurrent ? !currentEdition.empty : monthsWithItems.has(`${yr.year}-${m}`);
-                      return (
-                        <button
-                          key={m}
-                          type="button"
-                          className={`archive-month${has ? " has-items" : ""}${isCurrent ? " is-current" : ""}`}
-                          disabled={busy}
-                          onClick={() => downloadEdition(isCurrent ? currentEdition : editionForMonth(items, yr.year, m))}
-                          title={`${MONTH_NAMES[m]} ${yr.year}${isCurrent ? " — current edition" : has ? " — has dispatches" : ""}`}
-                        >
-                          <span>{MONTH_ABBR[m]}</span>
-                          <span className="archive-dl">
-                            <DownloadIcon />
-                          </span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
+            <div className="flex min-w-0 flex-1 flex-col gap-8 md:gap-12">
+              {shown.map((item, i) => (
+                <NewsRow
+                  key={item.id}
+                  item={item}
+                  index={i}
+                  innerRef={(el) => (rowRefs.current[i] = el)}
+                  onOpen={(at) => setOpen({ id: item.id, at })}
+                />
               ))}
             </div>
           </div>
-        </div>
-      )}
-    </>
+        )}
+      </main>
+
+      <NewsModal
+        item={active}
+        index={activeIndex < 0 ? 0 : activeIndex}
+        startAt={open?.at ?? 0}
+        onClose={() => setOpen(null)}
+      />
+    </div>
   );
 }

@@ -1,25 +1,137 @@
-// News — date (YYYY-MM-DD), title, text, optional link.
+/* News entries for the News page.
+   Each entry is one row on the timeline, latest first. Order here doesn't
+   matter — entries are sorted by date, newest first, and anything dated ahead
+   of today is flagged "Upcoming". Clicking a row (or one of its pictures)
+   opens a window with the full image set and write-up.
+
+   Fields:
+     id      – optional stable key; falls back to title + position
+     date    – YYYY-MM-DD
+     title   – headline
+     tag     – short label. It rides the split-flap board next to the date and
+               picks the entry's accent hue. Known tags: Publication, Preprint,
+               Open Data, Dataset, Talk, Event, Award, Press, Fieldwork,
+               People. Anything else still works and gets a colour by position.
+               Keep it short — every character is a flap.
+     text    – 1–2 sentence teaser shown on the row
+     body    – optional array of paragraphs for the window; falls back to `text`
+     images  – any number. The row shows them on a flip board of unevenly sized
+               tiles — up to four, or three on alternate rows. Tiles keep
+               turning over and no two ever show the same picture: with more
+               pictures than tiles a tile turns to one waiting off the board,
+               and with exactly as many, two tiles trade places instead. One
+               picture means a still tile; five or six give the liveliest
+               board. The window shows them all in a gallery.
+               Each: { src, alt, caption?, credit?: { name, url } }
+               A bare string is accepted as shorthand for { src }.
+               Entries with no images render as a full-width text row.
+     link    – optional { url, label } — or a bare URL string
+*/
 [
   {
     "date": "2026-07-15",
     "title": "Dataset release",
+    "tag": "Open Data",
     "text": "We released an open dataset of plant–compound associations.",
-    "link": "#"
+    "images": [
+      {
+        "src": "/images/research/species-use-data.webp",
+        "alt": "Botanical specimen plate showing pressed ferns and leaves on aged paper",
+        "credit": {
+          "name": "Nisa Çokokumuş",
+          "url": "https://unsplash.com/@nisacokokumus"
+        }
+      },
+      {
+        "src": "/images/research/health.webp",
+        "alt": "Three-panel montage: a medicinal aloe plant, plant cultures in lab flasks, and assorted pills spilling from a bottle"
+      },
+      {
+        "src": "/images/home/in4mal_L.webp",
+        "alt": "Hands holding an opened achiote pod, revealing red seeds used as natural dye and spice"
+      },
+      {
+        "src": "/images/research/macroecology.webp",
+        "alt": "Aerial view of forested hills stretching to distant mountains",
+        "credit": {
+          "name": "Zoshua Colah",
+          "url": "https://unsplash.com/@zoshuacolah"
+        }
+      },
+      {
+        "src": "/images/research/food.webp",
+        "alt": "Market baskets filled with colourful peppers, tomatoes and other vegetables",
+        "credit": {
+          "name": "João Rodrigues",
+          "url": "https://unsplash.com/@joaohfrodrigues"
+        }
+      },
+      {
+        "src": "/images/home/Javarman3_L.webp",
+        "alt": "Worker harvesting blue agave in a field beneath a volcano"
+      }
+    ]
   },
   {
     "date": "2025-05-22",
     "title": "New preprint",
+    "tag": "Preprint",
     "text": "Preprint on phylo-chem networks now online.",
-    "link": "#"
-  },
-  {
-    "date": "2025-02-03",
-    "title": "Seminar talk",
-    "text": "Invited talk on equitable bioprospecting."
+    "images": [
+      {
+        "src": "/images/research/health-focus.webp",
+        "alt": "Plant cultures growing in laboratory flasks"
+      },
+      {
+        "src": "/images/research/species-used.webp",
+        "alt": "A pair of hands picking blackcurrants from a leafy bush",
+        "credit": {
+          "name": "Sergey Kotenev",
+          "url": "https://unsplash.com/@sergeykotenev"
+        }
+      },
+      {
+        "src": "/images/research/DarioEndara_L.webp",
+        "alt": "Hands weaving a striped textile on a backstrap loom"
+      },
+      {
+        "src": "/images/home/PreeyapornKaewsaard_L.webp",
+        "alt": "Aerial view of two harvesters gathering reeds from clear shallow water"
+      },
+      {
+        "src": "/images/home/MuhammadAmdadHossain_L.webp",
+        "alt": "Aerial view of a worker spreading fish to dry on woven mats"
+      }
+    ]
   },
   {
     "date": "2025-02-06",
     "title": "Seminar talk",
+    "tag": "Talk",
+    "text": "Invited talk on equitable bioprospecting.",
+    "images": [
+      {
+        "src": "/images/research/people-biodiversity.webp",
+        "alt": "A person harvesting by hand in terraced rice fields"
+      },
+      {
+        "src": "/images/home/PhamHung_L.webp",
+        "alt": "Aerial view of a person gathering water lilies into a ring beside a boat"
+      },
+      {
+        "src": "/images/home/OlgaKaya_L.webp",
+        "alt": "A person with an umbrella crossing a suspension bridge through misty forest"
+      },
+      {
+        "src": "/images/research/species-use-data.webp",
+        "alt": "Botanical specimen plate showing pressed ferns and leaves"
+      }
+    ]
+  },
+  {
+    "date": "2025-02-03",
+    "title": "Seminar talk",
+    "tag": "Talk",
     "text": "Invited talk on equitable bioprospecting."
   }
 ]
