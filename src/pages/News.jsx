@@ -211,9 +211,23 @@ function ThreadRail({ width, height, nodes }) {
     const apply = () => {
       const svg = litRef.current?.ownerSVGElement;
       if (!svg || samples.length < 2) return;
+      const rect = svg.getBoundingClientRect();
       // the middle of the window, in the rail's own coordinates
-      const middle = window.innerHeight / 2 - svg.getBoundingClientRect().top;
-      fill.set(fractionAtY(samples, middle));
+      const middle = window.innerHeight / 2 - rect.top;
+
+      // The middle of the window stops short of the end of the thread — the
+      // page runs out of scroll first, with the footer still below — so the
+      // tail would never light. Over the last run of scroll, ease the fill on
+      // from the middle to the end of the thread instead. Smoothstepped, so it
+      // joins the middle-tracking without a kink and arrives exactly at the
+      // bottom of the page.
+      const doc = document.documentElement;
+      const left = Math.max(0, doc.scrollHeight - window.innerHeight - window.scrollY);
+      const runout = window.innerHeight * 0.5;
+      const t = runout > 0 ? Math.min(1, Math.max(0, 1 - left / runout)) : 1;
+      const target = middle + (rect.height - middle) * (t * t * (3 - 2 * t));
+
+      fill.set(fractionAtY(samples, target));
     };
     apply();
     const unsub = scrollY.on("change", apply);
@@ -408,13 +422,20 @@ function ImageMosaic({ images, title, index = 0, onOpen }) {
   return (
     <div ref={wrap} className={`absolute inset-0 grid gap-[3px] ${layout.grid}`}>
       {tiles.map((tile, i) => {
-        const items = tile.turn % 2 === 0 ? tile.a : tile.b;
+        const facing = tile.turn % 2 === 0 ? tile.a : tile.b;
         return (
           <button
             key={i}
             type="button"
-            onClick={() => onOpen(items)}
-            aria-label={`${title} — open image ${items + 1} of ${total}`}
+            onClick={(e) => {
+              e.stopPropagation();
+              onOpen(facing);
+            }}
+            // Opening at a particular picture is a mouse convenience. Keeping
+            // every tile in the tab order would put four stops on each entry
+            // of a news page; the row's title reaches the same window.
+            tabIndex={-1}
+            aria-label={`${title} — open image ${facing + 1} of ${total}`}
             className={`flip-tile group/img relative overflow-hidden ${layout.spans[i]}`}
           >
             <span className="flip-tile-inner" style={{ transform: `rotateX(${tile.turn * 180}deg)` }}>
@@ -449,7 +470,8 @@ const NewsRow = ({ item, index, onOpen, innerRef }) => {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-60px" }}
       transition={{ duration: 0.6, ease: [0.215, 0.61, 0.355, 1] }}
-      className="news-row group relative overflow-hidden rounded-2xl border transition-colors duration-300"
+      onClick={() => onOpen(0)}
+      className="news-row group relative cursor-pointer overflow-hidden rounded-2xl border transition-colors duration-300"
       style={{
         borderColor: "rgba(255,255,255,0.07)",
         background: "linear-gradient(150deg, rgba(255,255,255,0.04), rgba(255,255,255,0.008))",
@@ -499,8 +521,11 @@ const NewsRow = ({ item, index, onOpen, innerRef }) => {
           <h2 className="leading-snug">
             <button
               type="button"
-              onClick={() => onOpen(0)}
-              className="text-left text-white/90 transition-colors hover:text-white"
+              onClick={(e) => {
+                e.stopPropagation();
+                onOpen(0);
+              }}
+              className="text-left text-white/90 transition-colors group-hover:text-white"
               style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontSize: "clamp(1.35rem, 2.4vw, 1.85rem)" }}
             >
               {item.title}
@@ -510,21 +535,21 @@ const NewsRow = ({ item, index, onOpen, innerRef }) => {
           {item.teaser && <p className="mt-3 text-[0.92rem] leading-relaxed text-white/50">{item.teaser}</p>}
 
           <div className="mt-auto flex flex-wrap items-center gap-4 pt-6">
-            <button
-              type="button"
-              onClick={() => onOpen(0)}
-              className="inline-flex items-center gap-1.5 text-xs font-semibold transition-all duration-200 hover:gap-2.5"
+            <span
+              aria-hidden="true"
+              className="inline-flex items-center gap-1.5 text-xs font-semibold transition-all duration-200 group-hover:gap-2.5"
               style={{ color: hex }}
             >
-              {item.images.length > 1 ? `View ${item.images.length} images` : "Read more"}
+              Read more
               <ChevronRight className="h-3.5 w-3.5" />
-            </button>
+            </span>
             {item.link && (
               <a
                 href={item.link.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 text-xs font-semibold text-white/45 transition-all duration-200 hover:gap-2.5 hover:text-white/80"
+                onClick={(e) => e.stopPropagation()}
+                className="relative inline-flex items-center gap-1.5 text-xs font-semibold text-white/45 transition-all duration-200 hover:gap-2.5 hover:text-white/80"
               >
                 {item.link.label}
                 <ArrowUpRight className="h-3.5 w-3.5" />
