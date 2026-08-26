@@ -1,14 +1,15 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { AnimatePresence, motion, useScroll } from "framer-motion";
+import { AnimatePresence, motion, useMotionValue, useScroll } from "framer-motion";
 import { ArrowUpRight, ChevronLeft, ChevronRight, X } from "lucide-react";
 import { fetchJSONC } from "../utils/jsonc.js";
 import useSeo from "../utils/useSeo.js";
 
 /* ════════════════════════════════════════════════════════════════════════
    News — a timeline strung on a single thread, latest first.
-   One entry per row. A thread winds down the left rail and curls into a
-   spiral at each entry; the date and tag sit on a split-flap board that
-   keeps flipping while it is on screen.
+   One entry per row. The thread unspools from a ball of yarn, winds down the
+   left rail and curls into a spiral at each entry, with a lit run riding along
+   it as the page scrolls. Each entry's pictures sit on a flip board of tiles
+   that keep turning over while they are on screen.
    ════════════════════════════════════════════════════════════════════════ */
 
 /* ── Dates ──────────────────────────────────────────────────────────────── */
@@ -164,12 +165,66 @@ function ballBox(railWidth) {
   return { w, h, top: -h * BALL_EXIT_Y };
 }
 
-function ThreadRail({ width, height, nodes, progress }) {
-  if (!width || !height) return null;
+/* The thread fills in behind the reader, and the lit end sits wherever the
+   middle of the window is. Arc length doesn't run evenly against height — the
+   thread wanders more in some stretches than others — so the path is sampled
+   once into a height-to-length table and the fill is read off that. Without it
+   the lit end would drift from the centre line wherever the thread meanders. */
+function fractionAtY(samples, y) {
+  const last = samples.length - 1;
+  if (last < 1 || y <= samples[0]) return 0;
+  if (y >= samples[last]) return 1;
+  let lo = 0;
+  let hi = last;
+  while (hi - lo > 1) {
+    const mid = (lo + hi) >> 1;
+    if (samples[mid] <= y) lo = mid;
+    else hi = mid;
+  }
+  const span = samples[hi] - samples[lo] || 1;
+  return (lo + (y - samples[lo]) / span) / last;
+}
+
+function ThreadRail({ width, height, nodes }) {
   const cx = width * 0.38;
   const amp = Math.max(10, width * 0.3);
-  const path = serpentine(height, nodes.map((n) => n.y), cx, amp, ballBox(width).w);
+  const path = width && height ? serpentine(height, nodes.map((n) => n.y), cx, amp, ballBox(width).w) : "";
   const curlR = Math.min(17, width * 0.27);
+
+  const litRef = useRef(null);
+  const fill = useMotionValue(0);
+  const [samples, setSamples] = useState([]);
+  const { scrollY } = useScroll();
+
+  useLayoutEffect(() => {
+    const el = litRef.current;
+    if (!path || !el) {
+      setSamples([]);
+      return;
+    }
+    const total = el.getTotalLength();
+    const STEPS = 240;
+    setSamples(Array.from({ length: STEPS + 1 }, (_, i) => el.getPointAtLength((i / STEPS) * total).y));
+  }, [path]);
+
+  useEffect(() => {
+    const apply = () => {
+      const svg = litRef.current?.ownerSVGElement;
+      if (!svg || samples.length < 2) return;
+      // the middle of the window, in the rail's own coordinates
+      const middle = window.innerHeight / 2 - svg.getBoundingClientRect().top;
+      fill.set(fractionAtY(samples, middle));
+    };
+    apply();
+    const unsub = scrollY.on("change", apply);
+    window.addEventListener("resize", apply);
+    return () => {
+      unsub();
+      window.removeEventListener("resize", apply);
+    };
+  }, [samples, scrollY, fill]);
+
+  if (!width || !height) return null;
 
   return (
     <svg
@@ -190,13 +245,14 @@ function ThreadRail({ width, height, nodes, progress }) {
 
       {/* the slack thread, always fully drawn */}
       <path d={path} stroke="rgba(255,255,255,0.11)" strokeWidth="1.75" strokeLinecap="round" />
-      {/* and the lit thread, drawn in as the reader travels down the page */}
+      {/* and the lit thread, filled in as far as the middle of the window */}
       <motion.path
+        ref={litRef}
         d={path}
         stroke="url(#thread-grad)"
         strokeWidth="2.25"
         strokeLinecap="round"
-        style={{ pathLength: progress, opacity: 0.9 }}
+        style={{ pathLength: fill, opacity: 0.9 }}
       />
 
       {nodes.map((n, i) => (
@@ -240,7 +296,7 @@ const FLIP_EVERY = 5000; // ms between one tile turning and the next
 // Rows enter the cycle a beat apart so the page doesn't turn over all at once.
 // The phases divide the interval evenly, so a row only falls back in step with
 // another once FLIP_EVERY / FLIP_OFFSET rows separate them.
-const FLIP_OFFSET = 500;
+const FLIP_OFFSET = 1500;
 const FLIP_PHASES = Math.round(FLIP_EVERY / FLIP_OFFSET);
 
 function tileLayout(cells) {
@@ -352,13 +408,13 @@ function ImageMosaic({ images, title, index = 0, onOpen }) {
   return (
     <div ref={wrap} className={`absolute inset-0 grid gap-[3px] ${layout.grid}`}>
       {tiles.map((tile, i) => {
-        const shown = tile.turn % 2 === 0 ? tile.a : tile.b;
+        const items = tile.turn % 2 === 0 ? tile.a : tile.b;
         return (
           <button
             key={i}
             type="button"
-            onClick={() => onOpen(shown)}
-            aria-label={`${title} — open image ${shown + 1} of ${total}`}
+            onClick={() => onOpen(items)}
+            aria-label={`${title} — open image ${items + 1} of ${total}`}
             className={`flip-tile group/img relative overflow-hidden ${layout.spans[i]}`}
           >
             <span className="flip-tile-inner" style={{ transform: `rotateX(${tile.turn * 180}deg)` }}>
@@ -767,7 +823,6 @@ export default function News() {
   const [raw, setRaw] = useState([]);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [tag, setTag] = useState("All");
   const [open, setOpen] = useState(null); // { id, at }
 
   useEffect(() => {
@@ -783,16 +838,6 @@ export default function News() {
 
   const items = useMemo(() => orderItems(raw), [raw]);
 
-  const tags = useMemo(() => {
-    const seen = [];
-    items.forEach((it) => {
-      if (it.tag && !seen.includes(it.tag)) seen.push(it.tag);
-    });
-    return seen;
-  }, [items]);
-
-  const shown = useMemo(() => (tag === "All" ? items : items.filter((it) => it.tag === tag)), [items, tag]);
-
   /* Measure the rail and where each entry meets it, so the thread's curls land
      on the rows rather than on guessed offsets. */
   const listRef = useRef(null);
@@ -806,7 +851,7 @@ export default function News() {
       const railEl = railRef.current;
       if (!list || !railEl) return;
       const top = list.getBoundingClientRect().top;
-      const nodes = shown
+      const nodes = items
         .map((item, i) => {
           const el = rowRefs.current[i];
           if (!el) return null;
@@ -827,12 +872,7 @@ export default function News() {
       ro.disconnect();
       window.removeEventListener("resize", measure);
     };
-  }, [shown]);
-
-  const { scrollYProgress } = useScroll({
-    target: listRef,
-    offset: ["start 0.85", "end 0.9"],
-  });
+  }, [items]);
 
   const activeIndex = open ? items.findIndex((it) => it.id === open.id) : -1;
   const active = activeIndex >= 0 ? items[activeIndex] : null;
@@ -889,39 +929,13 @@ export default function News() {
 
       {/* ══ Timeline ═══════════════════════════════════════════════════════ */}
       <main className="relative mx-auto max-w-7xl px-6 pb-28 md:px-10">
-        {tags.length > 1 && (
-          <div className="mb-10 flex flex-wrap items-center gap-2">
-            {["All", ...tags].map((t) => {
-              const on = t === tag;
-              return (
-                <button
-                  key={t}
-                  type="button"
-                  onClick={() => setTag(t)}
-                  className="rounded-full border px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-[0.16em] transition"
-                  style={{
-                    color: on ? "#022c22" : "rgba(255,255,255,0.55)",
-                    background: on ? "#6ee7b7" : "rgba(255,255,255,0.04)",
-                    borderColor: on ? "#6ee7b7" : "rgba(255,255,255,0.12)",
-                  }}
-                >
-                  {t}
-                </button>
-              );
-            })}
-            <span className="ml-1 text-[11px] text-white/30">
-              {shown.length} {shown.length === 1 ? "entry" : "entries"}
-            </span>
-          </div>
-        )}
-
         {loading && <p className="py-16 text-center text-sm text-white/40">Loading the latest…</p>}
         {error && <p className="py-16 text-center text-sm text-red-300/70">Unable to load the news ({error}).</p>}
-        {!loading && !error && shown.length === 0 && (
+        {!loading && !error && items.length === 0 && (
           <p className="py-16 text-center text-sm italic text-white/35">Nothing here yet — check back soon.</p>
         )}
 
-        {shown.length > 0 && (
+        {items.length > 0 && (
           <div ref={listRef} className="relative mt-12 flex md:mt-24">
             <div ref={railRef} className="relative w-16 shrink-0 md:w-32">
               {rail.width > 0 && (
@@ -935,11 +949,11 @@ export default function News() {
                   }}
                 />
               )}
-              <ThreadRail width={rail.width} height={rail.height} nodes={rail.nodes} progress={scrollYProgress} />
+              <ThreadRail width={rail.width} height={rail.height} nodes={rail.nodes} />
             </div>
 
             <div className="flex min-w-0 flex-1 flex-col gap-8 md:gap-12">
-              {shown.map((item, i) => (
+              {items.map((item, i) => (
                 <NewsRow
                   key={item.id}
                   item={item}
