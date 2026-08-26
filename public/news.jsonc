@@ -29,13 +29,30 @@
 */
 [
   {
+    "id": "ian-ondo-talk-2026",
+    "date": "2026-07-07",
+    "title": "Ian Ondo",
+    "tag": "Talk",
+    "text": "Ian Ondo, a former member of the group, came back from UNEP-WCMC to present his current work.",
+    "body": [
+      "Ian Ondo, a former member of the group and now a biodiversity modeller at UNEP-WCMC working on species distribution, conservation, use and traits, came back to present his current work, including four projects using AI to extract new biodiversity data and to build improved species distribution models."
+    ]
+  },
+  {
+    "id": "sukanneya-thiyagarajah-dissertation-2026",
+    "date": "2026-04-30",
+    "title": "Sukanneya Thiyagarajah submits her dissertation",
+    "tag": "People",
+    "text": "Sukanneya Thiyagarajah submitted her BSc Final Year Project dissertation for 2025/26, on the rarity of species used by humans."
+  },
+  {
     "id": "lab-day-out-kew-2026",
     "date": "2026-04-29",
     "title": "Lab Day Out at Kew",
     "tag": "Event",
     "text": "The group spent a day at Kew Gardens, walking the lake crossing, the glasshouses and the spring planting.",
     "body": [
-      "The group spent 29 April at the Royal Botanic Gardens, Kew — a day away from screens, walking the grounds together at the height of the spring flowering."
+      "The group spent a day at Kew Gardens away from screens, walking the grounds together at the height of the spring flowering."
     ],
     "images": [
       {
@@ -63,5 +80,12 @@
         "alt": "Five people standing together at the far end of a long bronze-railed bridge over a still lake, backed by tall conifers"
       }
     ]
+  },
+  {
+    "id": "marybel-soto-gomez-talk-2026",
+    "date": "2026-02-04",
+    "title": "Marybel Soto Gomez",
+    "tag": "Talk",
+    "text": "Marybel Soto Gomez joined the group for a talk."
   }
 ]
