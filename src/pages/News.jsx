@@ -236,10 +236,12 @@ function ThreadRail({ width, height, nodes, progress }) {
    and the board still moves. One timer per entry drives it; a timer per tile
    would be a lot of clocks for one page, and each row starts its clock half a
    second after the one above so the page doesn't turn over in lockstep. */
-const FLIP_EVERY = 2000; // ms between one tile turning and the next
+const FLIP_EVERY = 5000; // ms between one tile turning and the next
 // Rows enter the cycle a beat apart so the page doesn't turn over all at once.
-// Four phases divide the interval evenly; row five falls in step with row one.
+// The phases divide the interval evenly, so a row only falls back in step with
+// another once FLIP_EVERY / FLIP_OFFSET rows separate them.
 const FLIP_OFFSET = 500;
+const FLIP_PHASES = Math.round(FLIP_EVERY / FLIP_OFFSET);
 
 function tileLayout(cells) {
   if (cells <= 1) return { grid: "grid-cols-1 grid-rows-1", spans: [""] };
@@ -329,7 +331,7 @@ function ImageMosaic({ images, title, index = 0, onOpen }) {
           kickoff = setTimeout(() => {
             kickoff = null;
             timer = setInterval(tick, FLIP_EVERY);
-          }, (index % 4) * FLIP_OFFSET);
+          }, (index % FLIP_PHASES) * FLIP_OFFSET);
         } else if (!entry.isIntersecting) {
           stop();
         }
