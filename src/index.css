@@ -398,6 +398,22 @@ body {
     }
 }
 
+/* ── The ball of yarn at the head of the thread ──
+   The art is a black line drawing, so it is used as a mask rather than an
+   image: the ink is painted with the same gradient the thread starts on, and
+   the two read as one object. Sizing and placement come from JS, which knows
+   the rail's measured width. */
+
+.yarn-ball {
+    position: absolute;
+    left: 0;
+    background: linear-gradient(150deg, #6ee7b7, #34d399 55%, #22d3ee);
+    -webkit-mask: url("/images/news/yarn-ball.webp") no-repeat center / contain;
+    mask: url("/images/news/yarn-ball.webp") no-repeat center / contain;
+    opacity: 0.92;
+    pointer-events: none;
+}
+
 /* ── The flip board ──
    Each tile is a card with two faces, turning about its horizontal axis to
    bring the next picture round. The face swinging away is loaded with the next

@@ -122,9 +122,9 @@ function useReducedMotion() {
    A serpentine down the rail that curls into a spiral at each entry. Both the
    path and the curls are generated from the measured row positions, so the
    thread stays pinned to the entries at any width or entry count. */
-function serpentine(height, nodes, cx, amp) {
+function serpentine(height, nodes, cx, amp, startX) {
   if (!height || !nodes.length) return "";
-  let d = `M ${cx} 0`;
+  let d = `M ${startX} 0`;
   let prev = 0;
   nodes.forEach((y, i) => {
     const dir = i % 2 === 0 ? 1 : -1;
@@ -151,11 +151,24 @@ function spiral(cx, cy, r0, r1, turns, steps = 44) {
   return d;
 }
 
+/* The ball of yarn the whole timeline unspools from. Its art is cropped so the
+   thread leaves the right edge at BALL_EXIT_Y down; the ball is placed so that
+   point sits exactly on the rail's origin, where the thread path begins. */
+const BALL_SCALE = 0.82; // of the rail's width
+const BALL_ASPECT = 756 / 768; // the cropped art's width / height
+const BALL_EXIT_Y = 0.6824;
+
+function ballBox(railWidth) {
+  const w = railWidth * BALL_SCALE;
+  const h = w / BALL_ASPECT;
+  return { w, h, top: -h * BALL_EXIT_Y };
+}
+
 function ThreadRail({ width, height, nodes, progress }) {
   if (!width || !height) return null;
   const cx = width * 0.38;
   const amp = Math.max(10, width * 0.3);
-  const path = serpentine(height, nodes.map((n) => n.y), cx, amp);
+  const path = serpentine(height, nodes.map((n) => n.y), cx, amp, ballBox(width).w);
   const curlR = Math.min(17, width * 0.27);
 
   return (
@@ -907,8 +920,19 @@ export default function News() {
         )}
 
         {shown.length > 0 && (
-          <div ref={listRef} className="relative flex">
-            <div ref={railRef} className="relative w-14 shrink-0 md:w-28">
+          <div ref={listRef} className="relative mt-12 flex md:mt-24">
+            <div ref={railRef} className="relative w-16 shrink-0 md:w-32">
+              {rail.width > 0 && (
+                <div
+                  className="yarn-ball"
+                  aria-hidden="true"
+                  style={{
+                    width: ballBox(rail.width).w,
+                    height: ballBox(rail.width).h,
+                    top: ballBox(rail.width).top,
+                  }}
+                />
+              )}
               <ThreadRail width={rail.width} height={rail.height} nodes={rail.nodes} progress={scrollYProgress} />
             </div>
 
