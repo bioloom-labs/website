@@ -64,6 +64,8 @@ const members = [
 
 const personPath = (m) => `/people/${slugify(m.name)}`;
 
+const canonicalPath = (p) => (p === "/" ? "/" : `${p}/`);
+
 const bodies = {
   "/": `
     <h1>${esc(home.hero.title)}</h1>
@@ -106,7 +108,7 @@ const bodies = {
       ${s.members
         .map(
           (m) => `<article>
-        <h3><a href="${esc(personPath(m))}">${esc(m.name)}</a></h3>
+        <h3><a href="${esc(canonicalPath(personPath(m)))}">${esc(m.name)}</a></h3>
         <p>${esc(m.role)}</p>
         ${paras(m.description)}
       </article>`
@@ -161,17 +163,17 @@ const organization = {
   logo: `${ORIGIN}/images/logos/bioloom.webp`,
   description: ROUTES["/"].description,
   parentOrganization: { "@type": "CollegeOrUniversity", name: "Queen Mary University of London" },
-  founder: { "@type": "Person", name: pi.name, url: `${ORIGIN}${personPath(pi)}` },
+  founder: { "@type": "Person", name: pi.name, url: `${ORIGIN}${canonicalPath(personPath(pi))}` },
   member: members
     .filter((m) => !m.alumnus)
-    .map((m) => ({ "@type": "Person", name: m.name, url: `${ORIGIN}${personPath(m)}` })),
+    .map((m) => ({ "@type": "Person", name: m.name, url: `${ORIGIN}${canonicalPath(personPath(m))}` })),
 };
 
 const personSchema = (m) => ({
   "@context": "https://schema.org",
   "@type": "Person",
   name: m.name,
-  url: `${ORIGIN}${personPath(m)}`,
+  url: `${ORIGIN}${canonicalPath(personPath(m))}`,
   jobTitle: m.role,
   description: (m.description || "").replace(/\s+/g, " ").trim() || undefined,
   image: m.photo ? `${ORIGIN}${m.photo}` : undefined,
@@ -200,7 +202,11 @@ if (!template.includes('<div id="root"></div>')) {
 }
 
 function render({ path, title, description, body, jsonLd = [] }) {
-  const url = `${ORIGIN}${path === "/" ? "/" : path}`;
+  // Cloudflare Pages 308s /about to /about/ and serves the file from there, so
+  // that trailing-slash form is the URL a crawler actually lands on. Declaring
+  // the slashless one canonical would point each page at a URL that redirects
+  // straight back to it.
+  const url = `${ORIGIN}${canonicalPath(path)}`;
   const fullTitle = title ? `${title} — ${SITE_NAME}` : DEFAULT_TITLE;
 
   const head = template
@@ -257,7 +263,7 @@ const pages = [
           ? `<ul>${m.links.map((l) => `<li><a href="${esc(l)}" rel="noopener">${esc(l)}</a></li>`).join("")}</ul>`
           : ""
       }
-      <p><a href="/people">All members of ${esc(SITE_NAME)}</a></p>`,
+      <p><a href="/people/">All members of ${esc(SITE_NAME)}</a></p>`,
   })),
 ];
 
@@ -278,7 +284,7 @@ writeFileSync(
   join(DIST, "sitemap.xml"),
   `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${written.map((p) => `  <url><loc>${ORIGIN}${p === "/" ? "/" : p}</loc></url>`).join("\n")}
+${written.map((p) => `  <url><loc>${ORIGIN}${canonicalPath(p)}</loc></url>`).join("\n")}
 </urlset>
 `
 );

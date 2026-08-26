@@ -41,7 +41,9 @@ export default function useSeo({ title, description } = {}) {
 
   useEffect(() => {
     const fullTitle = title ? `${title} — ${SITE_NAME}` : DEFAULT_TITLE;
-    const url = `${ORIGIN}${pathname}`;
+    // Match the trailing-slash form Cloudflare Pages serves, and the prerendered
+    // canonical, so a client-side visit doesn't disagree with a direct one.
+    const url = `${ORIGIN}${pathname.endsWith("/") ? pathname : `${pathname}/`}`;
 
     document.title = fullTitle;
     upsertMeta("name", "description", description);
