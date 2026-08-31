@@ -50,7 +50,7 @@
     "journal": "Nature Publishing Group UK",
     "abstract": "Many global biodiversity datasets overlook or misrepresent the knowledge of Indigenous Peoples, Local Communities, and Afro-Descendants (IPLCAD). We propose minimum data and metadata standards for a global data infrastructure on biodiversity knowledge and use, co-designed with IPLCAD, including information on language, community attribution and consent, to ensure data traceability and ethical use. This initiative integrates ancestral and academic sciences to advance inclusive biodiversity governance, addressing historical inequities for global sustainability.",
     "url": "https://www.nature.com/articles/s44185-026-00121-0",
-    "citations": 3,
+    "citations": 4,
     "_fetched_for": "Samuel Pironon",
     "_scholar_id": "pRpsOngAAAAJ"
   },
@@ -279,7 +279,7 @@
     "journal": "Science",
     "abstract": "Plants sustain human life. Understanding geographic patterns of the diversity of species used by people is thus essential for the sustainable management of plant resources. Here, we investigate the global distribution of 35,687 utilized plant species spanning 10 use categories (e.g., food, medicine, material). Our findings indicate general concordance between utilized and total plant diversity, supporting the potential for simultaneously conserving species diversity and its contributions to people. Although Indigenous lands across Mesoamerica, the Horn of Africa, and Southern Asia harbor a disproportionate diversity of utilized plants, the incidence of protected areas is negatively correlated with utilized species richness. Finding mechanisms to preserve areas containing concentrations of utilized plants and traditional knowledge must become a priority for the implementation of the Kunming-Montreal Global Biodiversity …",
     "url": "https://www.science.org/doi/abs/10.1126/science.adg8028",
-    "citations": 152,
+    "citations": 155,
     "_fetched_for": "Samuel Pironon",
     "_scholar_id": "pRpsOngAAAAJ"
   },
@@ -302,7 +302,7 @@
     "journal": "New Phytologist",
     "abstract": "  More than 15% of all vascular plant species may remain scientifically undescribed, and many of the > 350 000 described species have no or few geographic records documenting their distribution. Identifying and understanding taxonomic and geographic knowledge shortfalls is key to prioritising future collection and conservation efforts. Using extensive data for 343 523 vascular plant species and time‐to‐event analyses, we conducted multiple tests related to plant taxonomic and geographic data shortfalls, and identified 33 global diversity darkspots (those ‘botanical countries’ predicted to contain most undescribed and not yet recorded species). We defined priority regions for future collection according to several socio‐economic and environmental scenarios. Most plant diversity darkspots are found within global biodiversity hotspots, with the exception of New Guinea. We identify Colombia, Myanmar, New …",
     "url": "https://nph.onlinelibrary.wiley.com/doi/abs/10.1111/nph.20024",
-    "citations": 142,
+    "citations": 148,
     "_fetched_for": "Samuel Pironon",
     "_scholar_id": "pRpsOngAAAAJ"
   },
@@ -326,7 +326,7 @@
     "journal": "New Phytologist",
     "abstract": " Angiosperms, which inhabit diverse environments across all continents, exhibit significant variation in genome sizes, making them an excellent model system for examining hypotheses about the global distribution of genome size. These include the previously proposed large genome constraint, mutational hazard, polyploidy‐mediated, and climate‐mediated hypotheses. We compiled the largest genome size dataset to date, encompassing 16 017 (> 5% of known) angiosperm species, and analyzed genome size distribution using a comprehensive geographic distribution dataset for all angiosperms. We observed that angiosperms with large range sizes generally had small genomes, supporting the large genome constraint hypothesis. Climate was shown to exert a strong influence on genome size distribution along the global latitudinal gradient, while the frequency of polyploidy and the type of growth form had …",
     "url": "https://nph.onlinelibrary.wiley.com/doi/abs/10.1111/nph.19544",
-    "citations": 92,
+    "citations": 93,
     "_fetched_for": "Samuel Pironon",
     "_scholar_id": "pRpsOngAAAAJ"
   },
@@ -387,7 +387,7 @@
     "journal": "Nature Publishing Group UK",
     "abstract": "The global biodiversity crisis in agriculture is overlooked compared with that in wild systems. This must change if we are to safeguard domesticated plant diversity and meet global sustainable development and biodiversity goals. In this Perspective, we review tools developed through decades of wild biodiversity conservation and provide a framework for adapting and applying these for agrobiodiversity conservation. We focus on challenges and solutions around monitoring the status of agrobiodiversity, prioritizing its conservation, conserving it in situ and financing to ensure these actions can be maintained long term. Conserving global agrobiodiversity supports wider conservation efforts and is crucial for achieving food security, climate resilience and a sustainable future.",
     "url": "https://www.nature.com/articles/s41893-024-01427-2",
-    "citations": 46,
+    "citations": 47,
     "_fetched_for": "Samuel Pironon",
     "_scholar_id": "pRpsOngAAAAJ"
   },
@@ -501,7 +501,7 @@
     "journal": "Proceedings of the National Academy of Sciences",
     "abstract": "Invasion of the malaria vector Anopheles stephensi across the Horn of Africa threatens control efforts across the continent, particularly in urban settings where the vector is able to proliferate. Malaria transmission is primarily determined by the abundance of dominant vectors, which often varies seasonally with rainfall. However, it remains unclear how An. stephensi abundance changes throughout the year, despite this being a crucial input to surveillance and control activities. We collate longitudinal catch data from across its endemic range to better understand the vector’s seasonal dynamics and explore the implications of this seasonality for malaria surveillance and control across the Horn of Africa. Our analyses reveal pronounced variation in seasonal dynamics, the timing and nature of which are poorly predicted by rainfall patterns. Instead, they are associated with temperature and patterns of land use; frequently …",
     "url": "https://www.pnas.org/doi/abs/10.1073/pnas.2216142120",
-    "citations": 51,
+    "citations": 52,
     "_fetched_for": "Samuel Pironon",
     "_scholar_id": "pRpsOngAAAAJ"
   },
@@ -527,7 +527,7 @@
     "journal": "Frontiers in Plant Science",
     "abstract": "Plants are a rich source of bioactive compounds and a number of plant-derived antiplasmodial compounds have been developed into pharmaceutical drugs for the prevention and treatment of malaria, a major public health challenge. However, identifying plants with antiplasmodial potential can be time-consuming and costly. One approach for selecting plants to investigate is based on ethnobotanical knowledge which, though having provided some major successes, is restricted to a relatively small group of plant species. Machine learning, incorporating ethnobotanical and plant trait data, provides a promising approach to improve the identification of antiplasmodial plants and accelerate the search for new plant-derived antiplasmodial compounds. In this paper we present a novel dataset on antiplasmodial activity for three flowering plant families – Apocynaceae, Loganiaceae and Rubiaceae (together comprising c. 21,100 species) – and demonstrate the ability of machine learning algorithms to predict the antiplasmodial potential of plant species. We evaluate the predictive capability of a variety of algorithms – Support Vector Machines, Logistic Regression, Gradient Boosted Trees and Bayesian Neural Networks – and compare these to two ethnobotanical selection approaches – based on usage as an antimalarial and general usage as a medicine. We evaluate the approaches using the given data and when the given samples are reweighted to correct for sampling biases. In both evaluation settings each of the machine learning models have a higher precision than the ethnobotanical approaches. In the bias-corrected scenario, the Support …",
     "url": "https://www.frontiersin.org/journals/plant-science/articles/10.3389/fpls.2023.1173328/full",
-    "citations": 21,
+    "citations": 24,
     "_fetched_for": "Samuel Pironon",
     "_scholar_id": "pRpsOngAAAAJ"
   },
@@ -593,7 +593,7 @@
     "journal": "Blackwell Publishing Ltd",
     "abstract": "Species distribution models (SDMs) are widely used in ecology. In theory, SDMs capture (at least part of) species' ecological niches and can be used to make inferences about the distribution of suitable habitat for species of interest. Because habitat suitability is expected to influence population demography, SDMs have been used to estimate a variety of population parameters, from occurrence to genetic diversity. However, a critical look at the ability of SDMs to predict independent data across different aspects of population biology is lacking. Here, we systematically reviewed the literature, retrieving 201 studies that tested predictions from SDMs against independent assessments of occurrence, abundance, population performance, and genetic diversity. Although there is some support for the ability of SDMs to predict occurrence (~53% of studies depending on how support was assessed), the predictive performance …",
     "url": "https://nsojournals.onlinelibrary.wiley.com/doi/abs/10.1111/ecog.05877",
-    "citations": 347,
+    "citations": 350,
     "_fetched_for": "Samuel Pironon",
     "_scholar_id": "pRpsOngAAAAJ"
   },
@@ -785,7 +785,7 @@
     "journal": "American Association for the Advancement of Science",
     "abstract": "Madagascar’s biota is hyperdiverse and includes exceptional levels of endemicity. We review the current state of knowledge on Madagascar’s past and current terrestrial and freshwater biodiversity by compiling and presenting comprehensive data on species diversity, endemism, and rates of species description and human uses, in addition to presenting an updated and simplified map of vegetation types. We report a substantial increase of records and species new to science in recent years; however, the diversity and evolution of many groups remain practically unknown (e.g., fungi and most invertebrates). Digitization efforts are increasing the resolution of species richness patterns and we highlight the crucial role of field- and collections-based research for advancing biodiversity knowledge and identifying gaps in our understanding, particularly as species richness corresponds closely to collection effort …",
     "url": "https://www.science.org/doi/abs/10.1126/science.abf0869",
-    "citations": 203,
+    "citations": 205,
     "_fetched_for": "Samuel Pironon",
     "_scholar_id": "pRpsOngAAAAJ"
   },
@@ -808,7 +808,7 @@
     "journal": "Nature Plants",
     "abstract": "With more than two billion people suffering from malnutrition and diets homogenizing globally, it is vital to identify and conserve nutrient-rich species that may contribute to improving food security and diversifying diets. Of the approximately 390,000 vascular plant species known to science, thousands have been reported to be edible, yet their nutritional content remains poorly characterized. Here we use phylogenetic information to identify plants with the greatest potential to support strategies alleviating B-vitamin deficiencies. We predict the B-vitamin profiles of >6,400 edible plants lacking nutritional data and identify 1,044 species as promising key sources of B vitamins. Several of these source species should become conservation priorities, as 63 (6%) are threatened in the wild and 272 (26%) are absent from seed banks. Moreover, many of these conservation-priority source species overlap with hotspots of …",
     "url": "https://www.nature.com/articles/s41477-022-01100-6",
-    "citations": 93,
+    "citations": 94,
     "_fetched_for": "Samuel Pironon",
     "_scholar_id": "pRpsOngAAAAJ"
   },
@@ -882,7 +882,7 @@
     "journal": "Nature Ecology & Evolution",
     "abstract": "Protecting nature’s contributions to people requires accelerating extinction risk assessment and better integrating evolutionary, functional and used diversity with conservation planning. Here, we report machine learning extinction risk predictions for 1,381 palm species (Arecaceae), a plant family of high socio-economic and ecological importance. We integrate these predictions with published assessments for 508 species (covering 75% of all palm species) and we identify top-priority regions for palm conservation on the basis of their proportion of threatened evolutionarily distinct, functionally distinct and used species. Finally, we explore palm use resilience to identify non-threatened species that could potentially serve as substitutes for threatened used species by providing similar products. We estimate that over a thousand palms (56%) are probably threatened, including 185 species with documented uses. Some …",
     "url": "https://www.nature.com/articles/s41559-022-01858-0",
-    "citations": 28,
+    "citations": 29,
     "_fetched_for": "Samuel Pironon",
     "_scholar_id": "pRpsOngAAAAJ"
   },
@@ -1068,7 +1068,7 @@
     "journal": "Nature ecology & evolution",
     "abstract": "To meet the ambitious objectives of biodiversity and climate conventions, the international community requires clarity on how these objectives can be operationalized spatially and how multiple targets can be pursued concurrently. To support goal setting and the implementation of international strategies and action plans, spatial guidance is needed to identify which land areas have the potential to generate the greatest synergies between conserving biodiversity and nature’s contributions to people. Here we present results from a joint optimization that minimizes the number of threatened species, maximizes carbon retention and water quality regulation, and ranks terrestrial conservation priorities globally. We found that selecting the top-ranked 30% and 50% of terrestrial land area would conserve respectively 60.7% and 85.3% of the estimated total carbon stock and 66% and 89.8% of all clean water, in addition to …",
     "url": "https://www.nature.com/articles/s41559-021-01528-7",
-    "citations": 475,
+    "citations": 480,
     "_fetched_for": "Samuel Pironon",
     "_scholar_id": "pRpsOngAAAAJ"
   },
@@ -1091,7 +1091,7 @@
     "journal": "MDPI",
     "abstract": "There is a pressing need to conserve plant diversity to prevent extinctions and to enable sustainable use of plant material by current and future generations. Here, we review the contribution that living collections and seed banks based in botanic gardens around the world make to wild plant conservation and to tackling global challenges. We focus in particular on the work of Botanic Gardens Conservation International and the Millennium Seed Bank of the Royal Botanic Gardens, Kew, with its associated global Partnership. The advantages and limitations of conservation of plant diversity as both living material and seed collections are reviewed, and the need for additional research and conservation measures, such as cryopreservation, to enable the long-term conservation of ‘exceptional species’ is discussed. We highlight the importance of networks and sharing access to data and plant material. The skill sets found within botanic gardens and seed banks complement each other and enable the development of integrated conservation (linking in situ and ex situ efforts). Using a number of case studies we demonstrate how botanic gardens and seed banks support integrated conservation and research for agriculture and food security, restoration and reforestation, as well as supporting local livelihoods.",
     "url": "https://www.mdpi.com/2223-7747/10/11/2371",
-    "citations": 137,
+    "citations": 142,
     "_fetched_for": "Samuel Pironon",
     "_scholar_id": "pRpsOngAAAAJ"
   },
@@ -1209,7 +1209,7 @@
     "year": 2021,
     "journal": "Royal Botanic Gardens, Kew, Richmond, UK",
     "abstract": "Crop diversity plays a major role in underpinning food security. On a global scale it provides the raw materials to meet agricultural challenges such as adaptation to climate change, while locally it enhances productivity, resilience and sustainability. Crop diversity is especially important to smallholder farmers, who often rely on it to stabilise production and avoid harvest failure in increasingly erratic climates. Despite this, the pattens and underlying drivers of crop diversity within regions is not well known. With a novel dataset of over 1000 farms across the highlands of southwest Ethiopia we investigate the presence of distinct farm types, the effect of growing season length and market access on farm-level crop diversity, and of farm size and recently introduced crops on crop diversity of the landscape. We find that farms have spectral variation rather than discrete types, crop diversity increases with market access and decreases with growing season length, landscapes of smaller farms have higher species density, and that recently introduced crops are added to, rather than replacing traditional diversity. Given the rapid climatic, economic and demographic changes occurring in the region and the threats to food security these incur, our results may have important consequences for agricultural policy in southwest Ethiopia and other smallholder agrisystems worldwide.",
-    "url": "https://kew.iro.bl.uk/downloads/59d3ea90-7b00-4c5b-bf6f-e5b30d03a9ca",
+    "url": "https://scholar.archive.org/work/dr2lzy2i4jdpzemcribh3vnkpy/access/wayback/https://kew.iro.bl.uk/downloads/59d3ea90-7b00-4c5b-bf6f-e5b30d03a9ca",
     "citations": 1,
     "_fetched_for": "Samuel Pironon",
     "_scholar_id": "pRpsOngAAAAJ"
@@ -1307,7 +1307,7 @@
     "journal": "Proceedings of the National Academy of Sciences",
     "abstract": "In 2012, an unusual outbreak of urban malaria was reported from Djibouti City in the Horn of Africa and increasingly severe outbreaks have been reported annually ever since. Subsequent investigations discovered the presence of an Asian mosquito species; Anopheles stephensi, a species known to thrive in urban environments. Since that first report, An. stephensi has been identified in Ethiopia and Sudan, and this worrying development has prompted the World Health Organization (WHO) to publish a vector alert calling for active mosquito surveillance in the region. Using an up-to-date database of published locational records for An. stephensi across its full range (Asia, Arabian Peninsula, Horn of Africa) and a set of spatial models that identify the environmental conditions that characterize a species’ preferred habitat, we provide evidence-based maps predicting the possible locations across Africa where An …",
     "url": "https://www.pnas.org/doi/abs/10.1073/pnas.2003976117",
-    "citations": 455,
+    "citations": 462,
     "_fetched_for": "Samuel Pironon",
     "_scholar_id": "pRpsOngAAAAJ"
   },
@@ -1469,7 +1469,7 @@
     "journal": "",
     "abstract": "Never before has the biosphere, the thin layer of life we call home, been under such intensive and urgent threat. Deforestation rates have soared as we have cleared land to feed ever-more people, global emissions are disrupting the climate system, new pathogens threaten our crops and our health, illegal trade has eradicated entire plant populations, and non-native species are outcompeting local floras. Biodiversity is being lost–locally, regionally and globally. Yet this biodiversity sustains our lives. Open your fridge, peek into your medicine cupboard, examine your living room, feel your clothes. For thousands of years, we have searched nature to satisfy our hunger, cure our diseases, build our houses, and make our lives more comfortable. But our early exploration of useful traits in species relied on rudimentary tools, and indigenous knowledge was lost as local traditions were downplayed and globalisation emerged. As a result, humanity is still a long way from utilising the full potential of biodiversity, in particular plants and fungi, which play critical roles in ecosystems. Now, more than ever before, we need to explore the solutions they could provide to the global challenges we face.New species are still being scientifically named and described each year, but, at the same time, others are moving towards extinction–losing the battle against the threats they face. A detailed understanding of these two sides of the coin is critical to conserving plants and fungi, along with the useful characteristics they hold. The responsible exploration of natural products, through advances in biotechnology and other techniques, will help us identify and utilise the useful …",
     "url": "https://hal.science/hal-02957519/",
-    "citations": 422,
+    "citations": 425,
     "_fetched_for": "Samuel Pironon",
     "_scholar_id": "pRpsOngAAAAJ"
   },
@@ -1506,7 +1506,7 @@
     "journal": "",
     "abstract": "Biodiversity is essential to food security and nutrition locally and globally. By reviewing the global state of edible plants and highlighting key neglected and underutilized species (NUS), we attempt to unlock plant food resources and explore the role of fungi, which along with the wealth of traditional knowledge about their uses and practices, could help support sustainable agriculture while ensuring better protection of the environment and the continued delivery of its ecosystem services. This work will inform a wide range of user communities, including scientists, conservation and development organizations, policymakers, and the public of the importance of biodiversity beyond mainstream crops.As the world's population is increasing, humanity is facing both shortages (hunger) and excesses (obesity) of calorie and nutrient intakes. Biodiversity is fundamental to addressing this …",
     "url": "https://nph.onlinelibrary.wiley.com/doi/abs/10.1002/ppp3.10145",
-    "citations": 399,
+    "citations": 407,
     "_fetched_for": "Samuel Pironon",
     "_scholar_id": "pRpsOngAAAAJ"
   },
@@ -1532,9 +1532,9 @@
     ],
     "year": 2020,
     "journal": "KNB Data Repository",
-    "abstract": "Plants are essential to human wellbeing, supporting important ecosystem services that are critical components of Natural Capital. They supply food, medicine, fibre, fuel and building materials, and provide a broad spectrum of benefits to society, offering vital solutions to some of the world’s major challenges, including bioenergy, human and animal health, nutrition, microbial resistance, industrial biotechnology, and synthetic biology.In 2016, the Royal Botanic Gardens, Kew published the first State of the World's Plants report, with key statistics on plants. One of its highlights was the compilation of a list of 31,128 plant species with a documented human use from ten datasets (Diazgranados et al. 2018; RBG Kew 2016). Here, we added the datasets from the Medicinal Plant Names Services (MPNS version 8.2), the Plant Resources of South-East Asia (PROSEA) and the Useful Plants of New Guinea, for a total of 13 large …",
-    "url": "https://kew.iro.bl.uk/concern/datasets/7243d727-e28d-419d-a8f7-9ebef5b9e03e?",
-    "citations": 125,
+    "abstract": "Plants are essential to human wellbeing, supporting important ecosystem services that are critical components of Natural Capital. They supply food, medicine, fibre, fuel and building materials, and provide a broad spectrum of benefits to society, offering vital solutions to some of the world’s major challenges, including bioenergy, human and animal health, nutrition, microbial resistance, industrial biotechnology, and synthetic biology. In 2016, the Royal Botanic Gardens, Kew published the first State of the World's Plants report, with key statistics on plants. One of its highlights was the compilation of a list of 31,128 plant species with a documented human use from ten datasets (Diazgranados et al. 2018; RBG Kew 2016). Here, we added the datasets from the Medicinal Plant Names Services (MPNS version 8.2), the Plant Resources of South-East Asia (PROSEA) and the Useful Plants of New Guinea, for a total of 13 …",
+    "url": "https://kew.iro.bl.uk/lucky-search?index=bl-legacy-id&value=7243d727-e28d-419d-a8f7-9ebef5b9e03e",
+    "citations": 126,
     "_fetched_for": "Samuel Pironon",
     "_scholar_id": "pRpsOngAAAAJ"
   },
@@ -1606,7 +1606,7 @@
     "journal": "Journal of Biogeography",
     "abstract": "Phylogeography of fruit trees is challenging due to recurrent exchanges between domesticated and wild populations. Here we tested the eastern refugium hypothesis (ERH) for the carob tree, Ceratonia siliqua, which supports its natural and domestication origins in the eastern Mediterranean and a feral origin in the west.Mediterranean basin.Ceratonia siliqua L., Leguminosae.A phylogenetic reconstruction based on two nuclear and one plastid sequences was performed to estimate the divergence time between the carob tree and its sister species, Ceratonia oreothauma. Variation from four plastid regions and 17 nuclear microsatellite loci were used to decipher genetic structure in the carob tree and to test coalescent‐based models by an Approximate Bayesian computation (ABC) approach. We assessed our hypotheses by examining palaeobotanical records and hindcasting the …",
     "url": "https://onlinelibrary.wiley.com/doi/abs/10.1111/jbi.13726",
-    "citations": 71,
+    "citations": 72,
     "_fetched_for": "Samuel Pironon",
     "_scholar_id": "pRpsOngAAAAJ"
   },
@@ -1789,6 +1789,33 @@
     "_scholar_id": "pRpsOngAAAAJ"
   },
   {
+    "title": "Data from: A strong east–west Mediterranean divergence supports a new phylogeographic history of the carob tree (Ceratonia siliqua, Leguminosae) and multiple domestications …",
+    "authors": [
+      "Juan Viruel",
+      "Nicolas Le Galliot",
+      "Samuel Pironon",
+      "Jean Pierre Suc",
+      "Gonzalo Nieto Feliner",
+      "Fatma Lakhal-Mirleau",
+      "Marianick Juin",
+      "Marjorie Selva",
+      "Magda Bou Dagher-Kharrat",
+      "Lahcen Ouahmane",
+      "Stefano La Malfa",
+      "Katia Diadema",
+      "Hervé Sanguin",
+      "Frédéric Médail",
+      "Alex Baumel"
+    ],
+    "year": 2020,
+    "journal": "Dryad",
+    "abstract": "Aim: Phylogeography of fruit trees is challenging due to the recurrent exchanges between domesticated and wild populations. Here we tested the eastern refugium hypothesis (ERH) for the carob tree, Ceratonia siliqua, which supports its natural and domestication origins in the Eastern Mediterranean and a feral origin in the West. Location: Mediterranean basin Taxon: Ceratonia siliqua L., Leguminosae Methods: Divergence time of the divergence between the carob tree and its sister species (C. oreothauma) was estimated based on two nuclear and one plastid sequences. Variation from four plastid regions and 17 nuclear microsatellite loci were used to decipher genetic structure in the carob tree and to test coalescent-based models by an Approximate Bayesian Computation (ABC) approach. We assessed our hypotheses by examining palaeobotanical records and hindcasting the past distribution of the carob tree at the Mid-Holocene, Last Glacial Maximum (LGM) and Last Interglacial (LIG) using species distribution modelling (SDM). Results: The split between C. oreothauma and C. siliqua was estimated at 6.4 Ma, and a first divergence within C. siliqua at 1.3 Ma. After a presence since the Oligocene, Ceratonia was found in the Western and the Eastern Mediterranean in the fossil records during the Pleistocene. Plastid and nuclear markers, characterized by low allelic richness, revealed a strong west-east genetic structuring. Approximate Bayesian computation (ABC) analyses rejected the ERH. Main conclusions: Our study supports a severe population decline during LIG. The strong west-east divergence and the occurrence of four lineages …",
+    "url": "https://esploro.umontpellier.fr/esploro/outputs/dataset/Data-from-A-strong-eastwest-Mediterranean/99157050309311",
+    "citations": 0,
+    "_fetched_for": "Samuel Pironon",
+    "_scholar_id": "pRpsOngAAAAJ"
+  },
+  {
     "title": "Specific breeding system and ploidy interactions increase niche adaptability in potatoes",
     "authors": [
       "Nathan Fumia",
@@ -1864,7 +1891,7 @@
     "year": 2020,
     "journal": "",
     "abstract": "Crop wild relatives (CWRs) are wild plant species that share a close evolutionary relationship with domesticated crops, many of which have unique life history, functional, and genetic traits, making them useful to plant breeders. Whilst past research has studied the resilience of certain CWRs to abiotic stressors, these traits have not been screened across a larger diversity of CWRs. Furthermore, many CWRs have been identified as threatened in-situ, and require greater protection if breeders are to have access to seed material. We conducted a gap analysis to assess the availability of information for ten major traits, then analysed the differences between those of 303 CWRs previously identified as adapted to the conditions predicted for the future in sub-Saharan Africa (resilient) versus those 533 that do not (not resilient). Additionally, we analysed the conservation status and presence of CWRs in seed banks to set priorities for in-situ conservation and ex-situ seed collection. Our findings show that the traits of many CWRs are poorly described, but for those CWRs with better trait coverage we found key differences such as lower plant height amongst resilient CWRs of tree crops (coffee, cacao, mango). We found that 14% of resilient CWRs are threatened in-situ, and 39% are not assessed or data deficient. Although 36% of resilient CWRs still require seed collections, the presence of highly resilient CWRs of potato, pigeon pea, sweet potato, bean, and sugarcane in seed banks improves the possibility of near-future breeding programmes across sub-Saharan Africa.",
-    "url": "https://kew.iro.bl.uk/downloads/7bd9ad61-d072-4bb2-b304-7337d87fa28f",
+    "url": "https://scholar.archive.org/work/gji6yqcolrbafcapsokhvj3x6y/access/wayback/https://s3.eu-west-2.amazonaws.com/importer.oar.bl.uk/kew/7bd9ad61-d072-4bb2-b304-7337d87fa28f",
     "citations": 0,
     "_fetched_for": "Samuel Pironon",
     "_scholar_id": "pRpsOngAAAAJ"
@@ -1924,23 +1951,6 @@
     "_scholar_id": "pRpsOngAAAAJ"
   },
   {
-    "title": "Shifts in the abiotic and biotic environment of cultivated sunflower under future climate change",
-    "authors": [
-      "Zia Mehrabi",
-      "Samuel Pironon",
-      "Michael Kantar",
-      "Navin Ramankutty",
-      "Loren Rieseberg"
-    ],
-    "year": 2019,
-    "journal": "OCL",
-    "abstract": "Sunflower is a unique model species for assessing crop responses and adaptation to climate change. We provide an initial assessment of how climate change may influence the abiotic and biotic environment of cultivated sunflower across the world. We find an 8% shift between current and future climate space in cultivated sunflower locations globally, and a 48% shift in Northern America, where the crop originates. Globally, thecurrentnicheoccupiedbysunflowercropwildrelativesofferfewopportunitiestoadapt to future climate for cultivated sunflower, but in Northern America 100% of the future climate space of cultivated sunflower is filled by the niche of primary wild relative germplasm alone (eg wild Helianthus annuus). Globally, wefind little difference in the overlap between current and future climate space of cultivated sunflower with the niche of the important sunflower pathogen Sclerotinia sclerotiorum, but in Northern America, climate change will decrease the overlap between local populations of this pest and cultivated sunflower by 38%. Our analysis highlights the utility of multi-scale analysis for identifying candidate taxa for breeding efforts and for understanding how future climate will shift the abiotic and biotic environment of cultivated crops.",
-    "url": "https://www.sciengine.com/parse/pdf/2272-6977/EED11B04758B40DFBDA2BE954955BFDD.pdf",
-    "citations": 20,
-    "_fetched_for": "Samuel Pironon",
-    "_scholar_id": "pRpsOngAAAAJ"
-  },
-  {
     "title": "Phylogeography and post‐glacial dynamics in the clonal‐sexual orchid Cypripedium calceolus L.",
     "authors": [
       "Roberta Gargiulo",
@@ -1959,7 +1969,24 @@
     "journal": "Journal of Biogeography",
     "abstract": "We investigated the phylogeographical history of a clonal‐sexual orchid, to test the hypothesis that current patterns of genetic diversity and differentiation retain the traces of climatic fluctuations and of the species reproductive system.Europe, Siberia and Russian Far East.Cypripedium calceolus L. (Orchidaceae).Samples (>900, from 56 locations) were genotyped at 11 nuclear microsatellite loci and plastid sequences were obtained for a subset of them. Analysis of genetic structure and approximate Bayesian computations were performed. Species distribution modelling was used to explore the effects of past climatic fluctuations on the species range.Analysis of genetic diversity reveals high heterozygosity and allele diversity, with no geographical trend. Three genetic clusters are identified with extant gene pools derived from ancestral demes in glacial refugia. Siberian …",
     "url": "https://onlinelibrary.wiley.com/doi/abs/10.1111/jbi.13528",
-    "citations": 19,
+    "citations": 20,
+    "_fetched_for": "Samuel Pironon",
+    "_scholar_id": "pRpsOngAAAAJ"
+  },
+  {
+    "title": "Shifts in the abiotic and biotic environment of cultivated sunflower under future climate change",
+    "authors": [
+      "Zia Mehrabi",
+      "Samuel Pironon",
+      "Michael Kantar",
+      "Navin Ramankutty",
+      "Loren Rieseberg"
+    ],
+    "year": 2019,
+    "journal": "OCL",
+    "abstract": "Sunflower is a unique model species for assessing crop responses and adaptation to climate change. We provide an initial assessment of how climate change may influence the abiotic and biotic environment of cultivated sunflower across the world. We find an 8% shift between current and future climate space in cultivated sunflower locations globally, and a 48% shift in Northern America, where the crop originates. Globally, thecurrentnicheoccupiedbysunflowercropwildrelativesofferfewopportunitiestoadapt to future climate for cultivated sunflower, but in Northern America 100% of the future climate space of cultivated sunflower is filled by the niche of primary wild relative germplasm alone (eg wild Helianthus annuus). Globally, wefind little difference in the overlap between current and future climate space of cultivated sunflower with the niche of the important sunflower pathogen Sclerotinia sclerotiorum, but in Northern America, climate change will decrease the overlap between local populations of this pest and cultivated sunflower by 38%. Our analysis highlights the utility of multi-scale analysis for identifying candidate taxa for breeding efforts and for understanding how future climate will shift the abiotic and biotic environment of cultivated crops.",
+    "url": "https://www.sciengine.com/parse/pdf/2272-6977/EED11B04758B40DFBDA2BE954955BFDD.pdf",
+    "citations": 20,
     "_fetched_for": "Samuel Pironon",
     "_scholar_id": "pRpsOngAAAAJ"
   },
@@ -2063,25 +2090,25 @@
   {
     "title": "The carob tree at the crossroad of domestication center and refugia hypotheses",
     "authors": [
-      "Alex Baumel",
-      "Pascal Mirleau",
-      "Samuel Pironon",
-      "Gonzalo Nieto-Feliner",
-      "Magda Bou Dagher Kharrat",
-      "Stefano La Malfa",
-      "Lahcen Ouahmane",
-      "Katia Diadema",
-      "Jean-Pierre Suc",
-      "Marianick Juin",
       "Frédéric Médail",
+      "JP Suc",
+      "M Bou Dagher Kharrat",
       "Hervé Sanguin",
-      "Nicolas Le Galliot",
-      "Juan Viruel"
+      "Juan Viruel",
+      "Pascal Mirleau",
+      "Alex Baumel",
+      "Stefano La Malfa",
+      "N Le Galliot",
+      "Katia Diadema",
+      "Gonzalo Nieto-Feliner",
+      "S Pironon",
+      "Lahcen Ouahmane",
+      "Marianick Juin"
     ],
     "year": 2018,
     "journal": "ESEB",
     "abstract": "The Mediterranean thermophilous woodlands were early affected by human activities, mainly for forage and fruits harvest. The recurring exchanges that followed between natural ecosystems and cultivated areas have constituted a pivotal aspect in the process of Mediterranean fruit tree domestication. Determining the native status of Mediterranean fruit tree populations is a challenging task for phylogeography because early human influences began just after post glacial migrations. Here we applied phylogeographic methods and new NGS markers to tackle this issue for the carob tree (Ceratonia siliqua L., Leguminosae). Carob tree has been widely exploited for food and forage since antiquity and is currently used for industrial, agricultural and soil restoration purposes. The origin of carob tree populations throughout the Mediterranean basin has been associated to an historical process of dissemination by humans since its domestication in the Middle-East around 6,000-4,000 BC. However, vegetation studies stated that carob tree is a widespread component of thermophilous forest vegetation and opened a debate about the native or feral status of its populations. We used ca. 1000 genotypes based on SNPs and SSR markers to infer the main geographical genetic pools and we used multiple regression analyses based on distance matrices to assess the relative contribution to genetic differentiation of geographical distance, environment and hypotheses on past environments (past climatic suitability and human dissemination routes). In parallel, we developed new historical hypotheses from a review of Ceratonia fossils and species distribution …",
-    "url": "https://www.sidalc.net/search/Record/dig-cirad-fr-588804/Description",
+    "url": "https://esploro.umontpellier.fr/esploro/outputs/conferenceProceeding/The-carob-tree-at-the-crossroad/99157238109311",
     "citations": 1,
     "_fetched_for": "Samuel Pironon",
     "_scholar_id": "pRpsOngAAAAJ"
@@ -2126,7 +2153,7 @@
     "journal": "Blackwell Publishing Ltd",
     "abstract": "The ‘centre–periphery hypothesis’ (CPH) is a long‐standing postulate in ecology that states that genetic variation and demographic performance of a species decrease from the centre to the edge of its geographic range. This hypothesis is based on an assumed concordance between geographical peripherality and ecological marginality such that environmental conditions become harsher towards the limits of a species range. In this way, the CPH sets the stage for understanding the causes of distribution limits. To date, no study has examined conjointly the consistency of these postulates. In an extensive literature review we discuss the birth and development of the CPH and provide an assessment of the CPH by reviewing 248 empirical studies in the context of three main themes. First, a decrease in species occurrence towards their range limits was observed in 81% of studies, while only 51% demonstrated …",
     "url": "https://onlinelibrary.wiley.com/doi/abs/10.1111/brv.12313",
-    "citations": 514,
+    "citations": 515,
     "_fetched_for": "Samuel Pironon",
     "_scholar_id": "pRpsOngAAAAJ"
   },
@@ -2212,7 +2239,7 @@
     "journal": "Diversity and distributions",
     "abstract": "Conservation planning exercises increasingly rely on species distributions predicted either from one particular statistical model or, more recently, from an ensemble of models (i.e. ensemble forecasting). However, it has not yet been explored how different ways of summarizing ensemble predictions affect conservation planning outcomes. We evaluate these effects and compare commonplace consensus methods, applied before the conservation prioritization phase, to a novel method that applies consensus after reserve selection.Europe.We used an ensemble of predicted distributions of 146 Western Palaearctic bird species in alternative ways: four different consensus methods, as well as distributions discounted with variability, were used to produce inputs for spatial conservation prioritization. In addition, we developed and tested a novel method, in which we built 100 datasets by …",
     "url": "https://onlinelibrary.wiley.com/doi/abs/10.1111/ddi.12162",
-    "citations": 161,
+    "citations": 163,
     "_fetched_for": "Samuel Pironon",
     "_scholar_id": "pRpsOngAAAAJ"
   },
