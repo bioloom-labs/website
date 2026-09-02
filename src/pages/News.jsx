@@ -46,7 +46,7 @@ const ACCENT = {
   "open data": "#5eead4",
   "dataset": "#5eead4",
   "talk": "#fcd34d",
-  "event": "#fcd34d",
+  "event": "#f87171",
   "award": "#a3e635",
   "press": "#fca5a5",
   "fieldwork": "#6ee7b7",
