@@ -90,15 +90,15 @@ function NarrativeCard({ block, index }) {
   return (
     <motion.article
       layout
-      initial={{ y: 40, opacity: 0 }}
-      whileInView={{ y: 0, opacity: 1 }}
+      initial={{ opacity: 0 }}
+      whileInView={{ opacity: 1 }}
       viewport={{ once: true, margin: "-20% 0px -20% 0px" }}
       transition={{ duration: 0.7, ease: "easeOut" }}
       className="relative z-10 transform-gpu will-change-transform"
     >
       <motion.div
-        initial={{ opacity: 0.6, y: 12 }}
-        whileInView={{ opacity: 1, y: 0 }}
+        initial={{ opacity: 0.6 }}
+        whileInView={{ opacity: 1 }}
         viewport={{ once: true, margin: "-20% 0px -20% 0px" }}
         transition={{ duration: 0.6, ease: "easeOut" }}
         className={[
@@ -204,8 +204,8 @@ function SectionGrid({ sections = [] }) {
   return (
     <div className={sceneCardClass}>
       <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        whileInView={{ opacity: 1, y: 0 }}
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
         viewport={{ once: true, margin: "-10% 0px -10% 0px" }}
         transition={{ duration: 0.6, ease: "easeOut" }}
         className="grid gap-6 md:grid-cols-3"
@@ -676,8 +676,8 @@ export default function About() {
   return (
     <motion.main
       className="relative min-h-screen"
-      initial={{ opacity: 0, y: 24 }}
-      animate={{ opacity: 1, y: 0 }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
       transition={{ duration: 0.7, ease: "easeOut" }}
     >
       {/* OPTIMIZED BACKGROUND VIDEO MANAGER */}
@@ -727,8 +727,8 @@ export default function About() {
                   <SectionGrid sections={scene.sections || []} />
                   {data.closing && (
                     <motion.div
-                      initial={{ opacity: 0, y: 30 }}
-                      whileInView={{ opacity: 1, y: 0 }}
+                      initial={{ opacity: 0 }}
+                      whileInView={{ opacity: 1 }}
                       viewport={{ once: true, margin: "-5% 0px -5% 0px" }}
                       transition={{ duration: 0.6, ease: "easeOut" }}
                       className="rounded-3xl border border-brand-300/40 bg-brand-400/10 p-8 md:p-10 max-w-4xl"
@@ -757,8 +757,8 @@ export default function About() {
         if (!shouldShowHint) return null;
         return (
           <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
             transition={{ duration: 0.4 }}
             className="pointer-events-none fixed bottom-6 inset-x-0 flex justify-center z-40"
           >

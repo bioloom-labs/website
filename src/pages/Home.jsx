@@ -7,10 +7,9 @@ import useSeo from "../utils/useSeo.js";
 import { ROUTES } from "../utils/seoMeta.js";
 
 const fadeUp = {
-  hidden: { opacity: 0, y: 30 },
+  hidden: { opacity: 0 },
   visible: (i = 0) => ({
     opacity: 1,
-    y: 0,
     transition: {
       duration: 0.8,
       delay: i * 0.15,
@@ -302,8 +301,8 @@ export default function Home() {
           <div className="grid gap-10 md:grid-cols-12 md:gap-16">
             <motion.div
               className="md:col-span-5"
-              initial={{ opacity: 0, x: -20 }}
-              whileInView={{ opacity: 1, x: 0 }}
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
               viewport={{ once: true, margin: "-80px" }}
               transition={{ duration: 0.8, ease: [0.25, 0.1, 0.25, 1] }}
             >
@@ -315,8 +314,8 @@ export default function Home() {
 
             <motion.div
               className="space-y-5 md:col-span-6 md:col-start-7"
-              initial={{ opacity: 0, x: 20 }}
-              whileInView={{ opacity: 1, x: 0 }}
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
               viewport={{ once: true, margin: "-80px" }}
               transition={{
                 duration: 0.8,

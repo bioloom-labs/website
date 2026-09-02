@@ -231,9 +231,9 @@ function MemberModal({ person, onClose }) {
         onClick={onClose}
       >
         <motion.div
-          initial={{ scale: 0.92, opacity: 0, y: 20 }}
-          animate={{ scale: 1, opacity: 1, y: 0 }}
-          exit={{ scale: 0.94, opacity: 0, y: 10 }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
           transition={{ duration: 0.2, ease: "easeOut" }}
           className="relative w-full max-w-3xl max-h-[85vh] rounded-3xl bg-brand-950/98 border border-white/15 shadow-2xl shadow-black/60 overflow-hidden flex flex-col"
           onClick={(e) => e.stopPropagation()}
@@ -344,8 +344,8 @@ function PIHero({ person, bgImage }) {
 
       <div className="relative mx-auto max-w-7xl px-4 py-20 md:py-28">
         <motion.p
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
           transition={{ duration: 0.5 }}
           className="mb-10 text-xs font-semibold uppercase tracking-[0.25em] text-brand-300"
         >
@@ -354,8 +354,8 @@ function PIHero({ person, bgImage }) {
 
         <div className="flex flex-col gap-10 md:flex-row md:items-start md:gap-16">
           <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.1 }}
             className="flex shrink-0 flex-col items-center gap-5 md:items-start"
           >
@@ -377,8 +377,8 @@ function PIHero({ person, bgImage }) {
           </motion.div>
 
           <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.15 }}
             className="flex-1 min-w-0"
           >
@@ -426,8 +426,8 @@ function MemberCard({ person, index }) {
   return (
     <>
       <motion.div
-        initial={{ opacity: 0, y: 24 }}
-        animate={{ opacity: 1, y: 0 }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
         transition={{ delay: index * 0.07, duration: 0.45, ease: "easeOut" }}
         className="group relative overflow-hidden rounded-2xl cursor-pointer"
         style={{ aspectRatio: "3/4", width: "clamp(160px, 20vw, 220px)" }}

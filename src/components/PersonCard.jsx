@@ -713,9 +713,9 @@ export default function PersonCard({
             onClick={handleOverlayClose}
           >
             <motion.div
-              initial={{ scale: 0.9, opacity: 0, y: 20 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.94, opacity: 0, y: 10 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
               transition={{ duration: 0.18, ease: "easeOut" }}
               className="relative w-[min(60vw,64rem)] aspect-[3/2] max-h-[80vh] rounded-3xl bg-slate-950/95 border border-white/15 shadow-2xl shadow-black/60 overflow-hidden flex flex-col"
               onClick={(e) => e.stopPropagation()}
