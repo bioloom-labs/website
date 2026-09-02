@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Check, Copy, Github } from "lucide-react";
 import useSeo from "../utils/useSeo.js";
 import { ROUTES } from "../utils/seoMeta.js";
+import ThreadRule from "../components/ThreadRule.jsx";
 
 /* ── Lab details ────────────────────────────────────────────────────────── */
 const EMAIL = "s.pironon@qmul.ac.uk";
@@ -63,61 +64,13 @@ function rgba(hex, a) {
   return `rgba(${parseInt(h.slice(0, 2), 16)},${parseInt(h.slice(2, 4), 16)},${parseInt(h.slice(4, 6), 16)},${a})`;
 }
 
-function useReducedMotion() {
-  const [reduced, setReduced] = useState(
-    () => typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches
-  );
-  useEffect(() => {
-    const mql = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const sync = () => setReduced(mql.matches);
-    mql.addEventListener("change", sync);
-    return () => mql.removeEventListener("change", sync);
-  }, []);
-  return reduced;
-}
-
 /* ── Animation ──────────────────────────────────────────────────────────── */
 const EASE = [0.215, 0.61, 0.355, 1];
 const rise = (delay = 0) => ({
-  initial: { opacity: 0, y: 22 },
-  animate: { opacity: 1, y: 0 },
+  initial: { opacity: 0 },
+  animate: { opacity: 1 },
   transition: { duration: 0.65, delay, ease: EASE },
 });
-
-/* ── The thread — a single strand drawn under the headline on load, ending
-   in a small curl like the ones on the news timeline ────────────────────── */
-function ThreadRule() {
-  const reduced = useReducedMotion();
-  return (
-    <svg
-      viewBox="0 0 640 48"
-      className="mt-4 h-8 w-full max-w-2xl md:mt-5 md:h-10"
-      preserveAspectRatio="xMinYMid meet"
-      fill="none"
-      aria-hidden="true"
-    >
-      <defs>
-        <linearGradient id="contact-thread" x1="0" x2="1" y1="0" y2="0">
-          <stop offset="0%" stopColor="#6ee7b7" />
-          <stop offset="55%" stopColor="#22d3ee" />
-          <stop offset="100%" stopColor="#a3e635" stopOpacity="0" />
-        </linearGradient>
-      </defs>
-      <motion.path
-        d="M2 26 C 70 10, 130 40, 200 24 S 330 8, 400 24 c 14 -10, 32 -2, 24 10 c -8 12, -28 6, -20 -8 c 8 -14, 34 -12, 62 -4 S 560 34, 638 16"
-        stroke="url(#contact-thread)"
-        strokeWidth="2"
-        strokeLinecap="round"
-        initial={reduced ? false : { pathLength: 0, opacity: 0 }}
-        animate={{ pathLength: 1, opacity: 1 }}
-        transition={{
-          pathLength: { duration: 1.5, delay: 0.55, ease: EASE },
-          opacity: { duration: 0.2, delay: 0.55 },
-        }}
-      />
-    </svg>
-  );
-}
 
 /* ── Atmospheric backdrop, sibling to the Research and News pages' ──────── */
 function ContactBackdrop() {
@@ -432,8 +385,8 @@ export default function Contact() {
       {/* ══ Hero ═══════════════════════════════════════════════════════════ */}
       <header className="relative mx-auto max-w-7xl px-6 pb-10 pt-20 md:px-10 md:pb-14 md:pt-28">
         <motion.span
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
           transition={{ duration: 0.5 }}
           className="inline-flex items-center rounded-full border border-emerald-400/25 bg-emerald-400/[0.07] px-3 py-1 text-[10px] font-black uppercase tracking-[0.26em] text-emerald-300/80"
         >
@@ -441,8 +394,8 @@ export default function Contact() {
         </motion.span>
 
         <motion.h1
-          initial={{ opacity: 0, y: 26 }}
-          animate={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
           transition={{ duration: 0.75, delay: 0.08, ease: EASE }}
           className="mt-6 text-white"
           style={{
@@ -458,8 +411,8 @@ export default function Contact() {
         <ThreadRule />
 
         <motion.p
-          initial={{ opacity: 0, y: 18 }}
-          animate={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
           transition={{ duration: 0.6, delay: 0.22, ease: "easeOut" }}
           className="mt-6 max-w-2xl text-lg leading-relaxed text-emerald-50/80 md:text-xl"
         >

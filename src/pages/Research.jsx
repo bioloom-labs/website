@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { fetchJSONC } from "../utils/jsonc.js";
 import useSeo from "../utils/useSeo.js";
 import { ROUTES } from "../utils/seoMeta.js";
+import ThreadRule from "../components/ThreadRule.jsx";
 
 /* ── Icons ──────────────────────────────────────────────────────────────── */
 function ArrowUpRight({ className = "" }) {
@@ -68,10 +69,9 @@ function hueFor(item, index = 0) {
 
 /* ── Animation variants ─────────────────────────────────────────────────── */
 const fadeUp = {
-  hidden: { opacity: 0, y: 26 },
+  hidden: { opacity: 0 },
   show: (i = 0) => ({
     opacity: 1,
-    y: 0,
     transition: {
       duration: 0.6,
       delay: i * 0.05,
@@ -185,9 +185,9 @@ function ResearchModal({ item, index = 0, onClose }) {
               borderColor: rgba(hex, 0.22),
               background: "linear-gradient(160deg, #0a1f18, #061410)",
             }}
-            initial={{ opacity: 0, y: 24, scale: 0.97 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 16, scale: 0.98 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
             transition={{ duration: 0.3, ease: [0.215, 0.61, 0.355, 1] }}
           >
             {/* image side */}
@@ -429,8 +429,8 @@ function ScrollHint() {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: visible ? 1 : 0, y: visible ? 0 : 6 }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: visible ? 1 : 0 }}
       transition={{ duration: visible ? 0.5 : 0.3, delay: visible ? 0.55 : 0, ease: "easeOut" }}
       className="pointer-events-none fixed bottom-6 inset-x-0 flex justify-center z-40"
       aria-hidden="true"
@@ -461,10 +461,13 @@ function ScrollHint() {
 /* ── Canvas-keyed handwriting video ─────────────────────────────────────── */
 // Renders the .mov frame-by-frame: white → transparent, dark ink → gradient.
 // This is the only reliable way to get clean alpha from a white-bg screen recording.
-function FabricOfLifeVideo() {
+function FabricOfLifeVideo({ onEnded }) {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const rafRef = useRef(null);
+  // Kept in a ref so the playback effect below can stay mounted once.
+  const onEndedRef = useRef(onEnded);
+  onEndedRef.current = onEnded;
 
   useEffect(() => {
     const video = videoRef.current;
@@ -472,6 +475,18 @@ function FabricOfLifeVideo() {
     if (!video || !canvas) return;
 
     const ctx = canvas.getContext("2d", { willReadFrequently: true });
+
+    // The recording runs on for a couple of seconds of still frames after the
+    // pen lifts for good, so the video's own `ended` comes late. Watch the
+    // amount of ink instead: once it has stopped growing for a beat, the
+    // handwriting is finished. `ended`/`error` remain as fallbacks.
+    const INK_SETTLE = 0.3; // seconds of no new ink before calling it done
+    const ink = { peak: 0, at: 0, done: false };
+    const finish = () => {
+      if (ink.done) return;
+      ink.done = true;
+      onEndedRef.current?.();
+    };
 
     // Gradient stops: emerald → teal → sky
     const STOPS = [
@@ -508,6 +523,7 @@ function FabricOfLifeVideo() {
       const img = ctx.getImageData(0, 0, cw, ch);
       const d = img.data;
       const THRESHOLD = 210; // pixels brighter than this → transparent
+      let inked = 0;
 
       for (let i = 0; i < d.length; i += 4) {
         const gray = 0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2];
@@ -519,17 +535,35 @@ function FabricOfLifeVideo() {
           d[i] = r; d[i + 1] = g; d[i + 2] = b;
           // soft alpha: fully opaque in the darkest ink, fading at edges
           d[i + 3] = Math.round(((THRESHOLD - gray) / THRESHOLD) * 255);
+          inked++;
         }
       }
 
       ctx.putImageData(img, 0, 0);
+
+      if (!ink.done) {
+        const t = video.currentTime;
+        // Skip the first frames: before playback settles the frame can be
+        // dark all over and read as a page full of ink.
+        if (t > 0.15) {
+          if (inked > ink.peak + 40 || inked < ink.peak * 0.5) {
+            ink.peak = inked;
+            ink.at = t;
+          } else if (ink.at > 0 && t - ink.at > INK_SETTLE) {
+            finish();
+          }
+        }
+      }
       rafRef.current = requestAnimationFrame(render);
     }
 
     function begin() {
       render();
-      video.play().catch(() => {});
+      video.play().catch(finish);
     }
+
+    video.addEventListener("ended", finish, { once: true });
+    video.addEventListener("error", finish, { once: true });
 
     function start() {
       // On iOS Safari, seeking currentTime is async — wait for seeked before
@@ -569,6 +603,9 @@ export default function Research() {
   const [items, setItems] = useState([]);
   const [error, setError] = useState(null);
   const [activeIndex, setActiveIndex] = useState(null);
+  // The thread under the headline draws only once the handwriting has finished.
+  const [inkDone, setInkDone] = useState(false);
+  const onInkDone = useCallback(() => setInkDone(true), []);
 
   useEffect(() => {
     fetchJSONC("/research.jsonc")
@@ -632,8 +669,8 @@ export default function Research() {
         <div className="relative max-w-7xl mx-auto px-6 md:px-10">
           {/* Display heading */}
           <motion.h1
-            initial={{ opacity: 0, y: 26 }}
-            animate={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
             transition={{ duration: 0.75, delay: 0.08, ease: [0.215, 0.61, 0.355, 1.0] }}
             className="text-white mb-8"
             style={{
@@ -645,15 +682,19 @@ export default function Research() {
           >
             Weaving the
             <br />
-            <FabricOfLifeVideo />
+            {/* one shrink-to-fit box, so the thread is exactly as wide as the handwriting */}
+            <span className="inline-block">
+              <FabricOfLifeVideo onEnded={onInkDone} />
+              <ThreadRule start={inkDone} delay={0} className="mt-1 block h-auto w-full md:mt-2" strokeWidth={1.5} />
+            </span>
           </motion.h1>
 
           {/* Lead */}
           <motion.p
-            initial={{ opacity: 0, y: 18 }}
-            animate={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.22, ease: "easeOut" }}
-            className="text-lg md:text-xl text-emerald-50/90 max-w-xl leading-relaxed"
+            className="mt-6 text-lg md:text-xl text-emerald-50/90 max-w-xl leading-relaxed"
           >
             We map where biodiversity thrives, how it is changing, and what it
             means for people — weaving ecology, data science, and human
@@ -662,18 +703,6 @@ export default function Research() {
 
           {/* Scroll hint pill */}
           <ScrollHint />
-
-          {/* Animated rule */}
-          <motion.div
-            initial={{ opacity: 0, scaleX: 0 }}
-            animate={{ opacity: 1, scaleX: 1 }}
-            transition={{ duration: 0.9, delay: 0.38, ease: [0.215, 0.61, 0.355, 1.0] }}
-            className="mt-12 h-px origin-left max-w-2xl"
-            style={{
-              background:
-                "linear-gradient(90deg, rgba(16,185,129,0.45), rgba(20,184,166,0.2), transparent)",
-            }}
-          />
         </div>
       </header>
 

@@ -4,6 +4,7 @@ import { ArrowUpRight, ChevronRight, X } from "lucide-react";
 import { fetchJSONC } from "../utils/jsonc.js";
 import useSeo from "../utils/useSeo.js";
 import { ROUTES } from "../utils/seoMeta.js";
+import ThreadRule from "../components/ThreadRule.jsx";
 
 /* ════════════════════════════════════════════════════════════════════════
    News — a timeline strung on a single thread, latest first.
@@ -470,8 +471,8 @@ const NewsRow = ({ item, index, onOpen, innerRef }) => {
   return (
     <motion.article
       ref={innerRef}
-      initial={{ opacity: 0, y: 26 }}
-      whileInView={{ opacity: 1, y: 0 }}
+      initial={{ opacity: 0 }}
+      whileInView={{ opacity: 1 }}
       viewport={{ once: true, margin: "-60px" }}
       transition={{ duration: 0.6, ease: [0.215, 0.61, 0.355, 1] }}
       onClick={() => onOpen(0)}
@@ -723,9 +724,9 @@ function NewsModal({ item, index = 0, startAt = 0, onClose }) {
               borderColor: rgba(hex, 0.22),
               background: "linear-gradient(160deg, #0a1f18, #061410)",
             }}
-            initial={{ opacity: 0, y: 24, scale: 0.97 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 16, scale: 0.98 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
             transition={{ duration: 0.3, ease: [0.215, 0.61, 0.355, 1] }}
           >
             {/* The picture side and the write-up each carry their own scroll, so
@@ -995,8 +996,8 @@ export default function News() {
         <NewsBackdrop />
         <div className="relative mx-auto max-w-7xl">
           <motion.span
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
             transition={{ duration: 0.5 }}
             className="inline-flex items-center rounded-full border border-emerald-400/25 bg-emerald-400/[0.07] px-3 py-1 text-[10px] font-black uppercase tracking-[0.26em] text-emerald-300/80"
           >
@@ -1004,8 +1005,8 @@ export default function News() {
           </motion.span>
 
           <motion.h1
-            initial={{ opacity: 0, y: 26 }}
-            animate={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
             transition={{ duration: 0.75, delay: 0.08, ease: [0.215, 0.61, 0.355, 1] }}
             className="mt-6 text-white"
             style={{
@@ -1018,23 +1019,17 @@ export default function News() {
             From the loom
           </motion.h1>
 
+          <ThreadRule />
+
           <motion.p
-            initial={{ opacity: 0, y: 18 }}
-            animate={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.22, ease: "easeOut" }}
             className="mt-6 max-w-xl text-lg leading-relaxed text-emerald-50/80 md:text-xl"
           >
             Papers and preprints, datasets and talks, fieldwork and the people
             behind it — what the lab has been working on, as it happens.
           </motion.p>
-
-          <motion.div
-            initial={{ opacity: 0, scaleX: 0 }}
-            animate={{ opacity: 1, scaleX: 1 }}
-            transition={{ duration: 0.9, delay: 0.38, ease: [0.215, 0.61, 0.355, 1] }}
-            className="mt-10 h-px max-w-2xl origin-left"
-            style={{ background: "linear-gradient(90deg, rgba(16,185,129,0.45), rgba(20,184,166,0.2), transparent)" }}
-          />
         </div>
       </header>
 

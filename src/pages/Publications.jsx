@@ -12,6 +12,7 @@ import { ExternalLink } from "lucide-react";
 import { fetchJSONC } from "../utils/jsonc.js";
 import useSeo from "../utils/useSeo.js";
 import { ROUTES } from "../utils/seoMeta.js";
+import ThreadRule from "../components/ThreadRule.jsx";
 import {
   normalizeTitle,
   semanticScores,
@@ -73,16 +74,16 @@ function BioloomLoading() {
         style={{ height: "90px", width: "auto" }}
         xmlns="http://www.w3.org/2000/svg"
       >
-        <motion.g animate={{ opacity: _loopOpacity(), x: _loopX() }} transition={_loopTransition(0)}>
+        <motion.g animate={{ opacity: _loopOpacity() }} transition={ _loopTransition(0) }>
           <g transform={_PT} fill="#10b981" stroke="none"><path d={_FABRIC_D} /></g>
         </motion.g>
-        <motion.g animate={{ opacity: _loopOpacity(), x: _loopX() }} transition={_loopTransition(1)}>
+        <motion.g animate={{ opacity: _loopOpacity() }} transition={ _loopTransition(1) }>
           <g transform={_PT} fill="#10b981" stroke="none"><path d={_PLANT_D} /></g>
         </motion.g>
-        <motion.g animate={{ opacity: _loopOpacity(), x: _loopX() }} transition={_loopTransition(2)}>
+        <motion.g animate={{ opacity: _loopOpacity() }} transition={ _loopTransition(2) }>
           <g transform={_PT} fill="#a7f3d0" stroke="none">{_PEOPLE_DS.map((d, i) => <path key={i} d={d} />)}</g>
         </motion.g>
-        <motion.g animate={{ opacity: _loopOpacity(), x: _loopX() }} transition={_loopTransition(3)}>
+        <motion.g animate={{ opacity: _loopOpacity() }} transition={ _loopTransition(3) }>
           <g transform={_PT} fill="#a7f3d0" stroke="none">{_TEXT_DS.map((d, i) => <path key={i} d={d} />)}</g>
         </motion.g>
       </svg>
@@ -601,10 +602,45 @@ export default function Publications() {
 
   return (
     <section className="section">
-      <h1 className="h2-grad">Publications</h1>
+      {/* ══ Hero, in the same voice as the News and Contact pages ═══════════ */}
+      <motion.span
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5 }}
+        className="inline-flex items-center rounded-full border border-emerald-400/25 bg-emerald-400/[0.07] px-3 py-1 text-[10px] font-black uppercase tracking-[0.26em] text-emerald-300/80"
+      >
+        Publications
+      </motion.span>
+
+      <motion.h1
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.75, delay: 0.08, ease: [0.215, 0.61, 0.355, 1] }}
+        className="mt-6 text-white"
+        style={{
+          fontFamily: "'DM Serif Display', Georgia, serif",
+          fontSize: "clamp(2.6rem, 7vw, 5.6rem)",
+          lineHeight: 0.94,
+          letterSpacing: "-0.015em",
+        }}
+      >
+        What we&rsquo;ve woven
+      </motion.h1>
+
+      <ThreadRule />
+
+      <motion.p
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.6, delay: 0.22, ease: "easeOut" }}
+        className="mt-6 max-w-xl text-lg leading-relaxed text-emerald-50/80 md:text-xl"
+      >
+        Papers, preprints and data releases from the lab, newest first. Search by
+        topic, title or author, or narrow the list to an author and a span of years.
+      </motion.p>
 
       {/* Filters */}
-      <div className="mt-6 glass rounded-2xl p-4 flex flex-col gap-4 md:flex-row md:flex-wrap md:items-end">
+      <div className="mt-10 glass rounded-2xl p-4 flex flex-col gap-4 md:flex-row md:flex-wrap md:items-end">
         <div className="flex-1 min-w-[220px]">
           <label className="block text-sm mb-1 text-white/70">Search</label>
           <input
