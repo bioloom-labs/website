@@ -150,6 +150,22 @@
         "https://orcid.org/0000-0003-1227-460X",
         "https://scholar.google.se/citations?hl=en&pli=1&user=rnIA124AAAAJ"
       ]
+    },
+    {
+      "name": "Ian Ondo",
+      "role": "Quantitative Ecologist at UN Environment Programme World Conservation Monitoring Centre (UNEP-WCMC)",
+      "description": "I am a quantitative ecologist working at the intersection of ecology, data science and biodiversity conservation. My research focuses on biogeography, spatial ecology and ecological modelling, with a particular interest in understanding and predicting biodiversity patterns under environmental change.\n\nI first met Dr Samuel Pironon as an undergraduate at the University of Lorraine and later reconnected with him at the Royal Botanic Gardens, Kew, where I joined his team as a research assistant. There, I combined large-scale biodiversity and environmental datasets with statistical modelling to investigate plant diversity and biogeography, including the global distribution of useful plants and agrobiodiversity under climate change. This work developed into an ongoing collaboration around plant biogeography, spatial ecology and the relationship between people and biodiversity.\n\nI now work at the UN Environment Programme World Conservation Monitoring Centre (UNEP-WCMC), developing analytical approaches and spatial tools for biodiversity assessment and conservation. My current interests include the use of emerging computational approaches, including artificial intelligence, to integrate ecological knowledge and support biodiversity research and decision-making.\n\nI continue to collaborate with Samuel and his team, combining large-scale biodiversity data and quantitative methods to address questions relevant to both fundamental ecology and conservation.",
+      "photo": "/images/people/ondo.webp",
+      "email": "ian.ondo@unep-wcmc.org",
+      "website": "https://www.unep-wcmc.org/en/the-team#ian-ondo",
+      "twitter": "",
+      "linkedin": "",
+      "github": "",
+      "links": [
+        "https://scholar.google.com/citations?user=jwM53MkAAAAJ&hl=en",
+        "https://www.researchgate.net/profile/Ian-Ondo-2",
+        "https://orcid.org/0000-0001-7816-5882"
+      ]
     }
   ]
 }

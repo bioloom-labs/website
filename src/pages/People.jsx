@@ -68,10 +68,18 @@ function normalizeUrl(url = "") {
   return `https://${u}`;
 }
 
+// Institutional profile pages show the institution's logo instead of the generic globe.
+function websiteType(url = "") {
+  const low = url.toLowerCase();
+  if (low.includes("kew.org")) return "kew";
+  if (low.includes("unep-wcmc.org")) return "unep";
+  return "website";
+}
+
 function buildLinks(person) {
   const result = [];
   if (person.email) result.push({ href: `mailto:${person.email}`, label: person.email, type: "email" });
-  if (person.website) result.push({ href: normalizeUrl(person.website), label: "Website", type: "website" });
+  if (person.website) result.push({ href: normalizeUrl(person.website), label: "Website", type: websiteType(person.website) });
   if (person.linkedin) result.push({ href: normalizeUrl(person.linkedin), label: "LinkedIn", type: "linkedin" });
   if (person.github) result.push({ href: normalizeUrl(person.github), label: "GitHub", type: "github" });
   if (person.twitter) result.push({ href: normalizeUrl(person.twitter), label: "X", type: "x" });
@@ -92,6 +100,8 @@ function LinkIcon({ type, size = "3.5" }) {
   if (type === "orcid") return <img src="/images/socials/orcid.webp" className={cls} alt="ORCID" />;
   if (type === "scholar") return <img src="/images/socials/googlescholar.webp" className={cls} alt="Scholar" />;
   if (type === "researchgate") return <img src="/images/socials/researchgate.webp" className={cls} alt="ResearchGate" />;
+  if (type === "kew") return <img src="/images/logos/kew.webp" className={`h-${size} w-5 object-contain`} style={{ filter: "brightness(0) invert(1)" }} alt="Kew" />;
+  if (type === "unep") return <img src="/images/logos/unep-wcmc-emblem.svg" className={cls} alt="UNEP-WCMC" />;
   return <Globe className={`h-${size} w-${size}`} />;
 }
 
