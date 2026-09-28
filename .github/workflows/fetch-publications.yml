@@ -23,7 +23,8 @@ jobs:
           python-version: "3.11"
 
       - name: Install Python dependencies
-        run: pip install scholarly
+        # scholarly imports bibtexparser.bibdatabase, which bibtexparser 2.x removed
+        run: pip install scholarly "bibtexparser<2"
 
       - name: Fetch publications
         run: python scripts/fetch_scholar.py
