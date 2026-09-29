@@ -94,6 +94,8 @@ export default function App() {
         <Route path="/people/:slug" element={<People />} />
         <Route path="/publications" element={<Publications />} />
         <Route path="/news" element={<News />} />
+        {/* A blog post has a URL of its own, which opens it. */}
+        <Route path="/news/:id" element={<News />} />
         <Route path="/contact" element={<Contact />} />
       </Routes>
       {location.pathname === "/" || location.pathname === "/about" ? null : <Footer />}

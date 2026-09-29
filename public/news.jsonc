@@ -11,8 +11,8 @@
      tag     – short label. It rides the split-flap board next to the date and
                picks the entry's accent hue. Known tags: Publication, Preprint,
                Open Data, Dataset, Talk, Event, Award, Press, Fieldwork,
-               People. Anything else still works and gets a colour by position.
-               Keep it short — every character is a flap.
+               People, Blog. Anything else still works and gets a colour by
+               position. Keep it short — every character is a flap.
      text    – 1–2 sentence teaser shown on the row
      body    – optional array of paragraphs for the window; falls back to `text`
      images  – any number. The row shows them on a flip board of unevenly sized
@@ -26,8 +26,141 @@
                A bare string is accepted as shorthand for { src }.
                Entries with no images render as a full-width text row.
      link    – optional { url, label } — or a bare URL string
+
+   A blog post (tag "Blog") is a long read. Its row runs the cover picture
+   full width with the headline beneath, and it opens as a page of its own at
+   /news/<id> — so give it an id — with the pictures set among the paragraphs.
+   It reads these fields differently:
+     text    – the standfirst under the headline
+     author  – name, or { name, role }. A name matching someone in
+               people.jsonc borrows their photo, role and page for the byline.
+     cover   – { src, alt } across the top of the post; falls back to the
+               first figure
+     thumbnail – { src, alt } across the top of the row; falls back to `cover`
+     body    – paragraphs and pictures in reading order. A string is a
+               paragraph (a "\n" inside it breaks a line; [text](url) makes
+               a link). { "figure": {...},
+               "caption" } sets one picture; { "figures": [...], "caption" }
+               sets a row of them, and a nested array stacks its pictures into
+               one column, so [[a, b], [c]] puts a over b beside c. Figures are
+               numbered in order, and the reading time is worked out from the
+               paragraphs.
+     images  – not read; the post's pictures come from `body`
 */
 [
+  {
+    "id": "fabric-of-life-tower-hamlets-summer-fair-2026",
+    "date": "2026-09-22",
+    "title": "BIOLOOM brings the Fabric of Life to the local community",
+    "tag": "Blog",
+    "author": "Kristian George Suszczenia",
+    "text": "Hands-on crafts to bring together artists, children, mycelial textiles, and socio-ecological systems change.",
+    "cover": {
+      "src": "/news/22-09-2026/fold-5-installation-detail.webp",
+      "alt": "Close-up of the Fabric of Life installation: strips of leaf-matrix paper studded with seeds and pressed plants, woven with mycelium textile and a tuft of grey fur"
+    },
+    "thumbnail": {
+      "src": "/news/22-09-2026/fold-1-stall.webp",
+      "alt": "The stall at the fair: a hand holds up a small woven Fabric of Life diagram of coloured ribbons above a table of glass voting jars, bowls of glass beads and squares of handmade leaf paper"
+    },
+    "body": [
+      {
+        "figure": {
+          "src": "/news/22-09-2026/fold-1-stall.webp",
+          "alt": "The stall at the fair: a hand holds up a small woven Fabric of Life diagram of coloured ribbons above a table of glass voting jars, bowls of glass beads and squares of handmade leaf paper"
+        },
+        "caption": "A look at our stall: the fabric of life diagram, ecological crafts, and voting jars."
+      },
+      "Have you ever looked at the wooden furniture in your house or the food on your plate and wondered: “How did this get here?” It can be a mind-bender alone to think about all the human hands involved, but what if we go one step further and think about what had to go right in the ecosystem for it to get here? How large the fungal mycelial networks were? How many pollinating species, how many disease-protecting species, how many soil-forming species, how many species providing redundancy, backups for when heatwaves or wildfires or floods take away other crucial cogs? Just for me to sit at this desk, or enjoy this spag bol.",
+      "I struggled through this dizzying array of questions, which became a life-changing journey, when I started my PhD researching “Socio-Ecological Systems” in [BIOLOOM Labs](https://bioloom-labs.com/). Socio-ecological Systems are just what they sound like: tossing away the illusory line we draw between people and nature and considering this strange world, not as a society that sits alongside an ‘out there’ nature that it gets resources from, but as a profoundly complex single system. A single system which is mistreating itself.",
+      "It would be wrong to write about the amazing community and family engagement event that follows without a touch of the sobering context that drives this work. Most of us are taking part in a certain section of that socio-ecological system that is still figuring itself out. Still trying to find a non-destructive relationship with the non-human parts of the system that support us. All while we are watching those critical foundations of our lives suffer ecological degradation abroad and increasingly at home. In all of this, there is a growing chorus of academics, UN bodies, and front-lining communities concluding that it is precisely our tendency to draw that line, to separate ourselves from the intricate web of life around us, that is causing us to misperceive and therefore mismanage our world. That we need a significant shift in “[cultural narratives and social norms around production and consumption](https://www.ipbes.net/transformative-change-assessment)”. That recognising our place within this single system alongside our non-human partners, and acting like it, may be a critical leverage point for a safer and more just future for us all. What leading ecologist Sandra Diaz promotes as the transition to a “Fabric of Life” worldview.",
+      "I wanted to take my complex and unintuitive research, where I simulate networks depicting socio-ecological systems, and make it accessible in the belief that anyone of any age could engage with the world from this ‘Fabric of Life’ perspective if only they were given the chance. And what better way to do so than working with artists and park rangers?",
+      "On a heatwave-hot Saturday morning, we set up our stall at the [Friends of Tower Hamlets Cemetery Park](https://fothcp.org/) summer fair, a few minutes down the road from Queen Mary’s main campus, and let the children do it for themselves. But in fact, we had participants of all ages come to get their hands on the ecosystem and weave their very own Fabric of Life Diagram. In a Fabric of Life Diagram, such as the ‘chicken curry’ diagram shown below, we take three steps to go from human-only thinking to Fabric of Life thinking.",
+      {
+        "figure": {
+          "src": "/news/22-09-2026/fold-2-chicken-curry.webp",
+          "alt": "A Fabric of Life Diagram of woven satin ribbons, each drawn with a species, beside its back, which reads ‘chicken curry, fabric of life’ beneath a blurred name"
+        },
+        "caption": "A Fabric of Life Diagram made by a participant showing the direct providers (garlic, tomato, coriander, chicken) and their supporters (songbirds, bees, beetles, and grasses) that are needed for a chicken curry."
+      },
+      "First, we choose something we value in our lives; in this case, a chicken curry. Then, we think about the species that help directly provide us with this thing we love; here, garlic, tomato, coriander, and chicken. And place them as vertical ribbons, like the warp. Already, we are starting to name and thank the natural elements that prop up our lives, but we go one step further. Now, we think about the species that those species themselves rely upon – which make up the weft threading from left to right. Importantly, we weave this ribbon under a directly providing species if it does not support it, and over if it does. For example, in the ‘chicken curry’ Fabric of Life Diagram: the songbird (blue) helps disperse the seeds of the tomato (red), the bee (pale) pollinates the coriander (green), the beetle (brown) forms soil that all three plants in the curry rely upon, and the wild grass (light green) is needed for the chickens to eat.",
+      "The wonderful thing is that every participant goes home with a totally unique, colourful, and vividly interwoven picture of the way our lives are upheld by the complex and caring cat’s cradle of nature – which they can stick up on the fridge. We saw the kaleidoscopic fabric that emerges from thinking about the species that give us our chocolate bar, an ice cream, a sweater, a cup of tea, coffee, and medicinal remedies. At one point, some participants got super creative and made a Fabric of Life Diagram depicting the complex web of nature that was needed to give us the Lord of the Rings film franchise… including the grasses that make the rolling hills of New Zealand such a picturesque location and, of course, the overlooked earthworms that underpin them!",
+      {
+        "figures": [
+          [
+            {
+              "src": "/news/22-09-2026/fold-3a-coffee.webp",
+              "alt": "A woven ribbon diagram for coffee, with ‘Coffee’ written on the felt backing"
+            },
+            {
+              "src": "/news/22-09-2026/fold-3b-ice-cream.webp",
+              "alt": "A woven ribbon diagram for ice cream in a tub, with ‘I like nachure so much’ written on the back"
+            }
+          ],
+          {
+            "src": "/news/22-09-2026/fold-3c-lord-of-the-rings.webp",
+            "alt": "A woven ribbon diagram for the Lord of the Rings films, its ribbons drawn with grasses, an earthworm and an apple"
+          }
+        ],
+        "caption": "A selection of Fabric of Life Diagrams made by participants: coffee (top left), ice cream in a paper tub (bottom left), and the film ‘Lord of the Rings’ (right)."
+      },
+      "To fully explore the concept, materials artist Qi Shi, who partnered with me throughout this project, took the lead. We developed a Fabric of Life for a chocolate bar with more than 40 kinds of critters and plants (and many more species implied) performing the diverse roles needed to get that tasty snack to us. Including but not limited to: how tiny flies pollinate cocoa trees, how birds of prey are known to decrease pest pressure in sugar cane farms, how tiny fungi live between the tissues of Hazelnut trees and boost their immune system, how mosses growing on trees increase pollination rates, how marsupials, rats, bats and birds disperse seeds, how ladybirds control aphid populations and how millipedes accelerate compost forming under soybean crops. Qi took all the species involved in this great milieu and constructed ribbons that reflected the colours and textures. Such as paper made from fallen leaves to represent the plants, leather grown from living mycelium for the fungi, and of course feathers and fluff for our closer cousins. The result was a five-foot Fabric of Life Diagram, mounted on a ‘floating’ transparent background, that is as messy, complicated, and beautiful as the ecosystem it attempts to illustrate. An eye-catching centrepiece of our stall, as well as an invitation for children to get textural and “touch the ecosystem that underpins society” (in this case with society reduced to a chocolate bar… but the point stands).",
+      {
+        "figures": [
+          {
+            "src": "/news/22-09-2026/fold-4-installation.webp",
+            "alt": "The five-foot Fabric of Life installation hanging on a clear panel between two trees, woven from strips of leaf paper, mycelium leather, feathers and fur"
+          },
+          {
+            "src": "/news/22-09-2026/fold-5-installation-detail.webp",
+            "alt": "Close-up of the installation: strips of leaf-matrix paper studded with seeds and pressed plants, woven with mycelium textile and a tuft of grey fur"
+          }
+        ],
+        "caption": "Our five-foot floating 3D art installation, ‘The Fabric of Life Behind a Chocolate Bar’ (left), and a close-up highlighting the use of ecological materials to make leaf-matrix paper and mycelium-grown textiles (right)."
+      },
+      "Participants told us they were “shocked” by how the exercise and artwork made them consider how wide the reach and reliance of our lives really extend. But we also wanted to know if it helped them connect more to the unseen ecosystem behind our lives, so we asked – having done this – how does it make you think we should treat nature? Children and parents alike responded: “with kindness”, “with respect”, “like a valued community member”, “like a best friend (that keeps you alive)”, and “as an equal”. But what really hit home for me was being told that, because it is a part of us and we are a part of it, we should simply see looking after nature as “looking after ourselves”. All this wonderful feedback struck at a secret goal of mine – a little test.",
+      "I wanted to see if pragmatically thinking about the species we rely on, tracing reliance back through multiple layers of ecosystem (in this case two layers), could act as an accessible stepping stone to the real message hiding within. That being: the sudden realisation that the bee which pollinates the coriander in our curry has its own fabric of life just like us, and each of those species relies on its own fabric too, and so on and so on. That, if we were to truly try and weave the Fabric of Life showing the species which gift us even a simple curry or a single chocolate bar, it would be of incomprehensible size and complexity. And may well include most of the species on Earth… The secret message hidden within an exercise that seems on the surface about picking and choosing species is, in fact, that such an effort is impossible. That nature, as a whole, needs our reciprocity – for both its health and our own. From the bright smiles and kind words we received, we believe that the Fabric of Life Diagram proved that point. Children did not leave thinking that the four supporting species they happened to choose were important to their lives. No, children are far better at systems thinking than we give them credit for. They left with a personal sense that the fabric of life is far greater than our little craft, that nature really underpins so much more, and with a lasting memory of gratitude that they built with their own two hands. Gratitude for this wonderful ecosystem, and the wonderful life it gifts to us.",
+      {
+        "figure": {
+          "src": "/news/22-09-2026/fold-6-kristian-and-qi.webp",
+          "alt": "Kristian and Qi sitting at the Queen Mary stall under a gazebo at the summer fair, the installation standing on a wooden easel beside them"
+        },
+        "caption": "Kristian and Qi at the Friends of Tower Hamlets Cemetery Park Summer Fair."
+      },
+      "Ultimately, we hope to give participants a sense of reciprocity to, and kinship with, nature that is derived from getting stuck in, personal connection, and meeting the participant at their current worldview (which may well be a very human-centred and use-value oriented) – more than just lectures or words. Perhaps this will be one of the ways we can help turn this ship, our home, around.",
+      "If you think so too, or are interested in exploring this topic, please do reach out so that we can share guidance to reproduce the event, collaborate on future projects, or establish research connections.",
+      "Until next time, with hope,\nKristian."
+    ]
+  },
+  {
+    "id": "qing-zhang-joins-2026",
+    "date": "2026-09-21",
+    "title": "Qing Zhang joins the lab as a visiting PhD researcher",
+    "tag": "People",
+    "text": "Qing Zhang has joined the group as a visiting PhD researcher from Minzu University of China for the 2026–27 academic year.",
+    "body": [
+      "Qing Zhang has officially joined the group as a visiting PhD researcher from Minzu University of China for the 2026–27 academic year.",
+      "Qing studies the relationship between human culture and plant diversity, focusing on documenting and preserving the traditional botanical knowledge that sustains local food systems and agricultural heritage. Welcome, Qing!"
+    ],
+    "images": [
+      { "src": "/images/people/qing.webp", "alt": "Portrait of Qing Zhang" }
+    ]
+  },
+  {
+    "id": "george-bell-cara-clark-msc-distinction-2026",
+    "date": "2026-09-11",
+    "title": "George Bell and Cara Clark pass their MSc dissertations with distinction",
+    "tag": "People",
+    "text": "Congratulations to George Bell and Cara Clark, who have each passed their MSc Project dissertation with a distinction. Both will be staying on with the group as Research Assistants.",
+    "body": [
+      "Congratulations to George Bell and Cara Clark, who have each passed their MSc Project dissertation with a distinction.",
+      "We are delighted that both will continue with us as Research Assistants."
+    ],
+    "images": [
+      { "src": "/images/people/george-bell.webp" },
+      { "src": "/images/people/cara_main.webp" }
+    ]
+  },
   {
     "id": "ian-ondo-talk-2026",
     "date": "2026-07-07",

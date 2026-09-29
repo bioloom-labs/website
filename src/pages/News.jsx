@@ -1,9 +1,10 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion, useMotionValue, useScroll } from "framer-motion";
-import { ArrowUpRight, ChevronRight, X } from "lucide-react";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import { ArrowLeft, ArrowUpRight, Check, ChevronRight, Link2, X } from "lucide-react";
 import { fetchJSONC } from "../utils/jsonc.js";
 import useSeo from "../utils/useSeo.js";
-import { ROUTES } from "../utils/seoMeta.js";
+import { ROUTES, slugify } from "../utils/seoMeta.js";
 import ThreadRule from "../components/ThreadRule.jsx";
 
 /* ════════════════════════════════════════════════════════════════════════
@@ -11,7 +12,9 @@ import ThreadRule from "../components/ThreadRule.jsx";
    One entry per row. The thread unspools from a ball of yarn, winds down the
    left rail and curls into a spiral at each entry, with a lit run riding along
    it as the page scrolls. Each entry's pictures sit on a flip board of tiles
-   that keep turning over while they are on screen.
+   that keep turning over while they are on screen. A blog post is the
+   exception: its row opens like a magazine feature, and it reads as a page
+   of its own with the pictures set among the paragraphs.
    ════════════════════════════════════════════════════════════════════════ */
 
 /* ── Dates ──────────────────────────────────────────────────────────────── */
@@ -52,6 +55,7 @@ const ACCENT = {
   "press": "#fca5a5",
   "fieldwork": "#6ee7b7",
   "people": "#c4b5fd",
+  "blog": "#fdba74",
 };
 const ACCENT_FALLBACK = ["#6ee7b7", "#7dd3fc", "#fcd34d", "#a3e635", "#5eead4", "#fca5a5"];
 
@@ -63,13 +67,77 @@ function accentFor(item, index = 0) {
 /* ── Data ───────────────────────────────────────────────────────────────────
    news.jsonc is hand-edited, so accept the loose shapes it may arrive in:
    `image` (one string) as well as `images`, `link` as a bare URL string as
-   well as { url, label }, and `text` standing in for a missing `body`. */
-function normalise(item, idx) {
+   well as { url, label }, and `text` standing in for a missing `body`.
+
+   A blog post (tag "Blog") is the one entry whose write-up is more than
+   paragraphs: its `body` sets pictures among the text as { figure } and
+   { figures } blocks, and it carries an `author` and a `cover`. */
+const toImage = (img) => (typeof img === "string" ? { src: img } : img);
+const hasSrc = (img) => Boolean(img && img.src);
+
+/* A paragraph may carry links written as [text](url). */
+const INLINE_LINK = /\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g;
+const plainText = (text) => text.replace(INLINE_LINK, "$1");
+
+function withLinks(text, hex) {
+  const parts = [];
+  let last = 0;
+  for (const m of text.matchAll(INLINE_LINK)) {
+    parts.push(text.slice(last, m.index));
+    parts.push(
+      <a
+        key={m.index}
+        href={m[2]}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="underline decoration-1 underline-offset-[3px] transition-opacity hover:opacity-75"
+        style={{ color: hex, textDecorationColor: rgba(hex, 0.6) }}
+      >
+        {m[1]}
+      </a>
+    );
+    last = m.index + m[0].length;
+  }
+  parts.push(text.slice(last));
+  return parts;
+}
+
+/* A post's body, block by block. A string is a paragraph; { figure } is one
+   picture; { figures } is a row of them, and a nested array stacks its
+   pictures into one column so a pair of landscapes can stand beside a
+   portrait. */
+function blogBlocks(body) {
+  return (Array.isArray(body) ? body : [])
+    .map((block) => {
+      if (typeof block === "string") return { type: "p", text: block };
+      if (block?.figure) {
+        const img = toImage(block.figure);
+        return hasSrc(img) ? { type: "figure", columns: [[img]], caption: block.caption ?? img.caption } : null;
+      }
+      if (Array.isArray(block?.figures)) {
+        const columns = block.figures
+          .map((col) => (Array.isArray(col) ? col : [col]).map(toImage).filter(hasSrc))
+          .filter((col) => col.length);
+        return columns.length ? { type: "figure", columns, caption: block.caption } : null;
+      }
+      return null;
+    })
+    .filter(Boolean);
+}
+
+function normalise(item, idx, people = new Map()) {
   const dateObj = parseDate(item.date);
+  const blog = (item.tag || "").trim().toLowerCase() === "blog";
+  const blocks = blog ? blogBlocks(item.body) : [];
+  const figures = blocks.flatMap((b) => (b.type === "figure" ? b.columns.flat() : []));
+
   const rawImages = item.images ?? (item.image ? [item.image] : []);
-  const images = (Array.isArray(rawImages) ? rawImages : [])
-    .map((img) => (typeof img === "string" ? { src: img } : img))
-    .filter((img) => img && img.src);
+  const cover = blog && hasSrc(toImage(item.cover)) ? toImage(item.cover) : null;
+  // The row can lead with a different picture from the post's banner.
+  const thumbnail = blog && hasSrc(toImage(item.thumbnail)) ? toImage(item.thumbnail) : null;
+  const images = blog
+    ? [...(cover ? [cover] : []), ...figures]
+    : (Array.isArray(rawImages) ? rawImages : []).map(toImage).filter(hasSrc);
 
   const link =
     typeof item.link === "string"
@@ -80,7 +148,18 @@ function normalise(item, idx) {
         ? { label: "Read more", ...item.link }
         : null;
 
-  const body = Array.isArray(item.body) && item.body.length ? item.body : item.text ? [item.text] : [];
+  const paragraphs = blog
+    ? blocks.filter((b) => b.type === "p").map((b) => b.text)
+    : Array.isArray(item.body)
+      ? item.body
+      : [];
+  const body = paragraphs.length ? paragraphs : item.text ? [item.text] : [];
+
+  // The byline borrows the author's photo, role and page from the People data
+  // when the name matches someone there.
+  const author = item.author ? (typeof item.author === "string" ? { name: item.author } : item.author) : null;
+  const member = author?.name ? people.get(author.name.trim().toLowerCase()) : null;
+  const words = blog ? body.reduce((n, p) => n + plainText(p).split(/\s+/).filter(Boolean).length, 0) : 0;
 
   return {
     ...item,
@@ -90,17 +169,28 @@ function normalise(item, idx) {
     link,
     body,
     teaser: item.text || body[0] || "",
+    blog,
+    blocks,
+    cover: cover || figures[0] || null,
+    thumbnail: thumbnail || cover || figures[0] || null,
+    author: author
+      ? { ...(member ? { role: member.role, photo: member.photo, slug: slugify(member.name) } : {}), ...author }
+      : null,
+    readMinutes: words ? Math.max(1, Math.round(words / 200)) : 0,
   };
 }
 
 /* Strictly latest first. Anything dated ahead of today is still "latest", and
    is flagged as upcoming rather than pulled out into its own group. */
-function orderItems(list) {
-  const todayMid = new Date();
-  todayMid.setHours(0, 0, 0, 0);
+function orderItems(list, people) {
+  // A date parses as UTC midnight, which in British Summer Time is already an
+  // hour into the day, so today's entries are measured against the end of
+  // today rather than its start.
+  const todayEnd = new Date();
+  todayEnd.setHours(23, 59, 59, 999);
   return list
-    .map(normalise)
-    .map((e) => ({ ...e, upcoming: e.dateObj ? e.dateObj >= todayMid : false }))
+    .map((item, i) => normalise(item, i, people))
+    .map((e) => ({ ...e, upcoming: e.dateObj ? e.dateObj > todayEnd : false }))
     .sort((a, b) => {
       if (!a.dateObj) return 1;
       if (!b.dateObj) return -1;
@@ -583,6 +673,145 @@ const NewsRow = ({ item, index, onOpen, innerRef }) => {
   );
 };
 
+/* Who wrote a post, and how long it takes to read. The name links to the
+   author's page when they are on the team; inside a row, where the whole card
+   is already a button, it stays plain text. */
+function Byline({ author, minutes, linked = false }) {
+  if (!author && !minutes) return null;
+  const meta = [author?.role, minutes ? `${minutes} min read` : null].filter(Boolean).join(" · ");
+  return (
+    <div className="flex items-center gap-3">
+      {author?.photo && (
+        <img src={author.photo} alt="" className="h-9 w-9 shrink-0 rounded-full border border-white/10 object-cover" />
+      )}
+      <div className="text-xs leading-snug">
+        {author &&
+          (linked && author.slug ? (
+            <Link
+              to={`/people/${author.slug}`}
+              className="font-semibold text-white/85 transition-colors hover:text-white"
+            >
+              {author.name}
+            </Link>
+          ) : (
+            <span className="font-semibold text-white/85">{author.name}</span>
+          ))}
+        {meta && <span className="block text-white/40">{meta}</span>}
+      </div>
+    </div>
+  );
+}
+
+/* ── A blog post's row ────────────────────────────────────────────────────
+   A post is a long read with its pictures set among the paragraphs, so its
+   row is built like a magazine opener rather than a flip board: the cover
+   picture runs the full width, and the headline, standfirst, byline and
+   reading time sit beneath it. */
+const BlogRow = ({ item, index, onOpen, innerRef }) => {
+  const hex = accentFor(item, index);
+
+  return (
+    <motion.article
+      ref={innerRef}
+      initial={{ opacity: 0 }}
+      whileInView={{ opacity: 1 }}
+      viewport={{ once: true, margin: "-60px" }}
+      transition={{ duration: 0.6, ease: [0.215, 0.61, 0.355, 1] }}
+      onClick={() => onOpen(0)}
+      className="news-row group relative cursor-pointer overflow-hidden rounded-2xl border transition-colors duration-300"
+      style={{
+        borderColor: "rgba(255,255,255,0.07)",
+        background: "linear-gradient(150deg, rgba(255,255,255,0.04), rgba(255,255,255,0.008))",
+      }}
+      onMouseEnter={(e) => (e.currentTarget.style.borderColor = rgba(hex, 0.3))}
+      onMouseLeave={(e) => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.07)")}
+    >
+      <div
+        className="absolute inset-x-0 top-0 z-10 h-px"
+        style={{ background: `linear-gradient(90deg, ${rgba(hex, 0.55)}, transparent 60%)` }}
+      />
+
+      {item.thumbnail && (
+        <div className="relative aspect-[16/10] overflow-hidden sm:aspect-[2/1] lg:aspect-[2.4/1]">
+          <img
+            src={item.thumbnail.src}
+            alt={item.thumbnail.alt || ""}
+            loading="lazy"
+            className="h-full w-full object-cover transition-transform duration-[1400ms] ease-out group-hover:scale-[1.03]"
+          />
+          {/* blend the picture into the card along its lower edge */}
+          <div
+            className="pointer-events-none absolute inset-0"
+            style={{ background: "linear-gradient(to top, rgba(6,20,16,0.7), transparent 40%)" }}
+          />
+        </div>
+      )}
+
+      <div className="p-6 md:p-8">
+        <div className="mb-5 flex flex-wrap items-center gap-2.5">
+          {item.tag && (
+            <span
+              className="rounded-full border px-2.5 py-1 text-[9.5px] font-black uppercase tracking-[0.2em]"
+              style={{ color: hex, borderColor: rgba(hex, 0.32), background: rgba(hex, 0.08) }}
+            >
+              {item.tag}
+            </span>
+          )}
+          {item.dateObj && (
+            <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/50">
+              {fmtBoard(item.dateObj)}
+            </span>
+          )}
+          {item.upcoming && (
+            <span
+              className="rounded-full border px-2.5 py-1 text-[9.5px] font-black uppercase tracking-[0.2em]"
+              style={{ color: "#fcd34d", borderColor: "rgba(252,211,77,0.35)", background: "rgba(252,211,77,0.08)" }}
+            >
+              Upcoming
+            </span>
+          )}
+        </div>
+
+        <h2 className="max-w-3xl leading-[1.08]">
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onOpen(0);
+            }}
+            className="text-left text-white/90 transition-colors group-hover:text-white"
+            style={{
+              fontFamily: "'DM Serif Display', Georgia, serif",
+              fontSize: "clamp(1.6rem, 3.2vw, 2.5rem)",
+              letterSpacing: "-0.01em",
+            }}
+          >
+            {item.title}
+          </button>
+        </h2>
+
+        {item.teaser && (
+          <p className="font-editorial mt-4 max-w-3xl text-[1.12rem] leading-relaxed text-white/55 md:text-[1.2rem]">
+            {item.teaser}
+          </p>
+        )}
+
+        <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-4 border-t border-white/[0.06] pt-5">
+          <Byline author={item.author} minutes={item.readMinutes} />
+          <span
+            aria-hidden="true"
+            className="ml-auto inline-flex items-center gap-1.5 text-xs font-semibold transition-all duration-200 group-hover:gap-2.5"
+            style={{ color: hex }}
+          >
+            Read the post
+            <ChevronRight className="h-3.5 w-3.5" />
+          </span>
+        </div>
+      </div>
+    </motion.article>
+  );
+};
+
 /* Fitting a handful of pictures to the window's picture side ───────────────
    Up to five pictures are laid out to fill the side exactly, so none of them
    needs scrolling to. They keep their order and are cut into consecutive rows;
@@ -902,6 +1131,236 @@ function NewsModal({ item, index = 0, startAt = 0, onClose }) {
   );
 }
 
+/* ── One figure in a post: a picture, or a row of them ───────────────────
+   Each column takes a share of the width in proportion to its own shape, so
+   the columns come out the same height with every picture shown whole. A
+   column's shape is only known once its pictures have loaded, so until then
+   the columns share the width equally. */
+function BlogFigure({ block, number, hex }) {
+  const [ratios, setRatios] = useState({});
+  const note = (key, el) => {
+    if (!el || !el.naturalWidth || !el.naturalHeight) return;
+    const r = el.naturalWidth / el.naturalHeight;
+    setRatios((prev) => (prev[key] === r ? prev : { ...prev, [key]: r }));
+  };
+  const columnGrow = (col, c) => {
+    const rs = col.map((_, i) => ratios[`${c}-${i}`]);
+    return rs.every(Boolean) ? 1 / rs.reduce((sum, r) => sum + 1 / r, 0) : 1;
+  };
+
+  return (
+    <figure className="my-10 first:mt-0 md:-mx-8 lg:-mx-16">
+      <div className="flex gap-2">
+        {block.columns.map((col, c) => (
+          <div key={c} className="flex min-w-0 flex-col gap-2" style={{ flex: `${columnGrow(col, c)} 1 0%` }}>
+            {col.map((img, i) => (
+              <img
+                key={i}
+                src={img.src}
+                alt={img.alt || ""}
+                loading="lazy"
+                ref={(el) => el && el.complete && note(`${c}-${i}`, el)}
+                onLoad={(e) => note(`${c}-${i}`, e.currentTarget)}
+                className="block w-full rounded-xl border border-white/[0.08]"
+              />
+            ))}
+          </div>
+        ))}
+      </div>
+      {block.caption && (
+        <figcaption className="mt-3 px-1 text-[0.85rem] leading-relaxed text-white/45">
+          <span className="mr-2 text-[9.5px] font-black uppercase tracking-[0.2em]" style={{ color: hex }}>
+            Figure {number}
+          </span>
+          {block.caption}
+        </figcaption>
+      )}
+    </figure>
+  );
+}
+
+/* ── Reading view: a blog post laid out as a page ─────────────────────────
+   The split window suits an entry whose pictures are a set apart from its
+   text. A post's pictures belong at particular points in the argument, so it
+   opens instead as a single column with the figures set where the author put
+   them, numbered and captioned. */
+function BlogArticle({ item, index = 0, onClose }) {
+  const hex = item ? accentFor(item, index) : ACCENT.blog;
+  const scroller = useRef(null);
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    if (!item) return undefined;
+    const onKey = (e) => {
+      if (e.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", onKey);
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prev;
+    };
+  }, [item, onClose]);
+
+  // Each post starts at the top, with the link button reset.
+  useEffect(() => {
+    setCopied(false);
+    scroller.current?.scrollTo(0, 0);
+  }, [item?.id]);
+
+  const copyLink = () => {
+    navigator.clipboard
+      ?.writeText(`${window.location.origin}/news/${item.id}`)
+      .then(() => {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      })
+      .catch(() => {});
+  };
+
+  let figureNo = 0;
+  // The drop cap goes on the first paragraph, which may follow an opening figure.
+  const ledeAt = item?.blocks.findIndex((b) => b.type === "p") ?? -1;
+
+  return (
+    <AnimatePresence>
+      {item && (
+        <motion.div
+          ref={scroller}
+          className="fixed inset-0 z-[60] overflow-y-auto"
+          style={{ background: "#081a14", "--blog-accent": hex }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.25 }}
+        >
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close"
+            className="fixed right-4 top-4 z-10 flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-black/40 text-white/70 backdrop-blur transition-colors hover:bg-white/10 hover:text-white md:right-6 md:top-6"
+          >
+            <X className="h-4 w-4" />
+          </button>
+
+          <article aria-label={item.title} className="pb-24">
+            {item.cover && (
+              <div className="relative h-[42vh] max-h-[36rem] min-h-[15rem] w-full overflow-hidden">
+                <img src={item.cover.src} alt={item.cover.alt || ""} className="h-full w-full object-cover" />
+                <div
+                  className="pointer-events-none absolute inset-0"
+                  style={{ background: "linear-gradient(to top, #081a14 0%, rgba(8,26,20,0.6) 40%, transparent 80%)" }}
+                />
+              </div>
+            )}
+
+            <header className={`relative mx-auto max-w-3xl px-6 ${item.cover ? "-mt-16 md:-mt-28" : "pt-24"}`}>
+              <div className="mb-4 flex flex-wrap items-center gap-2.5">
+                {item.tag && (
+                  <span
+                    className="rounded-full border px-2.5 py-1 text-[9.5px] font-black uppercase tracking-[0.2em]"
+                    style={{ color: hex, borderColor: rgba(hex, 0.3), background: rgba(hex, 0.08) }}
+                  >
+                    {item.tag}
+                  </span>
+                )}
+                {item.dateObj && (
+                  <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/50">
+                    {fmtLong(item.dateObj)}
+                  </span>
+                )}
+                {item.upcoming && (
+                  <span
+                    className="rounded-full border px-2.5 py-1 text-[9.5px] font-black uppercase tracking-[0.2em]"
+                    style={{ color: "#fcd34d", borderColor: "rgba(252,211,77,0.35)", background: "rgba(252,211,77,0.08)" }}
+                  >
+                    Upcoming
+                  </span>
+                )}
+              </div>
+
+              <h1
+                className="text-white"
+                style={{
+                  fontFamily: "'DM Serif Display', Georgia, serif",
+                  fontSize: "clamp(2rem, 4.8vw, 3.4rem)",
+                  lineHeight: 1.05,
+                  letterSpacing: "-0.012em",
+                }}
+              >
+                {item.title}
+              </h1>
+
+              {item.teaser && (
+                <p className="font-editorial mt-5 text-[1.25rem] leading-relaxed text-white/65 md:text-[1.4rem]">
+                  {item.teaser}
+                </p>
+              )}
+
+              <div className="mt-7 flex flex-wrap items-center gap-x-6 gap-y-3 border-y border-white/[0.08] py-4">
+                <Byline author={item.author} minutes={item.readMinutes} linked />
+                <button
+                  type="button"
+                  onClick={copyLink}
+                  className="ml-auto inline-flex items-center gap-1.5 text-xs font-semibold text-white/50 transition-colors hover:text-white/85"
+                >
+                  {copied ? <Check className="h-3.5 w-3.5" /> : <Link2 className="h-3.5 w-3.5" />}
+                  {copied ? "Link copied" : "Copy link"}
+                </button>
+              </div>
+            </header>
+
+            <div className="mx-auto max-w-3xl px-6 pt-10">
+              {item.blocks.map((block, i) => {
+                if (block.type === "figure") {
+                  figureNo += 1;
+                  return <BlogFigure key={i} block={block} number={figureNo} hex={hex} />;
+                }
+                return (
+                  <p
+                    key={i}
+                    className={`font-editorial mb-6 whitespace-pre-line text-[1.15rem] leading-[1.7] text-white/75 ${
+                      i === ledeAt ? "blog-lede" : ""
+                    }`}
+                  >
+                    {withLinks(block.text, hex)}
+                  </p>
+                );
+              })}
+
+              {item.link && (
+                <a
+                  href={item.link.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-4 inline-flex w-fit items-center gap-1.5 text-sm font-semibold transition-all duration-200 hover:gap-2.5"
+                  style={{ color: hex }}
+                >
+                  {item.link.label}
+                  <ArrowUpRight className="h-3.5 w-3.5" />
+                </a>
+              )}
+
+              <div className="mt-14 border-t border-white/[0.08] pt-6">
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="inline-flex items-center gap-1.5 text-sm font-semibold transition-all duration-200 hover:gap-2.5"
+                  style={{ color: hex }}
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                  Back to the news
+                </button>
+              </div>
+            </div>
+          </article>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}
+
 /* ── Atmospheric backdrop, sibling to the Research page's ───────────────── */
 function NewsBackdrop() {
   return (
@@ -930,9 +1389,11 @@ function NewsBackdrop() {
 
 /* ── Page ───────────────────────────────────────────────────────────────── */
 export default function News() {
-  useSeo(ROUTES["/news"]);
+  const { id: linkedId } = useParams();
+  const navigate = useNavigate();
 
   const [raw, setRaw] = useState([]);
+  const [people, setPeople] = useState(() => new Map());
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(null); // { id, at }
@@ -943,12 +1404,40 @@ export default function News() {
       .then((data) => live && setRaw(Array.isArray(data) ? data : []))
       .catch((e) => live && setError(e?.message ?? "Failed to load news"))
       .finally(() => live && setLoading(false));
+    // Bylines borrow their author's photo, role and page from the People data;
+    // without it a post still shows the name it was given.
+    fetchJSONC("/people.jsonc")
+      .then((data) => {
+        if (!live) return;
+        const members = [
+          ...(data?.current_sections ?? []).flatMap((s) => s?.members ?? []),
+          ...(data?.previous ?? []),
+        ].filter((m) => m?.name);
+        setPeople(new Map(members.map((m) => [m.name.trim().toLowerCase(), m])));
+      })
+      .catch(() => {});
     return () => {
       live = false;
     };
   }, []);
 
-  const items = useMemo(() => orderItems(raw), [raw]);
+  const items = useMemo(() => orderItems(raw, people), [raw, people]);
+
+  /* An entry's own URL — /news/<id> — opens it on arrival, which is what gives
+     a blog post a page of its own to share and to index. Clicking within the
+     page sets local state and leaves the URL alone, as on the People page. */
+  useEffect(() => {
+    if (linkedId) setOpen({ id: linkedId, at: 0 });
+  }, [linkedId]);
+  const close = () => {
+    setOpen(null);
+    // Drop the id from the URL without adding a history entry, so Back still
+    // leaves the page instead of reopening the post behind you.
+    if (linkedId) navigate("/news", { replace: true });
+  };
+
+  const linked = linkedId ? items.find((it) => it.id === linkedId) : null;
+  useSeo(linked ? { title: linked.title, description: linked.teaser } : ROUTES["/news"]);
 
   /* Measure the rail and where each entry meets it, so the thread's curls land
      on the rows rather than on guessed offsets. */
@@ -1059,26 +1548,30 @@ export default function News() {
             </div>
 
             <div className="flex min-w-0 flex-1 flex-col gap-8 md:gap-12">
-              {items.map((item, i) => (
-                <NewsRow
-                  key={item.id}
-                  item={item}
-                  index={i}
-                  innerRef={(el) => (rowRefs.current[i] = el)}
-                  onOpen={(at) => setOpen({ id: item.id, at })}
-                />
-              ))}
+              {items.map((item, i) => {
+                const Row = item.blog ? BlogRow : NewsRow;
+                return (
+                  <Row
+                    key={item.id}
+                    item={item}
+                    index={i}
+                    innerRef={(el) => (rowRefs.current[i] = el)}
+                    onOpen={(at) => setOpen({ id: item.id, at })}
+                  />
+                );
+              })}
             </div>
           </div>
         )}
       </main>
 
       <NewsModal
-        item={active}
+        item={active && !active.blog ? active : null}
         index={activeIndex < 0 ? 0 : activeIndex}
         startAt={open?.at ?? 0}
-        onClose={() => setOpen(null)}
+        onClose={close}
       />
+      <BlogArticle item={active?.blog ? active : null} index={activeIndex < 0 ? 0 : activeIndex} onClose={close} />
     </div>
   );
 }

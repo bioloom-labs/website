@@ -449,3 +449,15 @@ body {
         transition: none;
     }
 }
+
+/* ── A blog post's opening paragraph ──
+   The first letter is set large in the display face and in the post's own
+   colour, as a magazine would. The colour is written by the reading view. */
+.blog-lede::first-letter {
+    float: left;
+    margin: 0.06em 0.14em 0 0;
+    font-family: "DM Serif Display", serif;
+    font-size: 3.6em;
+    line-height: 0.78;
+    color: var(--blog-accent, #fdba74);
+}

@@ -40,12 +40,16 @@ const readJSONC = (name) =>
 const esc = (s = "") =>
   String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 
+/** Escaped text, with [text](url) links turned into anchors. */
+const withLinks = (s) =>
+  esc(s).replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g, '<a href="$2">$1</a>');
+
 /** Blank-line-separated prose to paragraphs; arrays of strings work too. */
 const paras = (text) =>
   (Array.isArray(text) ? text : String(text || "").split(/\n{2,}/))
     .map((p) => String(p).trim())
     .filter(Boolean)
-    .map((p) => `<p>${esc(p)}</p>`)
+    .map((p) => `<p>${withLinks(p)}</p>`)
     .join("\n");
 
 /* ── page content ─────────────────────────────────────────────────────────── */
@@ -65,6 +69,39 @@ const members = [
 const personPath = (m) => `/people/${slugify(m.name)}`;
 
 const canonicalPath = (p) => (p === "/" ? "/" : `${p}/`);
+
+/* A blog post gets a page of its own at /news/<id>. */
+const isPost = (n) => (n.tag || "").trim().toLowerCase() === "blog" && Boolean(n.id);
+const posts = news.filter(isPost);
+const postPath = (n) => `/news/${n.id}`;
+
+const authorOf = (n) => {
+  const name = (typeof n.author === "string" ? n.author : n.author?.name || "").trim();
+  if (!name) return null;
+  const member = members.find((m) => m.name.toLowerCase() === name.toLowerCase());
+  return {
+    name: member?.name || name,
+    url: member ? `${ORIGIN}${canonicalPath(personPath(member))}` : undefined,
+  };
+};
+
+/** A post's write-up: its paragraphs, with the pictures set among them as figures. */
+const newsBody = (body) =>
+  (Array.isArray(body) ? body : [body])
+    .map((block) => {
+      if (!block || typeof block !== "object") return paras(block);
+      const pics = (block.figure ? [block.figure] : block.figures || [])
+        .flat()
+        .map((img) => (typeof img === "string" ? { src: img } : img))
+        .filter((img) => img && img.src);
+      if (!pics.length) return "";
+      const caption = block.caption ?? block.figure?.caption;
+      return `<figure>${pics.map((p) => `<img src="${esc(p.src)}" alt="${esc(p.alt)}" />`).join("")}${
+        caption ? `<figcaption>${esc(caption)}</figcaption>` : ""
+      }</figure>`;
+    })
+    .filter(Boolean)
+    .join("\n");
 
 const bodies = {
   "/": `
@@ -136,10 +173,10 @@ const bodies = {
     ${news
       .map(
         (n) => `<article>
-      <h2>${esc(n.title)}</h2>
+      <h2>${isPost(n) ? `<a href="${canonicalPath(postPath(n))}">${esc(n.title)}</a>` : esc(n.title)}</h2>
       ${n.date ? `<time datetime="${esc(n.date)}">${esc(n.date)}</time>` : ""}
       <p>${esc(n.text)}</p>
-      ${paras(n.body)}
+      ${isPost(n) ? "" : paras(n.body)}
     </article>`
       )
       .join("\n")}`,
@@ -184,6 +221,22 @@ const personSchema = (m) => ({
   // search engine ties this page to the entity behind those profiles.
   sameAs: [...(m.links || []), m.website, m.linkedin, m.github].filter(Boolean),
 });
+
+const postSchema = (n) => {
+  const author = authorOf(n);
+  const cover = typeof n.cover === "string" ? n.cover : n.cover?.src;
+  return {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    headline: n.title,
+    description: n.text,
+    datePublished: n.date,
+    url: `${ORIGIN}${canonicalPath(postPath(n))}`,
+    image: cover ? `${ORIGIN}${cover}` : undefined,
+    author: author ? { "@type": "Person", ...author } : undefined,
+    publisher: { "@type": "Organization", name: SITE_NAME, url: `${ORIGIN}/` },
+  };
+};
 
 /* ── assembly ─────────────────────────────────────────────────────────────── */
 
@@ -265,6 +318,28 @@ const pages = [
       }
       <p><a href="/people/">All members of ${esc(SITE_NAME)}</a></p>`,
   })),
+  ...posts.map((n) => {
+    const author = authorOf(n);
+    return {
+      path: postPath(n),
+      title: n.title,
+      description: n.text,
+      jsonLd: [postSchema(n)],
+      body: `
+      <article>
+        <h1>${esc(n.title)}</h1>
+        ${n.date ? `<time datetime="${esc(n.date)}">${esc(n.date)}</time>` : ""}
+        ${
+          author
+            ? `<p>By ${author.url ? `<a href="${esc(author.url)}">${esc(author.name)}</a>` : esc(author.name)}</p>`
+            : ""
+        }
+        ${n.text ? `<p>${esc(n.text)}</p>` : ""}
+        ${newsBody(n.body)}
+        <p><a href="/news/">All news from ${esc(SITE_NAME)}</a></p>
+      </article>`,
+    };
+  }),
 ];
 
 const written = pages.map(render);
@@ -289,4 +364,6 @@ ${written.map((p) => `  <url><loc>${ORIGIN}${canonicalPath(p)}</loc></url>`).joi
 `
 );
 
-console.log(`prerendered ${written.length} routes (${members.length} people) + sitemap.xml`);
+console.log(
+  `prerendered ${written.length} routes (${members.length} people, ${posts.length} posts) + sitemap.xml`
+);
