@@ -1361,32 +1361,6 @@ function BlogArticle({ item, index = 0, onClose }) {
   );
 }
 
-/* ── Atmospheric backdrop, sibling to the Research page's ───────────────── */
-function NewsBackdrop() {
-  return (
-    <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
-      <div
-        className="absolute -top-40 right-[-12rem] h-[40rem] w-[40rem] rounded-full blur-3xl"
-        style={{ background: "radial-gradient(circle, rgba(16,185,129,0.14), transparent 62%)" }}
-      />
-      <div
-        className="absolute top-[38%] -left-48 h-[38rem] w-[38rem] rounded-full blur-3xl"
-        style={{ background: "radial-gradient(circle, rgba(125,211,252,0.09), transparent 62%)" }}
-      />
-      <div
-        className="absolute bottom-[-8%] right-[18%] h-[34rem] w-[34rem] rounded-full blur-3xl"
-        style={{ background: "radial-gradient(circle, rgba(251,191,36,0.08), transparent 62%)" }}
-      />
-      <svg className="absolute inset-0 h-full w-full opacity-[0.035] mix-blend-overlay">
-        <filter id="news-grain">
-          <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" stitchTiles="stitch" />
-        </filter>
-        <rect width="100%" height="100%" filter="url(#news-grain)" />
-      </svg>
-    </div>
-  );
-}
-
 /* ── Page ───────────────────────────────────────────────────────────────── */
 export default function News() {
   const { id: linkedId } = useParams();
@@ -1482,7 +1456,28 @@ export default function News() {
     <div className="min-h-screen">
       {/* ══ Hero ═══════════════════════════════════════════════════════════ */}
       <header className="relative overflow-hidden px-6 pb-14 pt-20 md:px-10 md:pb-20 md:pt-28">
-        <NewsBackdrop />
+        {/* Photo background — the Fabric of Life installation, close up (Figure 4b of the post) */}
+        <div className="absolute inset-0">
+          <img
+            src="/news/22-09-2026/fold-5-installation-detail.webp"
+            alt=""
+            aria-hidden="true"
+            className="h-full w-full object-cover object-center"
+          />
+          {/* Dark overlay — heavy on left for text, clear on right */}
+          <div
+            className="absolute inset-0"
+            style={{
+              background:
+                "linear-gradient(105deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.4) 35%, rgba(0,0,0,0.12) 65%, transparent 100%)",
+            }}
+          />
+          {/* Bottom fade into page */}
+          <div
+            className="absolute bottom-0 left-0 right-0 h-40"
+            style={{ background: "linear-gradient(to top, rgba(2,44,34,1), transparent)" }}
+          />
+        </div>
         <div className="relative mx-auto max-w-7xl">
           <motion.span
             initial={{ opacity: 0 }}

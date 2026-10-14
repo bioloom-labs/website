@@ -649,12 +649,12 @@ export default function Research() {
             aria-hidden="true"
             className="w-full h-full object-cover object-center"
           />
-          {/* Dark overlay — heavy on left for text, lighter on right (75% strength) */}
+          {/* Dark overlay — heavy on left for text, clear on right */}
           <div
             className="absolute inset-0"
             style={{
               background:
-                "linear-gradient(105deg, rgba(2,44,34,0.7275) 0%, rgba(2,44,34,0.66) 35%, rgba(2,44,34,0.4125) 65%, rgba(2,44,34,0.2625) 100%)",
+                "linear-gradient(105deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.4) 35%, rgba(0,0,0,0.12) 65%, transparent 100%)",
             }}
           />
           {/* Bottom fade into page */}
