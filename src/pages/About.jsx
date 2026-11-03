@@ -250,6 +250,11 @@ function CollaboratorsScene() {
       href: "https://www.ukri.org/councils/bbsrc/",
     },
     {
+      name: "UKRI Future Leaders Fellowships",
+      logo: "/images/logos/ukri-flf.webp",
+      href: "https://www.ukri.org/what-we-do/developing-people-and-skills/future-leaders-fellowships/",
+    },
+    {
       name: "The Calleva Foundation",
       logo: "/images/logos/calleva.webp",
       href: null,
