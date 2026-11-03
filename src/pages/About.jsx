@@ -252,7 +252,7 @@ function CollaboratorsScene() {
     {
       name: "UKRI Future Leaders Fellowships",
       logo: "/images/logos/ukri-flf.webp",
-      href: "https://www.ukri.org/what-we-do/developing-people-and-skills/future-leaders-fellowships/",
+      href: "https://www.ukri.org/apply-for-funding/our-fellowship-opportunities/future-leaders-fellowships/",
     },
     {
       name: "The Calleva Foundation",
