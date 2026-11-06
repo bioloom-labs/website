@@ -9,7 +9,7 @@ import People from "./pages/People.jsx";
 import Publications from "./pages/Publications.jsx";
 import News from "./pages/News.jsx";
 import Contact from "./pages/Contact.jsx";
-import { fetchJSONC } from "./utils/jsonc.js";
+import { dataSettled, fetchJSONC } from "./utils/jsonc.js";
 
 export default function App() {
   const location = useLocation();
@@ -77,6 +77,22 @@ export default function App() {
     return () => {
       cancelled = true;
     };
+  }, []);
+
+  // Lift the loading screen from index.html once the page's data is in and has
+  // had two frames to render. This runs after the page's own effects, so its
+  // fetches have already started.
+  useEffect(() => {
+    const loader = document.getElementById("site-loader");
+    if (!loader) return;
+    dataSettled().then(() => {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          loader.classList.add("gone");
+          setTimeout(() => loader.remove(), 400);
+        });
+      });
+    });
   }, []);
 
   return (
