@@ -1158,7 +1158,7 @@ function BlogFigure({ block, number, hex }) {
 
   return (
     <figure className="my-10 first:mt-0 md:-mx-8 lg:-mx-16">
-      <div className="flex gap-2">
+      <div className="flex justify-center gap-2">
         {block.columns.map((col, c) => (
           <div key={c} className="flex min-w-0 flex-col gap-2" style={{ flex: `${columnGrow(col, c)} 1 0%` }}>
             {col.map((img, i) => (
