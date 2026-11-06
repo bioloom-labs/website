@@ -54,7 +54,7 @@ export default function Navbar() {
   ];
 
   return (
-    <header className="sticky top-0 z-50 border-b border-white/10 bg-brand-950/70 backdrop-blur supports-[backdrop-filter]:bg-brand-950/40">
+    <header className="sticky top-0 z-50 border-b border-white/10 bg-brand-950/90">
       <nav className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3">
         <Link to="/" className="flex items-center cursor-pointer" aria-label="BioLoom Labs — home">
           <BioloomLogo className="h-9 lg:h-10 w-auto block" />
@@ -98,7 +98,7 @@ export default function Navbar() {
           ref={menuRef}
           className={`
             fixed left-3 right-3 top-[56px]
-            rounded-2xl border border-white/10 bg-brand-950/90 backdrop-blur shadow-xl
+            rounded-2xl border border-white/10 bg-brand-950/90 shadow-xl
             overflow-y-auto max-h-[calc(100vh-72px)]
             transition-all duration-200 ease-out
               ${open

@@ -11,6 +11,7 @@ import { createPortal } from "react-dom";
 import { fetchJSONC } from "../utils/jsonc.js";
 import useSeo from "../utils/useSeo.js";
 import { ROUTES, personDescription, slugify } from "../utils/seoMeta.js";
+import { thumbOf } from "../utils/peoplePhoto.js";
 
 const PLACEHOLDER = `/images/people/placeholder.svg`;
 const SHORT_BIO = 420;
@@ -31,6 +32,13 @@ function sectionImage(title = "") {
 }
 
 // ─── helpers ────────────────────────────────────────────────────────────────
+
+// Small copy first; if it is missing (a new portrait with no thumbnail yet)
+// fall back to the original, then to the placeholder.
+function smallPhoto(photo, errors) {
+  if (!photo || errors > 1) return PLACEHOLDER;
+  return errors ? photo : thumbOf(photo);
+}
 
 function formatBlurbWithLinks(blurb = "") {
   if (!blurb) return null;
@@ -266,6 +274,9 @@ function MemberModal({ person, onClose }) {
                 src={imgErr || !modalPhoto ? PLACEHOLDER : modalPhoto}
                 alt={person.name}
                 onError={() => setImgErr(true)}
+                decoding="async"
+                // The thumbnail shows until the full-quality original arrives.
+                style={modalPhoto ? { background: `center / cover url(${thumbOf(modalPhoto)})` } : undefined}
                 className="w-full h-48 md:h-full object-cover"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-brand-950 via-brand-950/20 to-transparent md:bg-gradient-to-r" />
@@ -329,7 +340,7 @@ function useDeepLinkedModal(person) {
 }
 
 function PIHero({ person, bgImage }) {
-  const [imgErr, setImgErr] = useState(false);
+  const [imgErrors, setImgErrors] = useState(0);
   const [expanded, setExpanded] = useState(false);
   const [modalOpen, openModal, closeModal] = useDeepLinkedModal(person);
   const ref = useRef(null);
@@ -342,7 +353,7 @@ function PIHero({ person, bgImage }) {
   return (
     <div ref={ref} className="relative overflow-hidden border-b border-white/5">
       {/* Parallax bg */}
-      <motion.div style={{ y }} className="absolute inset-0 scale-[1.3] pointer-events-none">
+      <motion.div style={{ y, willChange: "transform" }} className="absolute inset-0 scale-[1.3] pointer-events-none">
         <img
           src={bgImage}
           alt=""
@@ -372,9 +383,9 @@ function PIHero({ person, bgImage }) {
             <div className="relative cursor-pointer" onClick={openModal}>
               <div className="absolute inset-0 scale-110 rounded-3xl bg-gradient-to-br from-brand-300/20 to-brand-600/10 blur-2xl" />
               <img
-                src={imgErr || !person.photo ? PLACEHOLDER : person.photo}
+                src={smallPhoto(person.photo, imgErrors)}
                 alt={person.name}
-                onError={() => setImgErr(true)}
+                onError={() => setImgErrors((n) => n + 1)}
                 className="relative h-60 w-60 rounded-3xl object-cover ring-1 ring-white/15 shadow-2xl shadow-brand-950 md:h-72 md:w-72 hover:ring-brand-400/40 transition"
               />
               <span className="absolute -bottom-3 -right-3 rounded-full bg-brand-400 px-3 py-1 text-xs font-bold text-brand-950 shadow-lg">
@@ -427,7 +438,7 @@ function PIHero({ person, bgImage }) {
 // ─── member card ─────────────────────────────────────────────────────────────
 
 function MemberCard({ person, index }) {
-  const [imgErr, setImgErr] = useState(false);
+  const [imgErrors, setImgErrors] = useState(0);
   const [hovered, setHovered] = useState(false);
   const [modalOpen, openModal, closeModal] = useDeepLinkedModal(person);
   const links = buildLinks(person);
@@ -447,9 +458,11 @@ function MemberCard({ person, index }) {
       >
         {/* Photo */}
         <img
-          src={imgErr || !person.photo ? PLACEHOLDER : person.photo}
+          src={smallPhoto(person.photo, imgErrors)}
           alt={person.name}
-          onError={() => setImgErr(true)}
+          loading="lazy"
+          decoding="async"
+          onError={() => setImgErrors((n) => n + 1)}
           className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
         />
 
@@ -513,7 +526,7 @@ function TeamSection({ section, sectionIndex, imageUrl }) {
     <div ref={ref} className="relative overflow-hidden border-t border-white/5">
       {/* Parallax bg image */}
       {imageUrl && (
-        <motion.div style={{ y }} className="absolute inset-0 scale-[1.3] pointer-events-none">
+        <motion.div style={{ y, willChange: "transform" }} className="absolute inset-0 scale-[1.3] pointer-events-none">
           <img src={imageUrl} alt="" className="h-full w-full object-cover" loading="lazy" />
         </motion.div>
       )}
@@ -552,7 +565,7 @@ function Alumni({ members, imageUrl }) {
   return (
     <div ref={ref} className="relative overflow-hidden border-t border-white/5">
       {imageUrl && (
-        <motion.div style={{ y }} className="absolute inset-0 scale-[1.3] pointer-events-none">
+        <motion.div style={{ y, willChange: "transform" }} className="absolute inset-0 scale-[1.3] pointer-events-none">
           <img src={imageUrl} alt="" className="h-full w-full object-cover" loading="lazy" />
         </motion.div>
       )}

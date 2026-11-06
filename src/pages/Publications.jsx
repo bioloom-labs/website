@@ -113,7 +113,7 @@ function ParallaxYearBanner({ year, count, imageUrl }) {
 
   return (
     <div ref={ref} className="relative overflow-hidden h-20 md:h-24 rounded-2xl mt-10 mb-4 first:mt-0">
-      <motion.div style={{ y }} className="absolute inset-0 scale-[1.4] pointer-events-none">
+      <motion.div style={{ y, willChange: "transform" }} className="absolute inset-0 scale-[1.4] pointer-events-none">
         <img src={imageUrl} alt="" className="h-full w-full object-cover" loading="lazy" />
       </motion.div>
       <div className="absolute inset-0 bg-black/58 pointer-events-none" />

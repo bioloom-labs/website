@@ -5,6 +5,7 @@ import { ArrowLeft, ArrowUpRight, Check, ChevronRight, Link2, X } from "lucide-r
 import { fetchJSONC } from "../utils/jsonc.js";
 import useSeo from "../utils/useSeo.js";
 import { ROUTES, slugify } from "../utils/seoMeta.js";
+import { thumbOf } from "../utils/peoplePhoto.js";
 import ThreadRule from "../components/ThreadRule.jsx";
 
 /* ════════════════════════════════════════════════════════════════════════
@@ -682,7 +683,14 @@ function Byline({ author, minutes, linked = false }) {
   return (
     <div className="flex items-center gap-3">
       {author?.photo && (
-        <img src={author.photo} alt="" className="h-9 w-9 shrink-0 rounded-full border border-white/10 object-cover" />
+        <img
+          src={thumbOf(author.photo)}
+          alt=""
+          onError={(e) => {
+            if (e.currentTarget.src.includes("/thumbs/")) e.currentTarget.src = author.photo;
+          }}
+          className="h-9 w-9 shrink-0 rounded-full border border-white/10 object-cover"
+        />
       )}
       <div className="text-xs leading-snug">
         {author &&

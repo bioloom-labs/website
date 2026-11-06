@@ -174,7 +174,7 @@ function NarrativeCard({ block, index }) {
                 {block.values.map((value, idx) => (
                   <div
                     key={value.title || idx}
-                    className="rounded-xl border border-white/15 bg-black/40 p-4 space-y-2 backdrop-blur-lg shadow-[inset_0_1px_0_rgba(255,255,255,0.15)]"
+                    className="rounded-xl border border-white/15 bg-black/40 p-4 space-y-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.15)]"
                   >
                     {value.title && (
                       <h4 className="text-base font-semibold text-emerald-200">
