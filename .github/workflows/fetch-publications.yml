@@ -1,9 +1,9 @@
 name: Fetch publications
 
 on:
-  schedule:
-    # Runs on the 1st of each month at 06:00 UTC
-    - cron: "0 6 1 * *"
+  # No schedule: Google Scholar blocks most requests from GitHub's servers, so
+  # the weekly update runs from a laptop instead (a launchd job). This stays as
+  # a manual fallback.
   workflow_dispatch: # Allow manual trigger from GitHub Actions tab
 
 permissions:
