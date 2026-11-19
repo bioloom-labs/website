@@ -14,6 +14,7 @@ minutes and try again, or use a proxy (see scholarly docs for proxy setup).
 """
 
 import json
+import random
 import re
 import sys
 import time
@@ -36,13 +37,16 @@ def strip_comments(text):
     return text
 
 
-def fetch_pubs_for_author(scholar_id, name, max_pubs=None):
+def fetch_pubs_for_author(scholar_id, name, previous, max_pubs=None):
+    """Returns (pubs, attempted, failed). Only papers that are new, or were saved
+    without authors, are looked up individually; the rest reuse their saved entry
+    with the citation count from the profile. This keeps the number of requests
+    to Scholar low, which makes it less likely to block us."""
     print(f"\nFetching: {name} ({scholar_id})")
 
     author = scholarly.search_author_id(scholar_id)
     if author is None:
-        print(f"  Author not found or Scholar returned empty result for {scholar_id}")
-        return []
+        raise RuntimeError(f"Author not found or Scholar returned empty result for {scholar_id}")
     author = scholarly.fill(author, sections=["publications"])
 
     publications = author.get("publications", [])
@@ -50,14 +54,25 @@ def fetch_pubs_for_author(scholar_id, name, max_pubs=None):
         publications = publications[:max_pubs]
 
     pubs = []
-    total = len(publications)
+    attempted = 0
+    failed = 0
+    print(f"  {len(publications)} papers on profile")
 
-    for i, pub in enumerate(publications, 1):
+    for pub in publications:
         bib = pub.get("bib", {})
         title = bib.get("title", "Untitled")
-        print(f"  [{i}/{total}] {title[:70]}")
 
-        # Fill individual pub to get abstract + URL
+        old = previous.get(title.lower().strip())
+        if old and old.get("authors"):
+            pubs.append({**old, "citations": pub.get("num_citations", old.get("citations", 0))})
+            continue
+
+        print(f"  Looking up: {title[:70]}")
+        attempted += 1
+        time.sleep(random.uniform(5, 15))  # irregular, human-ish pacing
+
+        # Fill individual pub to get authors, abstract + URL. If this fails the
+        # paper is saved without authors (hidden on the page) and retried next run.
         url = ""
         try:
             filled = scholarly.fill(pub)
@@ -65,6 +80,7 @@ def fetch_pubs_for_author(scholar_id, name, max_pubs=None):
             url = filled.get("pub_url", "") or ""
         except Exception as e:
             print(f"    (could not fill: {e})")
+            failed += 1
 
         # Parse authors — scholarly uses " and " as separator
         authors_raw = bib.get("author", "")
@@ -95,9 +111,7 @@ def fetch_pubs_for_author(scholar_id, name, max_pubs=None):
             "_scholar_id": scholar_id,
         })
 
-        time.sleep(0.8)  # be polite to Scholar
-
-    return pubs
+    return pubs, attempted, failed
 
 
 def main():
@@ -110,8 +124,16 @@ def main():
     if not authors:
         sys.exit("No authors found in scholar_authors.jsonc")
 
+    previous = {}
+    if OUTPUT_FILE.exists():
+        for p in json.loads(OUTPUT_FILE.read_text(encoding="utf-8")):
+            previous[p["title"].lower().strip()] = p
+
     all_pubs = []
     seen_titles = set()  # deduplicate by lowercase title
+    total_attempted = 0
+    total_failed = 0
+    errors = []
 
     for entry in authors:
         scholar_id = entry.get("scholar_id", "").strip()
@@ -123,7 +145,9 @@ def main():
             continue
 
         try:
-            pubs = fetch_pubs_for_author(scholar_id, name, max_pubs)
+            pubs, attempted, failed = fetch_pubs_for_author(scholar_id, name, previous, max_pubs)
+            total_attempted += attempted
+            total_failed += failed
             added = 0
             for p in pubs:
                 key = p["title"].lower().strip()
@@ -134,10 +158,22 @@ def main():
             print(f"  -> added {added} unique pubs ({len(pubs) - added} duplicates skipped)")
         except Exception as e:
             print(f"ERROR fetching {name}: {e}", file=sys.stderr)
+            errors.append(name)
 
-    if not all_pubs:
-        print("\nNo publications fetched — keeping existing file unchanged.")
-        sys.exit(0)
+    # Scholar blocks requests from CI runners now and then. Exit with an error
+    # (so the GitHub Action fails and emails) rather than overwrite good data
+    # with a partial list or papers missing their authors.
+    if errors or not all_pubs:
+        sys.exit(
+            f"\nCould not fetch {', '.join(errors) or 'any publications'} "
+            "(Scholar is probably blocking requests) — keeping existing file unchanged."
+        )
+    if total_failed > total_attempted / 2:
+        sys.exit(
+            f"\n{total_failed} of {total_attempted} paper lookups failed "
+            "(Scholar is probably blocking requests) — keeping existing file unchanged."
+        )
+    print(f"\nLooked up {total_attempted} new papers ({total_failed} failed).")
 
     # Sort newest first, then by citation count
     all_pubs.sort(
